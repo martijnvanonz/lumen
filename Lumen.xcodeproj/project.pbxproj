@@ -27,6 +27,7 @@
 		D5E6F7A8B9C0D1E2F3A4B5C6 /* PaymentHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6B5A4F3E2D1C0B9A8F7E6D5 /* PaymentHistoryView.swift */; };
 		E7F8A9B0C1D2E3F4A5B6C7D8 /* RefundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8C7B6A5F4E3D2C1B0A9F8E7 /* RefundView.swift */; };
 		F9A0B1C2D3E4F5A6B7C8D9E0 /* FeeComparisonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0D9C8B7A6F5E4D3C2B1A0F9 /* FeeComparisonView.swift */; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* WalletInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2E1D0C9B8A7F6E5D4C3B2A1 /* WalletInfoView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -50,6 +51,7 @@
 		C6B5A4F3E2D1C0B9A8F7E6D5 /* PaymentHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentHistoryView.swift; sourceTree = "<group>"; };
 		D8C7B6A5F4E3D2C1B0A9F8E7 /* RefundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefundView.swift; sourceTree = "<group>"; };
 		E0D9C8B7A6F5E4D3C2B1A0F9 /* FeeComparisonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeComparisonView.swift; sourceTree = "<group>"; };
+		F2E1D0C9B8A7F6E5D4C3B2A1 /* WalletInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletInfoView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -115,6 +117,7 @@
 				C6B5A4F3E2D1C0B9A8F7E6D5 /* PaymentHistoryView.swift */,
 				D8C7B6A5F4E3D2C1B0A9F8E7 /* RefundView.swift */,
 				E0D9C8B7A6F5E4D3C2B1A0F9 /* FeeComparisonView.swift */,
+				F2E1D0C9B8A7F6E5D4C3B2A1 /* WalletInfoView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -239,6 +242,7 @@
 				D5E6F7A8B9C0D1E2F3A4B5C6 /* PaymentHistoryView.swift in Sources */,
 				E7F8A9B0C1D2E3F4A5B6C7D8 /* RefundView.swift in Sources */,
 				F9A0B1C2D3E4F5A6B7C8D9E0 /* FeeComparisonView.swift in Sources */,
+				A1B2C3D4E5F6A7B8C9D0E1F2 /* WalletInfoView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

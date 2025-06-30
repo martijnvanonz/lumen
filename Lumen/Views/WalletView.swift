@@ -5,6 +5,7 @@ struct WalletView: View {
     @State private var showingSendView = false
     @State private var showingReceiveView = false
     @State private var showingRefundView = false
+    @State private var showingWalletInfo = false
 
     var body: some View {
         NavigationView {
@@ -17,8 +18,23 @@ struct WalletView: View {
                         // Network status bar
                         NetworkStatusView()
 
-                        // Balance Card
-                        BalanceCard(balance: walletManager.balance)
+                        // Balance Card with Info Button
+                        VStack(spacing: 12) {
+                            BalanceCard(balance: walletManager.balance)
+
+                            Button(action: {
+                                showingWalletInfo = true
+                            }) {
+                                HStack(spacing: 6) {
+                                    Image(systemName: "info.circle")
+                                        .font(.caption)
+
+                                    Text("Wallet Details")
+                                        .font(.caption)
+                                }
+                                .foregroundColor(.blue)
+                            }
+                        }
 
                         // Action Buttons
                         VStack(spacing: 16) {
@@ -96,6 +112,9 @@ struct WalletView: View {
         }
         .sheet(isPresented: $showingRefundView) {
             RefundView()
+        }
+        .sheet(isPresented: $showingWalletInfo) {
+            WalletInfoView()
         }
     }
     
