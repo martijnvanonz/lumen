@@ -16,10 +16,9 @@ class WalletManager: ObservableObject {
     @Published var isLoadingPayments = false
     
     // MARK: - Private Properties
-    
+
     private var sdk: BindingLiquidSdk?
     private let keychainManager = KeychainManager.shared
-    private let biometricManager = BiometricManager.shared
     private let eventHandler = PaymentEventHandler.shared
     private let errorHandler = ErrorHandler.shared
     private let networkMonitor = NetworkMonitor.shared
@@ -44,8 +43,8 @@ class WalletManager: ObservableObject {
             
             // Check if mnemonic exists in keychain
             if keychainManager.mnemonicExists() {
-                // Authenticate and retrieve existing mnemonic
-                mnemonic = try await authenticateAndRetrieveMnemonic()
+                // Retrieve existing mnemonic from iCloud Keychain
+                mnemonic = try await retrieveExistingMnemonic()
             } else {
                 // Generate new mnemonic and store it securely
                 mnemonic = try await generateAndStoreMnemonic()
@@ -70,45 +69,21 @@ class WalletManager: ObservableObject {
         }
     }
     
-    /// Generates a new mnemonic and stores it securely
+    /// Generates a new mnemonic and stores it securely in iCloud Keychain
     private func generateAndStoreMnemonic() async throws -> String {
-        return try await withCheckedThrowingContinuation { continuation in
-            // Generate mnemonic using Breez SDK
-            do {
-                let mnemonic = try generateBIP39Mnemonic()
-                
-                // Store mnemonic with biometric authentication
-                biometricManager.authenticateAndStoreMnemonic(
-                    mnemonic,
-                    reason: "Secure your new Lumen wallet with biometric authentication"
-                ) { result in
-                    switch result {
-                    case .success:
-                        continuation.resume(returning: mnemonic)
-                    case .failure(let error):
-                        continuation.resume(throwing: error)
-                    }
-                }
-            } catch {
-                continuation.resume(throwing: error)
-            }
-        }
+        // Generate mnemonic using Breez SDK
+        let mnemonic = try generateBIP39Mnemonic()
+
+        // Store mnemonic directly in iCloud Keychain (no biometric auth needed)
+        try keychainManager.storeOrUpdateMnemonic(mnemonic)
+
+        return mnemonic
     }
     
-    /// Authenticates user and retrieves mnemonic from keychain
-    private func authenticateAndRetrieveMnemonic() async throws -> String {
-        return try await withCheckedThrowingContinuation { continuation in
-            biometricManager.authenticateAndRetrieveMnemonic(
-                reason: "Access your Lumen wallet"
-            ) { result in
-                switch result {
-                case .success(let mnemonic):
-                    continuation.resume(returning: mnemonic)
-                case .failure(let error):
-                    continuation.resume(throwing: error)
-                }
-            }
-        }
+    /// Retrieves existing mnemonic from iCloud Keychain
+    private func retrieveExistingMnemonic() async throws -> String {
+        // Retrieve mnemonic directly from iCloud Keychain (no biometric auth needed)
+        return try keychainManager.retrieveMnemonic()
     }
     
     /// Connects to the Breez SDK with the provided mnemonic
