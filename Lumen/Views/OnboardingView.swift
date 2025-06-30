@@ -83,43 +83,39 @@ struct WelcomeStepView: View {
             Spacer()
             
             // Features
-            VStack(spacing: 24) {
+            VStack(spacing: AppTheme.Spacing.xxl) {
                 FeatureRow(
-                    icon: "lock.shield.fill",
+                    icon: AppTheme.Icons.shield,
                     title: "Secure by Design",
-                    description: "Your wallet is protected by biometric authentication and iCloud Keychain"
+                    description: "Your wallet is protected by biometric authentication and iCloud Keychain",
+                    iconColor: AppTheme.Colors.success
                 )
-                
+
                 FeatureRow(
-                    icon: "bolt.fill",
+                    icon: AppTheme.Icons.lightning,
                     title: "Lightning Fast",
-                    description: "Send and receive Bitcoin payments instantly with Lightning Network"
+                    description: "Send and receive Bitcoin payments instantly with Lightning Network",
+                    iconColor: AppTheme.Colors.lightning
                 )
-                
+
                 FeatureRow(
                     icon: "icloud.fill",
                     title: "Auto Recovery",
-                    description: "Seamlessly restore your wallet on any device with your Apple ID"
+                    description: "Seamlessly restore your wallet on any device with your Apple ID",
+                    iconColor: AppTheme.Colors.info
                 )
             }
-            .padding(.horizontal)
-            
+            .padding(.horizontal, AppTheme.Spacing.lg)
+
             Spacer()
-            
+
             // Continue Button
-            Button(action: {
+            Button("Get Started") {
                 onboardingState.currentStep = .biometricSetup
-            }) {
-                Text("Get Started")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.blue)
-                    .cornerRadius(12)
             }
-            .padding(.horizontal)
-            .padding(.bottom, 40)
+            .primaryButton()
+            .padding(.horizontal, AppTheme.Spacing.lg)
+            .padding(.bottom, AppTheme.Spacing.huge)
         }
     }
 }
@@ -367,31 +363,8 @@ struct CompletedView: View {
 
 // MARK: - Supporting Views
 
-struct FeatureRow: View {
-    let icon: String
-    let title: String
-    let description: String
-    
-    var body: some View {
-        HStack(spacing: 16) {
-            Image(systemName: icon)
-                .font(.title2)
-                .foregroundColor(.blue)
-                .frame(width: 30)
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.headline)
-                
-                Text(description)
-                    .font(.body)
-                    .foregroundColor(.secondary)
-            }
-            
-            Spacer()
-        }
-    }
-}
+// MARK: - Legacy FeatureRow (replaced by shared component)
+// Use FeatureRow from CoreComponents.swift instead
 
 struct BenefitRow: View {
     let icon: String

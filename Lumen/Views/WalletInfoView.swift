@@ -12,35 +12,32 @@ struct WalletInfoView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 20) {
+                VStack(spacing: AppTheme.Spacing.xl) {
                     if isLoading {
-                        LoadingInfoView()
+                        LoadingView(text: "Loading wallet information...")
                     } else if let walletInfo = walletInfo {
                         WalletDetailsView(walletInfo: walletInfo)
                     } else if let errorMessage = errorMessage {
-                        ErrorInfoView(message: errorMessage) {
+                        EmptyStateView(
+                            icon: AppTheme.Icons.error,
+                            title: "Error Loading Info",
+                            message: errorMessage,
+                            actionTitle: "Try Again"
+                        ) {
                             Task { await loadWalletInfo() }
                         }
                     }
                 }
-                .padding()
+                .padding(AppTheme.Spacing.lg)
             }
-            .navigationTitle("Wallet Info")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                }
-                
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Refresh") {
-                        Task { await loadWalletInfo() }
-                    }
-                    .disabled(isLoading)
-                }
-            }
+            .standardToolbar(
+                title: "Wallet Info",
+                displayMode: .large,
+                showsDoneButton: true,
+                showsRefreshButton: true,
+                onDone: { dismiss() },
+                onRefresh: { Task { await loadWalletInfo() } }
+            )
             .refreshable {
                 await loadWalletInfo()
             }

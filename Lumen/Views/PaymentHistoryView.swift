@@ -12,18 +12,24 @@ struct PaymentHistoryView: View {
             VStack(spacing: 0) {
                 // Filter bar
                 FilterBar(selectedFilter: $selectedFilter, showingFilterSheet: $showingFilterSheet)
-                
+
                 // Payment list
                 if walletManager.isLoadingPayments {
-                    LoadingView()
+                    LoadingView(text: "Loading payments...")
                 } else if filteredPayments.isEmpty {
-                    EmptyStateView(filter: selectedFilter)
+                    EmptyStateView(
+                        icon: emptyStateIcon,
+                        title: emptyStateTitle,
+                        message: emptyStateMessage
+                    )
                 } else {
                     PaymentListView(payments: filteredPayments)
                 }
             }
-            .navigationTitle("Payment History")
-            .navigationBarTitleDisplayMode(.large)
+            .standardToolbar(
+                title: "Payment History",
+                displayMode: .large
+            )
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Filter") {
@@ -31,7 +37,7 @@ struct PaymentHistoryView: View {
                     }
                 }
             }
-            .sheet(isPresented: $showingFilterSheet) {
+            .standardSheet(isPresented: $showingFilterSheet) {
                 FilterSheetView(selectedFilter: $selectedFilter)
             }
             .refreshable {
@@ -56,6 +62,39 @@ struct PaymentHistoryView: View {
             return payments.filter { $0.status == .complete }
         case .failed:
             return payments.filter { $0.status == .failed }
+        }
+    }
+
+    private var emptyStateIcon: String {
+        switch selectedFilter {
+        case .all: return "list.bullet"
+        case .sent: return "arrow.up.circle"
+        case .received: return "arrow.down.circle"
+        case .pending: return "clock"
+        case .completed: return "checkmark.circle"
+        case .failed: return "xmark.circle"
+        }
+    }
+
+    private var emptyStateTitle: String {
+        switch selectedFilter {
+        case .all: return "No Payments Yet"
+        case .sent: return "No Sent Payments"
+        case .received: return "No Received Payments"
+        case .pending: return "No Pending Payments"
+        case .completed: return "No Completed Payments"
+        case .failed: return "No Failed Payments"
+        }
+    }
+
+    private var emptyStateMessage: String {
+        switch selectedFilter {
+        case .all: return "Your payment history will appear here once you start sending and receiving payments."
+        case .sent: return "Payments you send will appear here."
+        case .received: return "Payments you receive will appear here."
+        case .pending: return "Payments currently being processed will appear here."
+        case .completed: return "Successfully completed payments will appear here."
+        case .failed: return "Failed payments will appear here."
         }
     }
 }
@@ -161,174 +200,12 @@ struct PaymentListView: View {
     }
 }
 
-struct PaymentRowView: View {
-    let payment: Payment
-    
-    var body: some View {
-        HStack(spacing: 12) {
-            // Status indicator
-            ZStack {
-                Circle()
-                    .fill(statusColor.opacity(0.1))
-                    .frame(width: 44, height: 44)
-                
-                Image(systemName: statusIcon)
-                    .font(.title3)
-                    .foregroundColor(statusColor)
-            }
-            
-            // Payment details
-            VStack(alignment: .leading, spacing: 4) {
-                HStack {
-                    Text(paymentTypeText)
-                        .font(.headline)
-                        .foregroundColor(.primary)
-                    
-                    Spacer()
-                    
-                    Text(amountText)
-                        .font(.headline)
-                        .foregroundColor(amountColor)
-                }
-                
-                HStack {
-                    Text(statusText)
-                        .font(.caption)
-                        .foregroundColor(statusColor)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(statusColor.opacity(0.1))
-                        .cornerRadius(4)
-                    
-                    Spacer()
-                    
-                    Text(timestampText)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                
-                // Payment details based on type
-                if let destination = payment.destination, !destination.isEmpty {
-                    Text(destination)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .lineLimit(2)
-                }
-                
-                if let txId = payment.txId {
-                    Text("ID: \(txId.prefix(16))...")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                        .textSelection(.enabled)
-                }
-            }
-        }
-        .padding(.vertical, 4)
-    }
-    
-    private var paymentTypeText: String {
-        switch payment.paymentType {
-        case .send: return "Sent"
-        case .receive: return "Received"
-        }
-    }
-    
-    private var statusText: String {
-        switch payment.status {
-        case .created: return "Created"
-        case .pending: return "Pending"
-        case .complete: return "Completed"
-        case .failed: return "Failed"
-        case .timedOut: return "Timed Out"
-        case .refundable: return "Refundable"
-        case .refundPending: return "Refund Pending"
-        case .waitingFeeAcceptance: return "Waiting Fee Acceptance"
-        }
-    }
-    
-    private var statusIcon: String {
-        switch payment.status {
-        case .created: return "plus.circle"
-        case .pending: return "clock"
-        case .complete: return payment.paymentType == .send ? "arrow.up.circle.fill" : "arrow.down.circle.fill"
-        case .failed: return "xmark.circle.fill"
-        case .timedOut: return "clock.badge.xmark"
-        case .refundable: return "arrow.counterclockwise.circle"
-        case .refundPending: return "arrow.counterclockwise.circle.fill"
-        case .waitingFeeAcceptance: return "clock.arrow.circlepath"
-        }
-    }
-    
-    private var statusColor: Color {
-        switch payment.status {
-        case .created: return .blue
-        case .pending: return .orange
-        case .complete: return payment.paymentType == .send ? .orange : .green
-        case .failed: return .red
-        case .timedOut: return .red
-        case .refundable: return .yellow
-        case .refundPending: return .orange
-        case .waitingFeeAcceptance: return .blue
-        }
-    }
-    
-    private var amountText: String {
-        let prefix = payment.paymentType == .send ? "-" : "+"
-        return "\(prefix)\(payment.amountSat) sats"
-    }
-    
-    private var amountColor: Color {
-        switch payment.paymentType {
-        case .send: return .orange
-        case .receive: return .green
-        }
-    }
-    
-    private var timestampText: String {
-        let date = Date(timeIntervalSince1970: TimeInterval(payment.timestamp))
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .abbreviated
-        return formatter.localizedString(for: date, relativeTo: Date())
-    }
-}
+// MARK: - Legacy PaymentRowView (replaced by shared component)
+// Use PaymentRowView from PaymentComponents.swift instead
 
-// MARK: - Loading and Empty States
 
-struct LoadingView: View {
-    var body: some View {
-        VStack(spacing: 16) {
-            ProgressView()
-                .scaleEffect(1.2)
-            
-            Text("Loading payments...")
-                .font(.headline)
-                .foregroundColor(.secondary)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-}
-
-struct EmptyStateView: View {
-    let filter: PaymentFilter
-    
-    var body: some View {
-        VStack(spacing: 20) {
-            Image(systemName: emptyStateIcon)
-                .font(.system(size: 48))
-                .foregroundColor(.secondary)
-            
-            Text(emptyStateTitle)
-                .font(.title2)
-                .fontWeight(.semibold)
-            
-            Text(emptyStateMessage)
-                .font(.body)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
+// MARK: - Legacy Components (replaced by shared components)
+// Use LoadingView and EmptyStateView from CoreComponents.swift instead
     
     private var emptyStateIcon: String {
         switch filter {

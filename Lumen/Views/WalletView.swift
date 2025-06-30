@@ -12,7 +12,7 @@ struct WalletView: View {
         NavigationView {
             ZStack(alignment: .top) {
                 ScrollView {
-                    VStack(spacing: 24) {
+                    VStack(spacing: AppTheme.Spacing.xxl) {
                         // Connection status bar
                         ConnectionStatusBar()
 
@@ -20,70 +20,50 @@ struct WalletView: View {
                         NetworkStatusView()
 
                         // Balance Card with Info Button
-                        VStack(spacing: 12) {
+                        VStack(spacing: AppTheme.Spacing.md) {
                             BalanceCard(balance: walletManager.balance)
 
                             Button(action: {
                                 showingWalletInfo = true
                             }) {
-                                HStack(spacing: 6) {
-                                    Image(systemName: "info.circle")
-                                        .font(.caption)
+                                HStack(spacing: AppTheme.Spacing.xs) {
+                                    Image(systemName: AppTheme.Icons.info)
+                                        .font(AppTheme.Typography.caption)
 
                                     Text("Wallet Details")
-                                        .font(.caption)
+                                        .font(AppTheme.Typography.caption)
                                 }
-                                .foregroundColor(.blue)
+                                .foregroundColor(AppTheme.Colors.primary)
                             }
                         }
 
                         // Action Buttons
-                        VStack(spacing: 16) {
-                            HStack(spacing: 16) {
-                                ActionButton(
+                        VStack(spacing: AppTheme.Spacing.lg) {
+                            HStack(spacing: AppTheme.Spacing.lg) {
+                                EnhancedActionButton(
                                     title: "Send",
-                                    icon: "arrow.up.circle.fill",
-                                    color: .orange
+                                    icon: AppTheme.Icons.send,
+                                    color: AppTheme.Colors.outgoing
                                 ) {
                                     showingSendView = true
                                 }
 
-                                ActionButton(
+                                EnhancedActionButton(
                                     title: "Receive",
-                                    icon: "arrow.down.circle.fill",
-                                    color: .green
+                                    icon: AppTheme.Icons.receive,
+                                    color: AppTheme.Colors.incoming
                                 ) {
                                     showingReceiveView = true
                                 }
                             }
 
                             // Refund button (smaller, secondary action)
-                            Button(action: {
+                            Button("Manage Refunds") {
                                 showingRefundView = true
-                            }) {
-                                HStack(spacing: 8) {
-                                    Image(systemName: "arrow.counterclockwise.circle")
-                                        .font(.title3)
-                                        .foregroundColor(.blue)
-
-                                    Text("Manage Refunds")
-                                        .font(.subheadline)
-                                        .foregroundColor(.blue)
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 12)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .fill(Color.blue.opacity(0.1))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 8)
-                                                .stroke(Color.blue.opacity(0.3), lineWidth: 1)
-                                        )
-                                )
                             }
-                            .buttonStyle(PlainButtonStyle())
+                            .secondaryButton()
                         }
-                        .padding(.horizontal)
+                        .padding(.horizontal, AppTheme.Spacing.lg)
 
                         // Enhanced Transaction History with real-time updates
                         EnhancedTransactionHistoryView()
@@ -105,16 +85,16 @@ struct WalletView: View {
                 .allowsHitTesting(false)
             }
         }
-        .sheet(isPresented: $showingSendView) {
+        .standardSheet(isPresented: $showingSendView) {
             SendPaymentView()
         }
-        .sheet(isPresented: $showingReceiveView) {
+        .standardSheet(isPresented: $showingReceiveView) {
             ReceivePaymentView()
         }
-        .sheet(isPresented: $showingRefundView) {
+        .standardSheet(isPresented: $showingRefundView) {
             RefundView()
         }
-        .sheet(isPresented: $showingWalletInfo) {
+        .standardSheet(isPresented: $showingWalletInfo) {
             WalletInfoView()
         }
     }
@@ -130,41 +110,36 @@ struct WalletView: View {
 
 struct BalanceCard: View {
     let balance: UInt64
-    
+
     var body: some View {
-        VStack(spacing: 16) {
-            VStack(spacing: 8) {
-                Text("Balance")
-                    .font(.headline)
-                    .foregroundColor(.secondary)
-                
-                Text("\(balance) sats")
-                    .font(.system(size: 36, weight: .bold, design: .rounded))
-                    .foregroundColor(.primary)
-                
-                Text("≈ $\(formattedUSDValue)")
-                    .font(.title3)
-                    .foregroundColor(.secondary)
-            }
-            
-            // Lightning Network indicator
-            HStack(spacing: 8) {
-                Image(systemName: "bolt.fill")
-                    .foregroundColor(.yellow)
-                
-                Text("Lightning Network")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+        CardContainer(padding: AppTheme.Spacing.xxl) {
+            VStack(spacing: AppTheme.Spacing.lg) {
+                VStack(spacing: AppTheme.Spacing.sm) {
+                    Text("Balance")
+                        .font(AppTheme.Typography.headline)
+                        .foregroundColor(.secondary)
+
+                    Text("\(balance) sats")
+                        .font(AppTheme.Typography.balanceFont)
+                        .foregroundColor(.primary)
+
+                    Text("≈ $\(formattedUSDValue)")
+                        .font(AppTheme.Typography.title3)
+                        .foregroundColor(.secondary)
+                }
+
+                // Lightning Network indicator
+                HStack(spacing: AppTheme.Spacing.sm) {
+                    Image(systemName: AppTheme.Icons.lightning)
+                        .foregroundColor(AppTheme.Colors.lightning)
+
+                    Text("Lightning Network")
+                        .font(AppTheme.Typography.caption)
+                        .foregroundColor(.secondary)
+                }
             }
         }
-        .frame(maxWidth: .infinity)
-        .padding(24)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color(.systemBackground))
-                .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
-        )
-        .padding(.horizontal)
+        .padding(.horizontal, AppTheme.Spacing.lg)
     }
     
     private var formattedUSDValue: String {
@@ -177,33 +152,21 @@ struct BalanceCard: View {
     }
 }
 
-// MARK: - Action Button
+// MARK: - Action Button (Legacy - use EnhancedActionButton instead)
 
 struct ActionButton: View {
     let title: String
     let icon: String
     let color: Color
     let action: () -> Void
-    
+
     var body: some View {
-        Button(action: action) {
-            VStack(spacing: 8) {
-                Image(systemName: icon)
-                    .font(.title2)
-                    .foregroundColor(color)
-                
-                Text(title)
-                    .font(.headline)
-                    .foregroundColor(.primary)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 20)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color(.secondarySystemBackground))
-            )
-        }
-        .buttonStyle(PlainButtonStyle())
+        EnhancedActionButton(
+            title: title,
+            icon: icon,
+            color: color,
+            action: action
+        )
     }
 }
 
@@ -230,87 +193,75 @@ struct SendPaymentView: View {
                     .padding(.top)
 
                 // Input field
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Payment Details")
-                        .font(.headline)
-
-                    TextField("Paste invoice, Lightning address, or Bitcoin address...", text: $inputText, axis: .vertical)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .lineLimit(3...6)
-                        .onChange(of: inputText) { _, newValue in
-                            if !newValue.isEmpty {
-                                parseInput()
-                            } else {
-                                paymentInfo = nil
-                                preparedPayment = nil
-                            }
-                        }
+                StandardTextField(
+                    title: "Payment Details",
+                    placeholder: "Paste invoice, Lightning address, or Bitcoin address...",
+                    text: $inputText,
+                    autocapitalization: .never
+                )
+                .onChange(of: inputText) { _, newValue in
+                    if !newValue.isEmpty {
+                        parseInput()
+                    } else {
+                        paymentInfo = nil
+                        preparedPayment = nil
+                    }
                 }
-                .padding(.horizontal)
+                .padding(.horizontal, AppTheme.Spacing.lg)
 
                 // Payment info display
                 if let paymentInfo = paymentInfo {
-                    PaymentInfoCard(paymentInfo: paymentInfo)
-                        .padding(.horizontal)
+                    PaymentInputInfoCard(paymentInfo: paymentInfo)
+                        .padding(.horizontal, AppTheme.Spacing.lg)
                 }
 
                 // Fee estimation display
                 if let preparedPayment = preparedPayment {
-                    VStack(spacing: 12) {
-                        FeeEstimationCard(preparedPayment: preparedPayment)
+                    VStack(spacing: AppTheme.Spacing.md) {
+                        FeeDisplayView(
+                            feeSats: preparedPayment.feesSat ?? 0,
+                            amountSats: amountSatsFromPayAmount(preparedPayment.amount),
+                            style: .detailed
+                        )
 
                         Button("View Fee Details") {
                             showingFeeDetails = true
                         }
-                        .font(.caption)
-                        .foregroundColor(.blue)
+                        .font(AppTheme.Typography.caption)
+                        .foregroundColor(AppTheme.Colors.primary)
                     }
-                    .padding(.horizontal)
+                    .padding(.horizontal, AppTheme.Spacing.lg)
                 }
 
                 // Error message
                 if let errorMessage = errorMessage {
                     Text(errorMessage)
-                        .foregroundColor(.red)
-                        .padding(.horizontal)
+                        .foregroundColor(AppTheme.Colors.error)
+                        .padding(.horizontal, AppTheme.Spacing.lg)
                 }
 
                 Spacer()
 
                 // Action buttons
-                VStack(spacing: 12) {
+                VStack(spacing: AppTheme.Spacing.md) {
                     if paymentInfo != nil && preparedPayment == nil && !isLoading {
-                        Button(action: preparePayment) {
-                            Text("Prepare Payment")
-                        }
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.orange)
-                        .cornerRadius(12)
-                        .padding(.horizontal)
+                        Button("Prepare Payment", action: preparePayment)
+                            .primaryButton()
+                            .padding(.horizontal, AppTheme.Spacing.lg)
                     }
 
                     if let preparedPayment = preparedPayment {
-                        Button(action: { showingConfirmation = true }) {
-                            Text("Send Payment")
-                        }
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.green)
-                        .cornerRadius(12)
-                        .padding(.horizontal)
+                        Button("Send Payment") { showingConfirmation = true }
+                            .primaryButton()
+                            .padding(.horizontal, AppTheme.Spacing.lg)
                     }
 
                     if isLoading {
-                        ProgressView("Processing...")
-                            .padding()
+                        LoadingView(text: "Processing payment...")
+                            .frame(height: 60)
                     }
                 }
-                .padding(.bottom)
+                .padding(.bottom, AppTheme.Spacing.lg)
             }
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarBackButtonHidden()
@@ -694,25 +645,18 @@ struct ReceivePaymentView: View {
                     .padding(.horizontal)
                 } else {
                     // Invoice creation form
-                    VStack(spacing: 16) {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Amount (sats)")
-                                .font(.headline)
-                            
-                            TextField("Enter amount...", text: $amount)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .keyboardType(.numberPad)
-                        }
-                        
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Description (optional)")
-                                .font(.headline)
-                            
-                            TextField("What's this for?", text: $description)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                        }
+                    VStack(spacing: AppTheme.Spacing.lg) {
+                        AmountInputField(
+                            amount: $amount,
+                            currency: "sats"
+                        )
+
+                        DescriptionInputField(
+                            placeholder: "What's this for?",
+                            text: $description
+                        )
                     }
-                    .padding(.horizontal)
+                    .padding(.horizontal, AppTheme.Spacing.lg)
                 }
                 
                 if let errorMessage = errorMessage {
