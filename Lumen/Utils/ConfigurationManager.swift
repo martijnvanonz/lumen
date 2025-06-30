@@ -162,12 +162,22 @@ class ConfigurationManager {
         }
         
         do {
-            let config = try defaultConfig(
+            var config = try defaultConfig(
                 network: liquidNetwork,
                 breezApiKey: breezApiKey
             )
-            
+
+            // Set working directory to app's documents directory to avoid read-only file system errors
+            let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+            let workingDir = documentsPath.appendingPathComponent("breez_sdk").path
+
+            // Create directory if it doesn't exist
+            try FileManager.default.createDirectory(atPath: workingDir, withIntermediateDirectories: true, attributes: nil)
+
+            config.workingDir = workingDir
+
             print("✅ Created Breez SDK config for \(liquidNetwork == .mainnet ? "mainnet" : "testnet")")
+            print("📁 Working directory: \(workingDir)")
             return config
         } catch {
             print("❌ Failed to create Breez SDK config: \(error)")
