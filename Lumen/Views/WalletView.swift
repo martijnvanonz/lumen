@@ -188,11 +188,13 @@ struct BalanceCard: View {
     }
     
     private var formattedFiatValue: String? {
-        guard let fiatAmount = currencyManager.convertSatsToFiat(balance) else {
+        guard let fiatAmount = currencyManager.convertSatsToFiat(balance),
+              fiatAmount.isFinite && !fiatAmount.isNaN else {
             return nil
         }
 
-        return currencyManager.formatFiatAmount(fiatAmount)
+        let formatted = currencyManager.formatFiatAmount(fiatAmount)
+        return formatted.isEmpty ? nil : formatted
     }
 }
 

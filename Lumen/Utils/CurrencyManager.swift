@@ -74,13 +74,18 @@ class CurrencyManager: ObservableObject {
         
         do {
             let rates = try sdk.fetchFiatRates()
-            
+
             await MainActor.run {
                 self.currentRates = rates
                 self.isLoadingRates = false
             }
-            
+
             print("✅ Fetched \(rates.count) BTC rates")
+
+            // Debug: Print first few rates to check for invalid values
+            for (index, rate) in rates.prefix(5).enumerated() {
+                print("Rate \(index): \(rate.coin) = \(rate.value) (isFinite: \(rate.value.isFinite), isNaN: \(rate.value.isNaN))")
+            }
         } catch {
             await MainActor.run {
                 self.isLoadingRates = false
@@ -99,25 +104,45 @@ class CurrencyManager: ObservableObject {
     /// Get the current BTC rate for the selected currency
     func getCurrentRate() -> Double? {
         guard let selectedCurrency = selectedCurrency else { return nil }
-        return currentRates.first { $0.coin.uppercased() == selectedCurrency.id.uppercased() }?.value
+
+        let rate = currentRates.first { $0.coin.uppercased() == selectedCurrency.id.uppercased() }?.value
+
+        // Validate the rate is a valid number
+        guard let validRate = rate,
+              validRate > 0,
+              validRate.isFinite,
+              !validRate.isNaN else {
+            return nil
+        }
+
+        return validRate
     }
     
     /// Convert satoshis to fiat amount using current rate
     func convertSatsToFiat(_ sats: UInt64) -> Double? {
-        guard let rate = getCurrentRate() else { return nil }
+        guard let rate = getCurrentRate(),
+              rate > 0,
+              rate.isFinite else { return nil }
+
         let btcAmount = Double(sats) / 100_000_000.0 // Convert sats to BTC
-        return btcAmount * rate
+        let fiatAmount = btcAmount * rate
+
+        // Ensure the result is valid
+        guard fiatAmount.isFinite && !fiatAmount.isNaN else { return nil }
+
+        return fiatAmount
     }
-    
+
     /// Format fiat amount with currency symbol
     func formatFiatAmount(_ amount: Double) -> String {
-        guard let selectedCurrency = selectedCurrency else { return "" }
-        
+        guard let selectedCurrency = selectedCurrency,
+              amount.isFinite && !amount.isNaN else { return "" }
+
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
         formatter.currencyCode = selectedCurrency.id
         formatter.maximumFractionDigits = Int(selectedCurrency.info.fractionSize)
-        
+
         return formatter.string(from: NSNumber(value: amount)) ?? ""
     }
     
