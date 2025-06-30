@@ -113,8 +113,8 @@ struct ConnectionStatusCard: View {
                 )
                 
                 InfoRow(
-                    label: "Block Height",
-                    value: "\(walletInfo.blockHeight)"
+                    label: "Liquid Tip",
+                    value: "\(walletInfo.blockchainInfo.liquidTip)"
                 )
                 
                 if let pendingReceiveSat = walletInfo.pendingReceiveSat {
@@ -151,7 +151,7 @@ struct NodeInfoCard: View {
             VStack(alignment: .leading, spacing: 8) {
                 InfoRow(
                     label: "Node ID",
-                    value: walletInfo.pubkey,
+                    value: walletInfo.walletInfo.pubkey,
                     isMonospace: true,
                     isCopyable: true
                 )
@@ -174,23 +174,23 @@ struct BalanceInfoCard: View {
             VStack(alignment: .leading, spacing: 8) {
                 InfoRow(
                     label: "Total Balance",
-                    value: "\(walletInfo.balanceSat) sats",
+                    value: "\(walletInfo.walletInfo.balanceSat) sats",
                     valueColor: .primary,
                     isHighlighted: true
                 )
                 
-                if let pendingReceiveSat = walletInfo.pendingReceiveSat, pendingReceiveSat > 0 {
+                if walletInfo.walletInfo.pendingReceiveSat > 0 {
                     InfoRow(
                         label: "Pending Receive",
-                        value: "\(pendingReceiveSat) sats",
+                        value: "\(walletInfo.walletInfo.pendingReceiveSat) sats",
                         valueColor: .green
                     )
                 }
                 
-                if let pendingSendSat = walletInfo.pendingSendSat, pendingSendSat > 0 {
+                if walletInfo.walletInfo.pendingSendSat > 0 {
                     InfoRow(
                         label: "Pending Send",
-                        value: "\(pendingSendSat) sats",
+                        value: "\(walletInfo.walletInfo.pendingSendSat) sats",
                         valueColor: .orange
                     )
                 }
@@ -212,13 +212,13 @@ struct NetworkInfoCard: View {
         ) {
             VStack(alignment: .leading, spacing: 8) {
                 InfoRow(
-                    label: "Network",
-                    value: walletInfo.network.rawValue.capitalized
+                    label: "Bitcoin Tip",
+                    value: "\(walletInfo.blockchainInfo.bitcoinTip)"
                 )
-                
+
                 InfoRow(
-                    label: "Block Height",
-                    value: "\(walletInfo.blockHeight)"
+                    label: "Liquid Tip",
+                    value: "\(walletInfo.blockchainInfo.liquidTip)"
                 )
             }
         }
@@ -238,19 +238,14 @@ struct LimitsInfoCard: View {
         ) {
             VStack(alignment: .leading, spacing: 8) {
                 InfoRow(
-                    label: "Max Receivable",
-                    value: "\(walletInfo.maxReceivableSat) sats"
+                    label: "Status",
+                    value: "Limits available via API"
                 )
-                
-                InfoRow(
-                    label: "Max Payable",
-                    value: "\(walletInfo.maxPayableSat) sats"
-                )
-                
-                InfoRow(
-                    label: "Max Single Payment",
-                    value: "\(walletInfo.maxSinglePaymentAmountSat) sats"
-                )
+
+                // TODO: Implement limits fetching using fetchLightningLimits() and fetchOnchainLimits()
+                Text("Payment limits can be fetched using dedicated API calls")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
         }
     }
