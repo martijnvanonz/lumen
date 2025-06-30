@@ -30,37 +30,114 @@ class CurrencyManager: ObservableObject {
     
     /// Load available currencies from Breez SDK
     func loadAvailableCurrencies() async {
-        guard let sdk = WalletManager.shared.sdk else {
-            print("❌ SDK not available for loading currencies")
+        // Check if we already have currencies loaded
+        if !availableCurrencies.isEmpty {
             return
         }
-        
+
         await MainActor.run {
             isLoadingCurrencies = true
         }
-        
+
+        // Try to get SDK, but don't fail if it's not available yet
+        guard let sdk = WalletManager.shared.sdk else {
+            print("⚠️ SDK not available for loading currencies, will load fallback currencies")
+            await loadFallbackCurrencies()
+            return
+        }
+
         do {
             let currencies = try sdk.listFiatCurrencies()
-            
+
             await MainActor.run {
                 self.availableCurrencies = currencies.sorted { $0.id < $1.id }
                 self.isLoadingCurrencies = false
-                
+
                 // Set default currency if none selected
                 if self.selectedCurrency == nil {
                     self.setDefaultCurrency()
                 }
             }
-            
-            print("✅ Loaded \(currencies.count) fiat currencies")
+
+            print("✅ Loaded \(currencies.count) fiat currencies from SDK")
         } catch {
             await MainActor.run {
                 self.isLoadingCurrencies = false
             }
-            print("❌ Failed to load fiat currencies: \(error)")
+            print("❌ Failed to load fiat currencies from SDK: \(error)")
+            // Load fallback currencies as backup
+            await loadFallbackCurrencies()
         }
     }
-    
+
+    /// Load fallback currencies when SDK is not available
+    private func loadFallbackCurrencies() async {
+        let fallbackCurrencies = createFallbackCurrencies()
+
+        await MainActor.run {
+            self.availableCurrencies = fallbackCurrencies
+            self.isLoadingCurrencies = false
+
+            // Set default currency if none selected
+            if self.selectedCurrency == nil {
+                self.setDefaultCurrency()
+            }
+        }
+
+        print("✅ Loaded \(fallbackCurrencies.count) fallback currencies")
+    }
+
+    /// Create a list of common fallback currencies
+    private func createFallbackCurrencies() -> [FiatCurrency] {
+        let commonCurrencies = [
+            ("usd", "US Dollar", 2),
+            ("eur", "Euro", 2),
+            ("gbp", "British Pound", 2),
+            ("jpy", "Japanese Yen", 0),
+            ("cad", "Canadian Dollar", 2),
+            ("aud", "Australian Dollar", 2),
+            ("chf", "Swiss Franc", 2),
+            ("cny", "Chinese Yuan", 2),
+            ("sek", "Swedish Krona", 2),
+            ("nok", "Norwegian Krone", 2),
+            ("dkk", "Danish Krone", 2),
+            ("pln", "Polish Zloty", 2),
+            ("czk", "Czech Koruna", 2),
+            ("huf", "Hungarian Forint", 0),
+            ("rub", "Russian Ruble", 2),
+            ("brl", "Brazilian Real", 2),
+            ("mxn", "Mexican Peso", 2),
+            ("inr", "Indian Rupee", 2),
+            ("krw", "South Korean Won", 0),
+            ("sgd", "Singapore Dollar", 2),
+            ("hkd", "Hong Kong Dollar", 2),
+            ("nzd", "New Zealand Dollar", 2),
+            ("zar", "South African Rand", 2),
+            ("try", "Turkish Lira", 2),
+            ("ils", "Israeli Shekel", 2),
+            ("aed", "UAE Dirham", 2),
+            ("sar", "Saudi Riyal", 2),
+            ("thb", "Thai Baht", 2),
+            ("myr", "Malaysian Ringgit", 2),
+            ("php", "Philippine Peso", 2)
+        ]
+
+        return commonCurrencies.map { (id, name, fractionSize) in
+            FiatCurrency(
+                id: id,
+                info: CurrencyInfo(
+                    name: name,
+                    fractionSize: UInt32(fractionSize),
+                    spacing: nil,
+                    symbol: nil,
+                    uniqSymbol: nil,
+                    localizedName: [],
+                    localeOverrides: []
+                )
+            )
+        }.sorted { $0.id < $1.id }
+    }
+
     /// Fetch current BTC rates from Breez SDK
     func fetchCurrentRates() async {
         guard let sdk = WalletManager.shared.sdk else {
@@ -99,6 +176,42 @@ class CurrencyManager: ObservableObject {
         selectedCurrency = currency
         saveCurrencyToUserDefaults(currency)
         print("✅ Selected currency: \(currency.id)")
+    }
+
+    /// Reload currencies from SDK when it becomes available
+    /// This replaces fallback currencies with real SDK currencies
+    func reloadCurrenciesFromSDK() async {
+        guard let sdk = WalletManager.shared.sdk else {
+            print("⚠️ SDK still not available for reloading currencies")
+            return
+        }
+
+        print("🔄 Reloading currencies from SDK...")
+
+        do {
+            let currencies = try sdk.listFiatCurrencies()
+
+            await MainActor.run {
+                // Store the currently selected currency ID to restore it
+                let selectedCurrencyId = self.selectedCurrency?.id
+
+                // Update available currencies
+                self.availableCurrencies = currencies.sorted { $0.id < $1.id }
+
+                // Restore selected currency if it exists in the new list
+                if let selectedId = selectedCurrencyId,
+                   let restoredCurrency = currencies.first(where: { $0.id == selectedId }) {
+                    self.selectedCurrency = restoredCurrency
+                } else if self.selectedCurrency == nil {
+                    // Set default if no currency was selected
+                    self.setDefaultCurrency()
+                }
+            }
+
+            print("✅ Reloaded \(currencies.count) currencies from SDK")
+        } catch {
+            print("❌ Failed to reload currencies from SDK: \(error)")
+        }
     }
     
     /// Get the current BTC rate for the selected currency

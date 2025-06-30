@@ -57,6 +57,13 @@ class WalletManager: ObservableObject {
                 isConnected = true
                 isLoading = false
             }
+
+            // Load currencies and start rate updates now that SDK is available
+            Task {
+                await CurrencyManager.shared.reloadCurrenciesFromSDK()
+                await CurrencyManager.shared.fetchCurrentRates()
+                CurrencyManager.shared.startRateUpdates()
+            }
             
         } catch {
             await MainActor.run {
