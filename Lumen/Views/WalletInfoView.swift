@@ -117,10 +117,10 @@ struct ConnectionStatusCard: View {
                     value: "\(walletInfo.blockchainInfo.liquidTip)"
                 )
                 
-                if let pendingReceiveSat = walletInfo.pendingReceiveSat {
+                if walletInfo.walletInfo.pendingReceiveSat > 0 {
                     InfoRow(
                         label: "Pending Receive",
-                        value: "\(pendingReceiveSat) sats",
+                        value: "\(walletInfo.walletInfo.pendingReceiveSat) sats",
                         valueColor: .orange
                     )
                 }
@@ -344,8 +344,8 @@ struct InfoRow: View {
             Text(value)
                 .font(isHighlighted ? .headline : .subheadline)
                 .fontWeight(isHighlighted ? .semibold : .regular)
-                .fontFamily(isMonospace ? .monospaced : .default)
-                .foregroundColor(valueColor)
+                .font(isMonospace ? .system(.subheadline, design: .monospaced) : .subheadline)
+                .foregroundStyle(valueColor)
                 .textSelection(isCopyable ? .enabled : .disabled)
                 .lineLimit(isMonospace ? nil : 1)
         }
