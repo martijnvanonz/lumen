@@ -329,9 +329,9 @@ struct SendPaymentView: View {
             } message: {
                 if let preparedPayment = preparedPayment {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Amount: \(preparedPayment.amountSat) sats")
-                        Text("Fee: \(preparedPayment.feesSat) sats")
-                        Text("Total: \(preparedPayment.amountSat + preparedPayment.feesSat) sats")
+                        Text("Amount: \(amountSatsFromPayAmount(preparedPayment.amount)) sats")
+                        Text("Fee: \(preparedPayment.feesSat ?? 0) sats")
+                        Text("Total: \(amountSatsFromPayAmount(preparedPayment.amount) + (preparedPayment.feesSat ?? 0)) sats")
                     }
                 }
             }
@@ -568,13 +568,13 @@ struct FeeEstimationCard: View {
             VStack(spacing: 8) {
                 FeeRowView(
                     label: "Payment Amount",
-                    amount: preparedPayment.amountSat,
+                    amount: amountSatsFromPayAmount(preparedPayment.amount),
                     isTotal: false
                 )
 
                 FeeRowView(
                     label: "Lightning Fee",
-                    amount: preparedPayment.feesSat,
+                    amount: preparedPayment.feesSat ?? 0,
                     isTotal: false,
                     color: .orange
                 )
@@ -583,13 +583,15 @@ struct FeeEstimationCard: View {
 
                 FeeRowView(
                     label: "Total",
-                    amount: preparedPayment.amountSat + preparedPayment.feesSat,
+                    amount: amountSatsFromPayAmount(preparedPayment.amount) + (preparedPayment.feesSat ?? 0),
                     isTotal: true
                 )
             }
 
             // Fee percentage
-            let feePercentage = Double(preparedPayment.feesSat) / Double(preparedPayment.amountSat) * 100
+            let amountSats = amountSatsFromPayAmount(preparedPayment.amount)
+            let feesSats = preparedPayment.feesSat ?? 0
+            let feePercentage = amountSats > 0 ? Double(feesSats) / Double(amountSats) * 100 : 0
             if feePercentage > 0 {
                 HStack {
                     Text("Fee Rate:")
@@ -874,8 +876,8 @@ struct FeeDetailsSheet: View {
                 VStack(spacing: 20) {
                     // Fee comparison
                     FeeComparisonView(
-                        lightningFeeSats: preparedPayment.feesSat,
-                        paymentAmountSats: preparedPayment.amountSat
+                        lightningFeeSats: preparedPayment.feesSat ?? 0,
+                        paymentAmountSats: amountSatsFromPayAmount(preparedPayment.amount)
                     )
 
                     // Fee breakdown
@@ -896,6 +898,24 @@ struct FeeDetailsSheet: View {
                 }
             }
         }
+    }
+}
+
+// MARK: - Helper Functions
+
+/// Extracts the amount in satoshis from a PayAmount enum
+private func amountSatsFromPayAmount(_ payAmount: PayAmount?) -> UInt64 {
+    guard let payAmount = payAmount else { return 0 }
+
+    switch payAmount {
+    case .bitcoin(let receiverAmountSat):
+        return receiverAmountSat
+    case .asset(_, let receiverAmount, _):
+        // For assets, we approximate using the receiver amount
+        // In a real app, you'd need proper conversion logic
+        return UInt64(receiverAmount)
+    case .drain:
+        return 0 // Drain means send all available, amount is determined dynamically
     }
 }
 
