@@ -781,7 +781,7 @@ struct ReceivePaymentView: View {
 
                 await MainActor.run {
                     preparedReceive = prepared
-                    invoice = response.invoice
+                    invoice = response.destination
                     isLoading = false
                 }
             } catch {
