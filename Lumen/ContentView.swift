@@ -42,14 +42,9 @@ struct ContentView: View {
         if walletManager.isConnected {
             showOnboarding = false
         } else {
-            // Check if we have a mnemonic stored (returning user)
-            let keychainManager = KeychainManager.shared
-            if keychainManager.mnemonicExists() {
-                // Try to initialize wallet automatically
-                Task {
-                    await walletManager.initializeWallet()
-                }
-            }
+            // Always show onboarding for wallet setup/recovery choice
+            // The onboarding flow will handle existing wallet detection
+            showOnboarding = true
         }
     }
 
