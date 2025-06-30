@@ -107,30 +107,18 @@ class NetworkMonitor: ObservableObject {
     private func handleReconnection() {
         lastConnectionTime = Date()
         reconnectionAttempts = 0
-        
+
         // Notify other components about reconnection
         NotificationCenter.default.post(name: .networkReconnected, object: nil)
-        
-        // Show reconnection notification
-        let eventHandler = PaymentEventHandler.shared
-        eventHandler.addNotification(
-            title: "Back Online",
-            message: "Connected via \(connectionType.displayName)",
-            type: .success
-        )
+
+        // Connection status is now shown via the top-right icon instead of toast notifications
     }
     
     private func handleDisconnection() {
         // Notify other components about disconnection
         NotificationCenter.default.post(name: .networkDisconnected, object: nil)
-        
-        // Show disconnection notification
-        let eventHandler = PaymentEventHandler.shared
-        eventHandler.addNotification(
-            title: "Connection Lost",
-            message: "Check your internet connection",
-            type: .warning
-        )
+
+        // Connection status is now shown via the top-right icon instead of toast notifications
     }
     
     // MARK: - Public Methods

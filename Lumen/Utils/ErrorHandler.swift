@@ -276,14 +276,18 @@ class ErrorHandler: ObservableObject {
     /// Handle an error without showing UI (for logging only)
     func logError(_ error: AppError, context: String? = nil) {
         let errorLog = ErrorLog(error: error, timestamp: Date(), context: context)
-        errorHistory.append(errorLog)
-        
-        // Keep only the last 100 errors
-        if errorHistory.count > 100 {
-            errorHistory = Array(errorHistory.suffix(100))
+
+        // Update @Published properties on main thread
+        DispatchQueue.main.async {
+            self.errorHistory.append(errorLog)
+
+            // Keep only the last 100 errors
+            if self.errorHistory.count > 100 {
+                self.errorHistory = Array(self.errorHistory.suffix(100))
+            }
         }
-        
-        // Log to console for debugging
+
+        // Log to console for debugging (can be done on any thread)
         print("🚨 Error: \(error.title) - \(error.message)")
         if let context = context {
             print("   Context: \(context)")

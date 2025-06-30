@@ -68,7 +68,7 @@ struct NotificationCard: View {
 
 struct ConnectionStatusBar: View {
     @StateObject private var eventHandler = PaymentEventHandler.shared
-    
+
     var body: some View {
         if eventHandler.connectionStatus != .connected {
             HStack(spacing: 8) {
@@ -81,17 +81,46 @@ struct ConnectionStatusBar: View {
                         .font(.caption)
                         .foregroundColor(eventHandler.connectionStatus.color)
                 }
-                
+
                 Text(eventHandler.connectionStatus.displayText)
                     .font(.caption)
                     .foregroundColor(eventHandler.connectionStatus.color)
-                
+
                 Spacer()
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
             .background(eventHandler.connectionStatus.color.opacity(0.1))
         }
+    }
+}
+
+// MARK: - Connection Status Icon (Top-Right Corner)
+
+struct ConnectionStatusIcon: View {
+    @StateObject private var eventHandler = PaymentEventHandler.shared
+
+    var body: some View {
+        Group {
+            switch eventHandler.connectionStatus {
+            case .connected:
+                Image(systemName: "wifi")
+                    .foregroundColor(.green)
+                    .font(.system(size: 16, weight: .medium))
+
+            case .connecting, .syncing:
+                ProgressView()
+                    .scaleEffect(0.7)
+                    .progressViewStyle(CircularProgressViewStyle(tint: .orange))
+
+            case .disconnected:
+                Image(systemName: "wifi.slash")
+                    .foregroundColor(.red)
+                    .font(.system(size: 16, weight: .medium))
+            }
+        }
+        .frame(width: 20, height: 20)
+        .animation(.easeInOut(duration: 0.3), value: eventHandler.connectionStatus)
     }
 }
 

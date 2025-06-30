@@ -13,12 +13,6 @@ struct WalletView: View {
             ZStack(alignment: .top) {
                 ScrollView {
                     VStack(spacing: 24) {
-                        // Connection status bar
-                        ConnectionStatusBar()
-
-                        // Network status bar
-                        NetworkStatusView()
-
                         // Balance Card with Info Button
                         VStack(spacing: 12) {
                             BalanceCard(balance: walletManager.balance)
@@ -92,6 +86,11 @@ struct WalletView: View {
                 }
                 .navigationTitle("Lumen")
                 .navigationBarTitleDisplayMode(.large)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        ConnectionStatusIcon()
+                    }
+                }
                 .refreshable {
                     // Refresh wallet data and payment history
                     await refreshWallet()

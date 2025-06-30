@@ -113,38 +113,58 @@ class BiometricManager {
         return availableBiometricType() != .none
     }
     
-    /// Authenticates the user using biometrics
+    /// Authenticates the user using biometrics or device passcode as fallback
     /// - Parameters:
     ///   - reason: The reason for authentication to display to the user
     ///   - completion: Completion handler with success/failure result
     func authenticateUser(reason: String, completion: @escaping (Result<Void, BiometricError>) -> Void) {
         // Create a fresh context for each authentication attempt
         let authContext = LAContext()
-        
-        // Check if biometric authentication is available
+
+        // First try biometric authentication if available
         var error: NSError?
-        guard authContext.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) else {
-            if let laError = error {
-                completion(.failure(mapLAError(laError)))
-            } else {
-                completion(.failure(.notAvailable))
+        if authContext.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
+            // Configure the context for biometric auth
+            authContext.localizedFallbackTitle = "Use Passcode"
+            authContext.localizedCancelTitle = "Cancel"
+
+            // Perform biometric authentication
+            authContext.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, error in
+                DispatchQueue.main.async {
+                    if success {
+                        completion(.success(()))
+                    } else if let error = error {
+                        completion(.failure(self.mapLAError(error)))
+                    } else {
+                        completion(.failure(.authenticationFailed))
+                    }
+                }
             }
-            return
-        }
-        
-        // Configure the context
-        authContext.localizedFallbackTitle = "Use Passcode"
-        authContext.localizedCancelTitle = "Cancel"
-        
-        // Perform authentication
-        authContext.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, error in
-            DispatchQueue.main.async {
-                if success {
-                    completion(.success(()))
-                } else if let error = error {
-                    completion(.failure(self.mapLAError(error)))
-                } else {
-                    completion(.failure(.authenticationFailed))
+        } else {
+            // Fallback to device passcode authentication if biometrics not available/enrolled
+            if authContext.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
+                authContext.localizedCancelTitle = "Cancel"
+
+                // Use device passcode authentication
+                authContext.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason) { success, error in
+                    DispatchQueue.main.async {
+                        if success {
+                            completion(.success(()))
+                        } else if let error = error {
+                            completion(.failure(self.mapLAError(error)))
+                        } else {
+                            completion(.failure(.authenticationFailed))
+                        }
+                    }
+                }
+            } else {
+                // Neither biometric nor passcode authentication is available
+                DispatchQueue.main.async {
+                    if let laError = error {
+                        completion(.failure(self.mapLAError(laError)))
+                    } else {
+                        completion(.failure(.notAvailable))
+                    }
                 }
             }
         }
@@ -242,25 +262,34 @@ class BiometricManager {
 
 extension BiometricManager {
     
-    /// Quick check if the user can authenticate with biometrics
+    /// Quick check if the user can authenticate with biometrics or device passcode
     /// - Returns: true if authentication is possible, false otherwise
     func canAuthenticate() -> Bool {
-        return context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil)
+        let context = LAContext()
+        return context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil) ||
+               context.canEvaluatePolicy(.deviceOwnerAuthentication, error: nil)
     }
     
-    /// Gets a user-friendly description of the available biometric type
+    /// Gets a user-friendly description of the available authentication methods
     /// - Returns: Description string for UI display
     func biometricTypeDescription() -> String {
         let type = availableBiometricType()
+        let context = LAContext()
+        let hasPasscode = context.canEvaluatePolicy(.deviceOwnerAuthentication, error: nil)
+
         switch type {
         case .none:
-            return "Biometric authentication is not available"
+            if hasPasscode {
+                return "Device passcode authentication is available"
+            } else {
+                return "No authentication method is available"
+            }
         case .touchID:
-            return "Touch ID is available"
+            return "Touch ID is available (with passcode fallback)"
         case .faceID:
-            return "Face ID is available"
+            return "Face ID is available (with passcode fallback)"
         case .opticID:
-            return "Optic ID is available"
+            return "Optic ID is available (with passcode fallback)"
         }
     }
 }
