@@ -39,20 +39,9 @@ struct OnboardingView: View {
     }
     
     private func checkExistingWallet() {
-        let keychainManager = KeychainManager.shared
-        let biometricManager = BiometricManager.shared
-        
-        if keychainManager.mnemonicExists() {
-            // Wallet exists, check biometric availability
-            if biometricManager.isBiometricAvailable() {
-                onboardingState.currentStep = .walletInitialization
-            } else {
-                onboardingState.currentStep = .biometricSetup
-            }
-        } else {
-            // New wallet needed
-            onboardingState.currentStep = .welcome
-        }
+        // Always start with the welcome screen, which will handle existing wallet detection
+        // and provide appropriate UI for both new and existing users
+        onboardingState.currentStep = .welcome
     }
 }
 
@@ -202,7 +191,7 @@ struct ExistingWalletView: View {
             // Action Buttons
             VStack(spacing: 16) {
                 Button(action: {
-                    onboardingState.currentStep = .currencySelection
+                    continueWithExistingWallet()
                 }) {
                     Text("Continue with Existing Wallet")
                         .font(.headline)
@@ -229,6 +218,28 @@ struct ExistingWalletView: View {
             }
             .padding(.horizontal)
             .padding(.bottom, 40)
+        }
+    }
+
+    // MARK: - Private Methods
+
+    private func continueWithExistingWallet() {
+        let biometricManager = BiometricManager.shared
+        let currencyManager = CurrencyManager.shared
+
+        // Check if user has already selected a currency
+        if currencyManager.selectedCurrency != nil {
+            // Currency already selected, check biometric setup
+            if biometricManager.isBiometricAvailable() {
+                // Biometrics available, go directly to wallet initialization
+                onboardingState.currentStep = .walletInitialization
+            } else {
+                // Need to set up biometrics first
+                onboardingState.currentStep = .biometricSetup
+            }
+        } else {
+            // No currency selected yet, go to currency selection
+            onboardingState.currentStep = .currencySelection
         }
     }
 }
