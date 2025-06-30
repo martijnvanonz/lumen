@@ -343,6 +343,31 @@ class WalletManager: ObservableObject {
         return try sdk.getInfo()
     }
 
+    /// Quickly connects to get wallet balance for existing wallet detection
+    /// This is a lightweight connection that doesn't trigger full initialization
+    func getExistingWalletBalance() async -> UInt64? {
+        guard let mnemonic = try? keychainManager.retrieveMnemonic() else {
+            return nil
+        }
+
+        do {
+            // Create a temporary SDK connection just to get balance
+            let config = try configManager.getBreezSDKConfig()
+            let tempSdk = try BreezSDKLiquid.connect(req: ConnectRequest(config: config, mnemonic: mnemonic))
+
+            let info = try tempSdk.getInfo()
+            let balance = info.walletInfo.balanceSat
+
+            // Disconnect the temporary connection
+            try tempSdk.disconnect()
+
+            return balance
+        } catch {
+            print("❌ Failed to get existing wallet balance: \(error)")
+            return nil
+        }
+    }
+
     // MARK: - Payment Management
 
     /// Loads payment history from the SDK

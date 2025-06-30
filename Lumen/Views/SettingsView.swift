@@ -4,7 +4,10 @@ import BreezSDKLiquid
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var currencyManager = CurrencyManager.shared
+    @StateObject private var walletManager = WalletManager.shared
     @State private var showingCurrencySelection = false
+    @State private var showingLogoutConfirmation = false
+    @State private var isLoggingOut = false
     
     var body: some View {
         NavigationView {
@@ -70,18 +73,49 @@ struct SettingsView: View {
                         Image(systemName: "network")
                             .foregroundColor(.green)
                             .frame(width: 24)
-                        
+
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Network")
                                 .foregroundColor(.primary)
-                            
+
                             Text("Liquid Network")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
-                        
+
                         Spacer()
                     }
+                }
+
+                // Wallet Management Section
+                Section("Wallet Management") {
+                    Button(action: {
+                        showingLogoutConfirmation = true
+                    }) {
+                        HStack {
+                            Image(systemName: "rectangle.portrait.and.arrow.right")
+                                .foregroundColor(.red)
+                                .frame(width: 24)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Logout Wallet")
+                                    .foregroundColor(.red)
+
+                                Text("Disconnect and return to onboarding")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+
+                            Spacer()
+
+                            if isLoggingOut {
+                                ProgressView()
+                                    .scaleEffect(0.8)
+                            }
+                        }
+                    }
+                    .disabled(isLoggingOut)
+                    .buttonStyle(PlainButtonStyle())
                 }
             }
             .navigationTitle("Settings")
@@ -96,6 +130,41 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showingCurrencySelection) {
             CurrencySelectionSettingsView()
+        }
+        .alert("Logout Wallet", isPresented: $showingLogoutConfirmation) {
+            Button("Cancel", role: .cancel) { }
+            Button("Logout", role: .destructive) {
+                performLogout()
+            }
+        } message: {
+            Text("Are you sure you want to logout? This will disconnect your wallet and return you to the onboarding screen. Your wallet will remain safely stored in iCloud Keychain.")
+        }
+    }
+
+    // MARK: - Private Methods
+
+    private func performLogout() {
+        isLoggingOut = true
+
+        Task {
+            do {
+                // Reset the wallet (disconnect and clear state)
+                try await walletManager.resetWallet()
+
+                await MainActor.run {
+                    isLoggingOut = false
+                    dismiss()
+
+                    // Post notification to trigger return to onboarding
+                    NotificationCenter.default.post(name: .walletLoggedOut, object: nil)
+                }
+            } catch {
+                await MainActor.run {
+                    isLoggingOut = false
+                    // Handle error - could show an error alert here
+                    print("❌ Logout failed: \(error)")
+                }
+            }
         }
     }
 }

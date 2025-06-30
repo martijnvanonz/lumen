@@ -60,31 +60,208 @@ struct OnboardingView: View {
 
 struct WelcomeStepView: View {
     @ObservedObject var onboardingState: OnboardingState
-    
+    @StateObject private var walletManager = WalletManager.shared
+    @StateObject private var currencyManager = CurrencyManager.shared
+    @State private var existingWalletBalance: UInt64?
+    @State private var isCheckingExistingWallet = true
+    @State private var showingNewWalletWarning = false
+
+    var hasExistingWallet: Bool {
+        KeychainManager.shared.mnemonicExists()
+    }
+
+    var body: some View {
+        Group {
+            if hasExistingWallet {
+                ExistingWalletView(
+                    onboardingState: onboardingState,
+                    balance: existingWalletBalance,
+                    isCheckingBalance: isCheckingExistingWallet,
+                    onCreateNewWallet: {
+                        showingNewWalletWarning = true
+                    }
+                )
+            } else {
+                NewWalletWelcomeView(onboardingState: onboardingState)
+            }
+        }
+        .onAppear {
+            if hasExistingWallet {
+                checkExistingWalletBalance()
+            }
+        }
+        .alert("Create New Wallet", isPresented: $showingNewWalletWarning) {
+            Button("Cancel", role: .cancel) { }
+            Button("Delete & Create New", role: .destructive) {
+                createNewWallet()
+            }
+        } message: {
+            Text("Creating a new wallet will permanently delete your existing wallet and all funds. This action cannot be undone. Are you sure you want to continue?")
+        }
+    }
+
+    // MARK: - Private Methods
+
+    private func checkExistingWalletBalance() {
+        Task {
+            let balance = await walletManager.getExistingWalletBalance()
+            await MainActor.run {
+                self.existingWalletBalance = balance
+                self.isCheckingExistingWallet = false
+            }
+        }
+    }
+
+    private func createNewWallet() {
+        Task {
+            do {
+                // Reset the existing wallet
+                try await walletManager.resetWallet()
+
+                await MainActor.run {
+                    // Continue with new wallet creation
+                    onboardingState.currentStep = .currencySelection
+                }
+            } catch {
+                print("❌ Failed to reset wallet: \(error)")
+            }
+        }
+    }
+}
+
+// MARK: - Existing Wallet View
+
+struct ExistingWalletView: View {
+    @ObservedObject var onboardingState: OnboardingState
+    @StateObject private var currencyManager = CurrencyManager.shared
+    let balance: UInt64?
+    let isCheckingBalance: Bool
+    let onCreateNewWallet: () -> Void
+
     var body: some View {
         VStack(spacing: 40) {
             Spacer()
-            
+
+            // App Icon and Title
+            VStack(spacing: 20) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 80))
+                    .foregroundColor(.green)
+                    .shadow(color: .green.opacity(0.3), radius: 20)
+
+                VStack(spacing: 8) {
+                    Text("Existing Wallet Found")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+
+                    Text("Your wallet is safely stored in iCloud Keychain")
+                        .font(.title3)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+            }
+
+            // Balance Display
+            VStack(spacing: 16) {
+                if isCheckingBalance {
+                    ProgressView("Checking balance...")
+                        .frame(height: 60)
+                } else if let balance = balance {
+                    VStack(spacing: 8) {
+                        Text("Current Balance")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+
+                        Text("\(balance) sats")
+                            .font(.title)
+                            .fontWeight(.bold)
+
+                        if let fiatValue = currencyManager.convertSatsToFiat(balance) {
+                            let formattedFiat = currencyManager.formatFiatAmount(fiatValue)
+                            if !formattedFiat.isEmpty {
+                                Text("≈ \(formattedFiat)")
+                                    .font(.title3)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                    .padding()
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.secondary.opacity(0.1))
+                    )
+                } else {
+                    Text("Unable to check balance")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+
+            Spacer()
+
+            // Action Buttons
+            VStack(spacing: 16) {
+                Button(action: {
+                    onboardingState.currentStep = .currencySelection
+                }) {
+                    Text("Continue with Existing Wallet")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue)
+                        .cornerRadius(12)
+                }
+
+                Button(action: onCreateNewWallet) {
+                    Text("Create New Wallet")
+                        .font(.headline)
+                        .foregroundColor(.red)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.red.opacity(0.1))
+                        .cornerRadius(12)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.red, lineWidth: 1)
+                        )
+                }
+            }
+            .padding(.horizontal)
+            .padding(.bottom, 40)
+        }
+    }
+}
+
+// MARK: - New Wallet Welcome View
+
+struct NewWalletWelcomeView: View {
+    @ObservedObject var onboardingState: OnboardingState
+
+    var body: some View {
+        VStack(spacing: 40) {
+            Spacer()
+
             // App Icon and Title
             VStack(spacing: 20) {
                 Image(systemName: "lightbulb.fill")
                     .font(.system(size: 80))
                     .foregroundColor(.yellow)
                     .shadow(color: .yellow.opacity(0.3), radius: 20)
-                
+
                 VStack(spacing: 8) {
                     Text("Lumen")
                         .font(.largeTitle)
                         .fontWeight(.bold)
-                    
+
                     Text("Bright, simple payments.")
                         .font(.title3)
                         .foregroundColor(.secondary)
                 }
             }
-            
+
             Spacer()
-            
+
             // Features
             VStack(spacing: 24) {
                 FeatureRow(
@@ -92,13 +269,13 @@ struct WelcomeStepView: View {
                     title: "Secure by Design",
                     description: "Your wallet is protected by biometric authentication and iCloud Keychain"
                 )
-                
+
                 FeatureRow(
                     icon: "bolt.fill",
                     title: "Lightning Fast",
                     description: "Send and receive Bitcoin payments instantly with Lightning Network"
                 )
-                
+
                 FeatureRow(
                     icon: "icloud.fill",
                     title: "Auto Recovery",
@@ -106,9 +283,9 @@ struct WelcomeStepView: View {
                 )
             }
             .padding(.horizontal)
-            
+
             Spacer()
-            
+
             // Continue Button
             Button(action: {
                 onboardingState.currentStep = .currencySelection
