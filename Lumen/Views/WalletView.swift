@@ -505,7 +505,7 @@ struct PaymentInfoCard: View {
 
                     Text(destination.count > 20 ? "\(destination.prefix(20))..." : destination)
                         .font(.subheadline)
-                        .fontFamily(.monospaced)
+                        .fontDesign(.monospaced)
                 }
             }
 
