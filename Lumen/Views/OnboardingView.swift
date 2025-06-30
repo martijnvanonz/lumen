@@ -54,7 +54,8 @@ struct WelcomeStepView: View {
     @State private var showingNewWalletWarning = false
 
     var hasExistingWallet: Bool {
-        KeychainManager.shared.mnemonicExists()
+        // Check both keychain and UserDefaults state for consistency
+        return KeychainManager.shared.mnemonicExists() || walletManager.hasWallet
     }
 
     var body: some View {
@@ -85,15 +86,15 @@ struct WelcomeStepView: View {
     private func createNewWallet() {
         Task {
             do {
-                // Reset the existing wallet
-                try await walletManager.resetWallet()
+                // Delete the existing wallet from keychain
+                try await walletManager.deleteWalletFromKeychain()
 
                 await MainActor.run {
                     // Continue with new wallet creation - go to biometric setup
                     onboardingState.currentStep = .biometricSetup
                 }
             } catch {
-                print("❌ Failed to reset wallet: \(error)")
+                print("❌ Failed to delete existing wallet: \(error)")
             }
         }
     }
@@ -421,7 +422,7 @@ struct WalletInitializationView: View {
 
                         Button("Reset Wallet") {
                             Task {
-                                try? await walletManager.resetWallet()
+                                try? await walletManager.deleteWalletFromKeychain()
                                 await walletManager.initializeWallet()
                             }
                         }

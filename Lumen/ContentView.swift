@@ -38,11 +38,11 @@ struct ContentView: View {
     }
 
     private func checkWalletStatus() {
-        // Check if wallet is already connected
-        if walletManager.isConnected {
+        // Check if user is logged in and wallet is connected
+        if walletManager.isLoggedIn && walletManager.isConnected {
             showOnboarding = false
         } else {
-            // Always show onboarding for wallet setup/recovery choice
+            // Show onboarding for wallet setup/recovery choice
             // The onboarding flow will handle existing wallet detection
             showOnboarding = true
         }

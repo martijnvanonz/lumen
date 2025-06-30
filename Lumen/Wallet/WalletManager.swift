@@ -23,6 +23,14 @@ class WalletManager: ObservableObject {
     private let errorHandler = ErrorHandler.shared
     private let networkMonitor = NetworkMonitor.shared
     private let configManager = ConfigurationManager.shared
+    private let userDefaults = UserDefaults.standard
+
+    // MARK: - UserDefaults Keys
+
+    private enum UserDefaultsKeys {
+        static let hasWallet = "hasWallet"
+        static let isLoggedIn = "isLoggedIn"
+    }
     
     // MARK: - Singleton
     
@@ -52,11 +60,15 @@ class WalletManager: ObservableObject {
             
             // Connect to Breez SDK with the mnemonic
             try await connectToBreezSDK(mnemonic: mnemonic)
-            
+
             await MainActor.run {
                 isConnected = true
                 isLoading = false
             }
+
+            // Update state flags
+            hasWallet = true
+            isLoggedIn = true
 
             // Load currencies and start rate updates now that SDK is available
             Task {
@@ -324,19 +336,8 @@ class WalletManager: ObservableObject {
     /// Resets the wallet by clearing stored mnemonic and disconnecting
     /// Use this to recover from corrupted wallet state
     func resetWallet() async throws {
-        // Disconnect from SDK first
-        await disconnect()
-
-        // Clear stored mnemonic from keychain
-        try keychainManager.deleteMnemonic()
-
-        await MainActor.run {
-            self.balance = 0
-            self.payments = []
-            self.errorMessage = nil
-            self.isConnected = false
-            self.isLoading = false
-        }
+        // Use the new deleteWalletFromKeychain method for consistency
+        try await deleteWalletFromKeychain()
 
         print("✅ Wallet reset completed - ready for fresh initialization")
     }
@@ -348,6 +349,64 @@ class WalletManager: ObservableObject {
         }
 
         return try sdk.getInfo()
+    }
+
+    // MARK: - State Management
+
+    /// Checks if a wallet exists in keychain
+    var hasWallet: Bool {
+        get {
+            return userDefaults.bool(forKey: UserDefaultsKeys.hasWallet)
+        }
+        set {
+            userDefaults.set(newValue, forKey: UserDefaultsKeys.hasWallet)
+        }
+    }
+
+    /// Checks if user is currently logged in
+    var isLoggedIn: Bool {
+        get {
+            return userDefaults.bool(forKey: UserDefaultsKeys.isLoggedIn)
+        }
+        set {
+            userDefaults.set(newValue, forKey: UserDefaultsKeys.isLoggedIn)
+        }
+    }
+
+    /// Logs out the user (clears in-memory state but preserves keychain)
+    func logout() async {
+        // Disconnect from SDK
+        await disconnect()
+
+        // Clear in-memory state
+        await MainActor.run {
+            self.isConnected = false
+            self.balance = 0
+            self.payments = []
+            self.errorMessage = nil
+            self.isLoading = false
+            self.sdk = nil
+        }
+
+        // Update UserDefaults state (preserve hasWallet, clear isLoggedIn)
+        isLoggedIn = false
+
+        print("✅ User logged out - wallet remains in keychain")
+    }
+
+    /// Permanently deletes wallet from keychain and clears all state
+    func deleteWalletFromKeychain() async throws {
+        // First logout to clear all state
+        await logout()
+
+        // Delete mnemonic from keychain
+        try keychainManager.deleteMnemonic()
+
+        // Clear all UserDefaults state
+        hasWallet = false
+        isLoggedIn = false
+
+        print("✅ Wallet permanently deleted from keychain")
     }
 
 
@@ -667,12 +726,6 @@ class WalletManager: ObservableObject {
 
         case .lnUrlError(let data):
             throw WalletError.unsupportedPaymentType("LNURL error: \(data.reason)")
-
-        case .lnUrlAuth(let data):
-            throw WalletError.unsupportedPaymentType("LNURL-Auth not yet supported")
-
-        case .lnUrlError(let data):
-            throw WalletError.invalidInvoice
 
         case .nodeId(let nodeId):
             throw WalletError.unsupportedPaymentType("Direct node payments not supported")

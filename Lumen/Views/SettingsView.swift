@@ -7,7 +7,9 @@ struct SettingsView: View {
     @StateObject private var walletManager = WalletManager.shared
     @State private var showingCurrencySelection = false
     @State private var showingLogoutConfirmation = false
+    @State private var showingDeleteWalletConfirmation = false
     @State private var isLoggingOut = false
+    @State private var isDeletingWallet = false
     
     var body: some View {
         NavigationView {
@@ -114,7 +116,35 @@ struct SettingsView: View {
                             }
                         }
                     }
-                    .disabled(isLoggingOut)
+                    .disabled(isLoggingOut || isDeletingWallet)
+                    .buttonStyle(PlainButtonStyle())
+
+                    Button(action: {
+                        showingDeleteWalletConfirmation = true
+                    }) {
+                        HStack {
+                            Image(systemName: "trash.fill")
+                                .foregroundColor(.red)
+                                .frame(width: 24)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Delete Wallet from Keychain")
+                                    .foregroundColor(.red)
+
+                                Text("Permanently remove wallet seed")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+
+                            Spacer()
+
+                            if isDeletingWallet {
+                                ProgressView()
+                                    .scaleEffect(0.8)
+                            }
+                        }
+                    }
+                    .disabled(isLoggingOut || isDeletingWallet)
                     .buttonStyle(PlainButtonStyle())
                 }
             }
@@ -139,6 +169,14 @@ struct SettingsView: View {
         } message: {
             Text("Are you sure you want to logout? This will disconnect your wallet and return you to the onboarding screen. Your wallet will remain safely stored in iCloud Keychain.")
         }
+        .alert("Delete Wallet from Keychain", isPresented: $showingDeleteWalletConfirmation) {
+            Button("Cancel", role: .cancel) { }
+            Button("Delete", role: .destructive) {
+                performDeleteWallet()
+            }
+        } message: {
+            Text("⚠️ WARNING: This will permanently delete your wallet seed from iCloud Keychain. You will lose access to your funds unless you have backed up your seed phrase elsewhere. This action cannot be undone.")
+        }
     }
 
     // MARK: - Private Methods
@@ -147,12 +185,29 @@ struct SettingsView: View {
         isLoggingOut = true
 
         Task {
+            // Use the new logout method that preserves keychain
+            await walletManager.logout()
+
+            await MainActor.run {
+                isLoggingOut = false
+                dismiss()
+
+                // Post notification to trigger return to onboarding
+                NotificationCenter.default.post(name: .walletLoggedOut, object: nil)
+            }
+        }
+    }
+
+    private func performDeleteWallet() {
+        isDeletingWallet = true
+
+        Task {
             do {
-                // Reset the wallet (disconnect and clear state)
-                try await walletManager.resetWallet()
+                // Permanently delete wallet from keychain
+                try await walletManager.deleteWalletFromKeychain()
 
                 await MainActor.run {
-                    isLoggingOut = false
+                    isDeletingWallet = false
                     dismiss()
 
                     // Post notification to trigger return to onboarding
@@ -160,9 +215,9 @@ struct SettingsView: View {
                 }
             } catch {
                 await MainActor.run {
-                    isLoggingOut = false
+                    isDeletingWallet = false
                     // Handle error - could show an error alert here
-                    print("❌ Logout failed: \(error)")
+                    print("❌ Delete wallet failed: \(error)")
                 }
             }
         }
