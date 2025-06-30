@@ -167,6 +167,15 @@ class PaymentEventHandler: ObservableObject {
                 
             case .paymentWaitingConfirmation(let details):
                 self.handlePaymentWaitingConfirmation(details)
+
+            case .paymentRefundable(let details):
+                self.handlePaymentRefundable(details)
+
+            case .paymentWaitingFeeAcceptance(let details):
+                self.handlePaymentWaitingFeeAcceptance(details)
+
+            case .dataSynced(let didPullNewRecords):
+                self.handleDataSynced(didPullNewRecords)
             }
         }
     }
@@ -233,12 +242,44 @@ class PaymentEventHandler: ObservableObject {
     private func handlePaymentWaitingConfirmation(_ details: Payment) {
         let paymentInfo = createPaymentInfo(from: details, status: .waitingConfirmation)
         addOrUpdatePayment(paymentInfo)
-        
+
         addNotification(
             title: "Waiting for Confirmation",
             message: "Payment of \(details.amountSat) sats is waiting for network confirmation",
             type: .warning
         )
+    }
+
+    private func handlePaymentRefundable(_ details: Payment) {
+        let paymentInfo = createPaymentInfo(from: details, status: .failed)
+        addOrUpdatePayment(paymentInfo)
+
+        addNotification(
+            title: "Payment Refundable",
+            message: "Payment failed and can be refunded",
+            type: .warning
+        )
+    }
+
+    private func handlePaymentWaitingFeeAcceptance(_ details: Payment) {
+        let paymentInfo = createPaymentInfo(from: details, status: .pending)
+        addOrUpdatePayment(paymentInfo)
+
+        addNotification(
+            title: "Fee Acceptance Required",
+            message: "Payment is waiting for fee acceptance",
+            type: .info
+        )
+    }
+
+    private func handleDataSynced(_ didPullNewRecords: Bool) {
+        if didPullNewRecords {
+            addNotification(
+                title: "Data Updated",
+                message: "New payment data synchronized",
+                type: .info
+            )
+        }
     }
     
     // MARK: - Helper Methods
@@ -252,7 +293,7 @@ class PaymentEventHandler: ObservableObject {
             direction: direction,
             status: status,
             timestamp: Date(timeIntervalSince1970: TimeInterval(payment.timestamp)),
-            description: payment.description
+            description: nil // Payment type doesn't have description property
         )
     }
     

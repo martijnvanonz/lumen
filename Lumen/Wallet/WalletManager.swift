@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 import BreezSDKLiquid
 
 /// Manages the Breez SDK Liquid wallet integration
@@ -407,7 +408,7 @@ class WalletManager: ObservableObject {
             direction: direction,
             status: status,
             timestamp: Date(timeIntervalSince1970: TimeInterval(payment.timestamp)),
-            description: payment.description
+            description: nil // Payment type doesn't have description property
         )
     }
 

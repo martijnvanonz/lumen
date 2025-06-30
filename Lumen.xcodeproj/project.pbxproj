@@ -3,253 +3,282 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A1B2C3D4E5F67890 /* LumenApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F67891 /* LumenApp.swift */; };
-		A1B2C3D4E5F67892 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F67893 /* ContentView.swift */; };
-		A1B2C3D4E5F67894 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F67895 /* Assets.xcassets */; };
-		A1B2C3D4E5F67896 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F67897 /* Preview Assets.xcassets */; };
-		338E9485D51B4E1490986799 /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 589CF27EA81040B7A4D32DB0 /* KeychainManager.swift */; };
-		AB26FBFD4E5F441EA2159880 /* BiometricManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0270EDAC7C44AA680D3D5B9 /* BiometricManager.swift */; };
-		AD39264313C0442185C0132E /* BreezSDKLiquid in Frameworks */ = {isa = PBXBuildFile; productRef = 355AFB6DD05A463EA6837E4B /* BreezSDKLiquid */; };
-		B8F7E6D5C4A39281F0E5B7C9 /* WalletManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A8B7F6E5D4C3B2A1908F7E /* WalletManager.swift */; };
-		A7B8C9D0E1F2A3B4C5D6E7F8 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8E7D6C5B4A39281F0E5B7C9 /* OnboardingView.swift */; };
-		B9C8D7E6F5A4B3C2D1E0F9A8 /* WalletView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8F9E0D1C2B3A4F5E6D7C8B9 /* WalletView.swift */; };
-		C1D2E3F4A5B6C7D8E9F0A1B2 /* PaymentEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A1F0E9D8C7B6A5F4E3D2C1 /* PaymentEventHandler.swift */; };
-		D3E4F5A6B7C8D9E0F1A2B3C4 /* NotificationOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4B3A2F1E0D9C8B7A6F5E4D3 /* NotificationOverlay.swift */; };
-		E5F6A7B8C9D0E1F2A3B4C5D6 /* ErrorHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C5B4A3F2E1D0C9B8A7F6E5 /* ErrorHandler.swift */; };
-		F7A8B9C0D1E2F3A4B5C6D7E8 /* NetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8D7C6B5A4F3E2D1C0B9A8F7 /* NetworkMonitor.swift */; };
-		A9B0C1D2E3F4A5B6C7D8E9F0 /* ErrorAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E9D8C7B6A5F4E3D2C1B0A9 /* ErrorAlertView.swift */; };
-		B1C2D3E4F5A6B7C8D9E0F1A2 /* ConfigurationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2F1E0D9C8B7A6F5E4D3C2B1 /* ConfigurationManager.swift */; };
-		C3D4E5F6A7B8C9D0E1F2A3B4 /* .env.example in Resources */ = {isa = PBXBuildFile; fileRef = B4A3F2E1D0C9B8A7F6E5D4C3 /* .env.example */; };
-		D5E6F7A8B9C0D1E2F3A4B5C6 /* PaymentHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6B5A4F3E2D1C0B9A8F7E6D5 /* PaymentHistoryView.swift */; };
-		E7F8A9B0C1D2E3F4A5B6C7D8 /* RefundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8C7B6A5F4E3D2C1B0A9F8E7 /* RefundView.swift */; };
-		F9A0B1C2D3E4F5A6B7C8D9E0 /* FeeComparisonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0D9C8B7A6F5E4D3C2B1A0F9 /* FeeComparisonView.swift */; };
-		A1B2C3D4E5F6A7B8C9D0E1F2 /* WalletInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2E1D0C9B8A7F6E5D4C3B2A1 /* WalletInfoView.swift */; };
+		3822F8842E12BC8100D2598D /* BreezSDKLiquid in Frameworks */ = {isa = PBXBuildFile; productRef = 3822F8832E12BC8100D2598D /* BreezSDKLiquid */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		3822F8072E12B87000D2598D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3822F7F12E12B86E00D2598D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3822F7F82E12B86E00D2598D;
+			remoteInfo = Lumen;
+		};
+		3822F8112E12B87000D2598D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3822F7F12E12B86E00D2598D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3822F7F82E12B86E00D2598D;
+			remoteInfo = Lumen;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
-		A1B2C3D4E5F67898 /* Lumen.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Lumen.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		A1B2C3D4E5F67891 /* LumenApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LumenApp.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F67893 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F67895 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		A1B2C3D4E5F67897 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		589CF27EA81040B7A4D32DB0 /* KeychainManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainManager.swift; sourceTree = "<group>"; };
-		D0270EDAC7C44AA680D3D5B9 /* BiometricManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiometricManager.swift; sourceTree = "<group>"; };
-		C9A8B7F6E5D4C3B2A1908F7E /* WalletManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletManager.swift; sourceTree = "<group>"; };
-		F8E7D6C5B4A39281F0E5B7C9 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
-		A8F9E0D1C2B3A4F5E6D7C8B9 /* WalletView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletView.swift; sourceTree = "<group>"; };
-		B2A1F0E9D8C7B6A5F4E3D2C1 /* PaymentEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentEventHandler.swift; sourceTree = "<group>"; };
-		C4B3A2F1E0D9C8B7A6F5E4D3 /* NotificationOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationOverlay.swift; sourceTree = "<group>"; };
-		D6C5B4A3F2E1D0C9B8A7F6E5 /* ErrorHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorHandler.swift; sourceTree = "<group>"; };
-		E8D7C6B5A4F3E2D1C0B9A8F7 /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
-		F0E9D8C7B6A5F4E3D2C1B0A9 /* ErrorAlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorAlertView.swift; sourceTree = "<group>"; };
-		A2F1E0D9C8B7A6F5E4D3C2B1 /* ConfigurationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationManager.swift; sourceTree = "<group>"; };
-		B4A3F2E1D0C9B8A7F6E5D4C3 /* .env.example */ = {isa = PBXFileReference; lastKnownFileType = text; path = .env.example; sourceTree = "<group>"; };
-		C6B5A4F3E2D1C0B9A8F7E6D5 /* PaymentHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentHistoryView.swift; sourceTree = "<group>"; };
-		D8C7B6A5F4E3D2C1B0A9F8E7 /* RefundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefundView.swift; sourceTree = "<group>"; };
-		E0D9C8B7A6F5E4D3C2B1A0F9 /* FeeComparisonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeComparisonView.swift; sourceTree = "<group>"; };
-		F2E1D0C9B8A7F6E5D4C3B2A1 /* WalletInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletInfoView.swift; sourceTree = "<group>"; };
+		3822F7F92E12B86E00D2598D /* Lumen.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Lumen.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3822F8062E12B87000D2598D /* LumenTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LumenTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		3822F8102E12B87000D2598D /* LumenUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LumenUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		3822F7FB2E12B86E00D2598D /* Lumen */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Lumen;
+			sourceTree = "<group>";
+		};
+		3822F8092E12B87000D2598D /* LumenTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = LumenTests;
+			sourceTree = "<group>";
+		};
+		3822F8132E12B87000D2598D /* LumenUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = LumenUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
 /* Begin PBXFrameworksBuildPhase section */
-		A1B2C3D4E5F67899 /* Frameworks */ = {
+		3822F7F62E12B86E00D2598D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AD39264313C0442185C0132E /* BreezSDKLiquid in Frameworks */,
+				3822F8842E12BC8100D2598D /* BreezSDKLiquid in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3822F8032E12B87000D2598D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3822F80D2E12B87000D2598D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		A1B2C3D4E5F6789A = {
+		3822F7F02E12B86E00D2598D = {
 			isa = PBXGroup;
 			children = (
-				A1B2C3D4E5F6789B /* Lumen */,
-				A1B2C3D4E5F6789C /* Products */,
+				3822F7FB2E12B86E00D2598D /* Lumen */,
+				3822F8092E12B87000D2598D /* LumenTests */,
+				3822F8132E12B87000D2598D /* LumenUITests */,
+				3822F7FA2E12B86E00D2598D /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		A1B2C3D4E5F6789C /* Products */ = {
+		3822F7FA2E12B86E00D2598D /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A1B2C3D4E5F67898 /* Lumen.app */,
+				3822F7F92E12B86E00D2598D /* Lumen.app */,
+				3822F8062E12B87000D2598D /* LumenTests.xctest */,
+				3822F8102E12B87000D2598D /* LumenUITests.xctest */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		A1B2C3D4E5F6789B /* Lumen */ = {
-			isa = PBXGroup;
-			children = (
-				A1B2C3D4E5F67891 /* LumenApp.swift */,
-				A1B2C3D4E5F67893 /* ContentView.swift */,
-				D1E2F3A4B5C6D7E8F9A0B1C2 /* Views */,
-				E2098C9A87924639B2F78499 /* Security */,
-				F2E1D0C9B8A79685A4B3C2E1 /* Wallet */,
-				B1C2D3E4F5A6B7C8D9E0F1A2 /* Utils */,
-				A1B2C3D4E5F67895 /* Assets.xcassets */,
-				B4A3F2E1D0C9B8A7F6E5D4C3 /* .env.example */,
-				A1B2C3D4E5F6789D /* Preview Content */,
-			);
-			path = Lumen;
-			sourceTree = "<group>";
-		};
-		E2098C9A87924639B2F78499 /* Security */ = {
-			isa = PBXGroup;
-			children = (
-				589CF27EA81040B7A4D32DB0 /* KeychainManager.swift */,
-				D0270EDAC7C44AA680D3D5B9 /* BiometricManager.swift */,
-			);
-			path = Security;
-			sourceTree = "<group>";
-		};
-		D1E2F3A4B5C6D7E8F9A0B1C2 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				F8E7D6C5B4A39281F0E5B7C9 /* OnboardingView.swift */,
-				A8F9E0D1C2B3A4F5E6D7C8B9 /* WalletView.swift */,
-				C4B3A2F1E0D9C8B7A6F5E4D3 /* NotificationOverlay.swift */,
-				F0E9D8C7B6A5F4E3D2C1B0A9 /* ErrorAlertView.swift */,
-				C6B5A4F3E2D1C0B9A8F7E6D5 /* PaymentHistoryView.swift */,
-				D8C7B6A5F4E3D2C1B0A9F8E7 /* RefundView.swift */,
-				E0D9C8B7A6F5E4D3C2B1A0F9 /* FeeComparisonView.swift */,
-				F2E1D0C9B8A7F6E5D4C3B2A1 /* WalletInfoView.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		B1C2D3E4F5A6B7C8D9E0F1A2 /* Utils */ = {
-			isa = PBXGroup;
-			children = (
-				D6C5B4A3F2E1D0C9B8A7F6E5 /* ErrorHandler.swift */,
-				E8D7C6B5A4F3E2D1C0B9A8F7 /* NetworkMonitor.swift */,
-				A2F1E0D9C8B7A6F5E4D3C2B1 /* ConfigurationManager.swift */,
-			);
-			path = Utils;
-			sourceTree = "<group>";
-		};
-		F2E1D0C9B8A79685A4B3C2E1 /* Wallet */ = {
-			isa = PBXGroup;
-			children = (
-				C9A8B7F6E5D4C3B2A1908F7E /* WalletManager.swift */,
-				B2A1F0E9D8C7B6A5F4E3D2C1 /* PaymentEventHandler.swift */,
-			);
-			path = Wallet;
-			sourceTree = "<group>";
-		};
-		A1B2C3D4E5F6789D /* Preview Content */ = {
-			isa = PBXGroup;
-			children = (
-				A1B2C3D4E5F67897 /* Preview Assets.xcassets */,
-			);
-			path = "Preview Content";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		A1B2C3D4E5F6789E /* Lumen */ = {
+		3822F7F82E12B86E00D2598D /* Lumen */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = A1B2C3D4E5F6789F /* Build configuration list for PBXNativeTarget "Lumen" */;
+			buildConfigurationList = 3822F81A2E12B87000D2598D /* Build configuration list for PBXNativeTarget "Lumen" */;
 			buildPhases = (
-				A1B2C3D4E5F678A0 /* Sources */,
-				A1B2C3D4E5F67899 /* Frameworks */,
-				A1B2C3D4E5F678A1 /* Resources */,
+				3822F7F52E12B86E00D2598D /* Sources */,
+				3822F7F62E12B86E00D2598D /* Frameworks */,
+				3822F7F72E12B86E00D2598D /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
+			fileSystemSynchronizedGroups = (
+				3822F7FB2E12B86E00D2598D /* Lumen */,
+			);
 			name = Lumen;
 			packageProductDependencies = (
-				355AFB6DD05A463EA6837E4B /* BreezSDKLiquid */,
+				3822F8832E12BC8100D2598D /* BreezSDKLiquid */,
 			);
 			productName = Lumen;
-			productReference = A1B2C3D4E5F67898 /* Lumen.app */;
+			productReference = 3822F7F92E12B86E00D2598D /* Lumen.app */;
 			productType = "com.apple.product-type.application";
+		};
+		3822F8052E12B87000D2598D /* LumenTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3822F81D2E12B87000D2598D /* Build configuration list for PBXNativeTarget "LumenTests" */;
+			buildPhases = (
+				3822F8022E12B87000D2598D /* Sources */,
+				3822F8032E12B87000D2598D /* Frameworks */,
+				3822F8042E12B87000D2598D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				3822F8082E12B87000D2598D /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				3822F8092E12B87000D2598D /* LumenTests */,
+			);
+			name = LumenTests;
+			packageProductDependencies = (
+			);
+			productName = LumenTests;
+			productReference = 3822F8062E12B87000D2598D /* LumenTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		3822F80F2E12B87000D2598D /* LumenUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3822F8202E12B87000D2598D /* Build configuration list for PBXNativeTarget "LumenUITests" */;
+			buildPhases = (
+				3822F80C2E12B87000D2598D /* Sources */,
+				3822F80D2E12B87000D2598D /* Frameworks */,
+				3822F80E2E12B87000D2598D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				3822F8122E12B87000D2598D /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				3822F8132E12B87000D2598D /* LumenUITests */,
+			);
+			name = LumenUITests;
+			packageProductDependencies = (
+			);
+			productName = LumenUITests;
+			productReference = 3822F8102E12B87000D2598D /* LumenUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		A1B2C3D4E5F678A2 /* Project object */ = {
+		3822F7F12E12B86E00D2598D /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1500;
-				LastUpgradeCheck = 1500;
+				LastSwiftUpdateCheck = 1640;
+				LastUpgradeCheck = 1640;
 				TargetAttributes = {
-					A1B2C3D4E5F6789E = {
-						CreatedOnToolsVersion = 15.0;
+					3822F7F82E12B86E00D2598D = {
+						CreatedOnToolsVersion = 16.4;
+					};
+					3822F8052E12B87000D2598D = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = 3822F7F82E12B86E00D2598D;
+					};
+					3822F80F2E12B87000D2598D = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = 3822F7F82E12B86E00D2598D;
 					};
 				};
 			};
-			buildConfigurationList = A1B2C3D4E5F678A3 /* Build configuration list for PBXProject "Lumen" */;
-			compatibilityVersion = "Xcode 14.0";
+			buildConfigurationList = 3822F7F42E12B86E00D2598D /* Build configuration list for PBXProject "Lumen" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
 			);
-			mainGroup = A1B2C3D4E5F6789A;
+			mainGroup = 3822F7F02E12B86E00D2598D;
+			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				F1E2D3C4B5A69788ABCD1234 /* XCRemoteSwiftPackageReference "breez-sdk-liquid-swift" */,
+				3822F8822E12BC8100D2598D /* XCRemoteSwiftPackageReference "breez-sdk-liquid-swift" */,
 			);
-			productRefGroup = A1B2C3D4E5F6789C /* Products */;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 3822F7FA2E12B86E00D2598D /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				A1B2C3D4E5F6789E /* Lumen */,
+				3822F7F82E12B86E00D2598D /* Lumen */,
+				3822F8052E12B87000D2598D /* LumenTests */,
+				3822F80F2E12B87000D2598D /* LumenUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		A1B2C3D4E5F678A1 /* Resources */ = {
+		3822F7F72E12B86E00D2598D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A1B2C3D4E5F67896 /* Preview Assets.xcassets in Resources */,
-				A1B2C3D4E5F67894 /* Assets.xcassets in Resources */,
-				C3D4E5F6A7B8C9D0E1F2A3B4 /* .env.example in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3822F8042E12B87000D2598D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3822F80E2E12B87000D2598D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		A1B2C3D4E5F678A0 /* Sources */ = {
+		3822F7F52E12B86E00D2598D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A1B2C3D4E5F67892 /* ContentView.swift in Sources */,
-				A1B2C3D4E5F67890 /* LumenApp.swift in Sources */,
-				338E9485D51B4E1490986799 /* KeychainManager.swift in Sources */,
-				AB26FBFD4E5F441EA2159880 /* BiometricManager.swift in Sources */,
-				B8F7E6D5C4A39281F0E5B7C9 /* WalletManager.swift in Sources */,
-				A7B8C9D0E1F2A3B4C5D6E7F8 /* OnboardingView.swift in Sources */,
-				B9C8D7E6F5A4B3C2D1E0F9A8 /* WalletView.swift in Sources */,
-				C1D2E3F4A5B6C7D8E9F0A1B2 /* PaymentEventHandler.swift in Sources */,
-				D3E4F5A6B7C8D9E0F1A2B3C4 /* NotificationOverlay.swift in Sources */,
-				E5F6A7B8C9D0E1F2A3B4C5D6 /* ErrorHandler.swift in Sources */,
-				F7A8B9C0D1E2F3A4B5C6D7E8 /* NetworkMonitor.swift in Sources */,
-				A9B0C1D2E3F4A5B6C7D8E9F0 /* ErrorAlertView.swift in Sources */,
-				B1C2D3E4F5A6B7C8D9E0F1A2 /* ConfigurationManager.swift in Sources */,
-				D5E6F7A8B9C0D1E2F3A4B5C6 /* PaymentHistoryView.swift in Sources */,
-				E7F8A9B0C1D2E3F4A5B6C7D8 /* RefundView.swift in Sources */,
-				F9A0B1C2D3E4F5A6B7C8D9E0 /* FeeComparisonView.swift in Sources */,
-				A1B2C3D4E5F6A7B8C9D0E1F2 /* WalletInfoView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3822F8022E12B87000D2598D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3822F80C2E12B87000D2598D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		3822F8082E12B87000D2598D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3822F7F82E12B86E00D2598D /* Lumen */;
+			targetProxy = 3822F8072E12B87000D2598D /* PBXContainerItemProxy */;
+		};
+		3822F8122E12B87000D2598D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3822F7F82E12B86E00D2598D /* Lumen */;
+			targetProxy = 3822F8112E12B87000D2598D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
-		A1B2C3D4E5F678A4 /* Debug */ = {
+		3822F8182E12B87000D2598D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -284,6 +313,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 9472YPH4BZ;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -301,7 +331,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -312,7 +342,7 @@
 			};
 			name = Debug;
 		};
-		A1B2C3D4E5F678A5 /* Release */ = {
+		3822F8192E12B87000D2598D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -347,6 +377,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 9472YPH4BZ;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -358,7 +389,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -368,30 +399,27 @@
 			};
 			name = Release;
 		};
-		A1B2C3D4E5F678A6 /* Debug */ = {
+		3822F81B2E12B87000D2598D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"Lumen/Preview Content\"";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 9472YPH4BZ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSFaceIDUsageDescription = "Lumen uses Face ID to securely access your wallet.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.lumen.wallet;
+				PRODUCT_BUNDLE_IDENTIFIER = com.martijnvanonzenoort.Lumen;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -399,30 +427,27 @@
 			};
 			name = Debug;
 		};
-		A1B2C3D4E5F678A7 /* Release */ = {
+		3822F81C2E12B87000D2598D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"Lumen/Preview Content\"";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 9472YPH4BZ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSFaceIDUsageDescription = "Lumen uses Face ID to securely access your wallet.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.lumen.wallet;
+				PRODUCT_BUNDLE_IDENTIFIER = com.martijnvanonzenoort.Lumen;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -430,23 +455,113 @@
 			};
 			name = Release;
 		};
+		3822F81E2E12B87000D2598D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9472YPH4BZ;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.martijnvanonzenoort.LumenTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Lumen.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Lumen";
+			};
+			name = Debug;
+		};
+		3822F81F2E12B87000D2598D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9472YPH4BZ;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.martijnvanonzenoort.LumenTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Lumen.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Lumen";
+			};
+			name = Release;
+		};
+		3822F8212E12B87000D2598D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9472YPH4BZ;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.martijnvanonzenoort.LumenUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Lumen;
+			};
+			name = Debug;
+		};
+		3822F8222E12B87000D2598D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9472YPH4BZ;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.martijnvanonzenoort.LumenUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Lumen;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		A1B2C3D4E5F678A3 /* Build configuration list for PBXProject "Lumen" */ = {
+		3822F7F42E12B86E00D2598D /* Build configuration list for PBXProject "Lumen" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				A1B2C3D4E5F678A4 /* Debug */,
-				A1B2C3D4E5F678A5 /* Release */,
+				3822F8182E12B87000D2598D /* Debug */,
+				3822F8192E12B87000D2598D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		A1B2C3D4E5F6789F /* Build configuration list for PBXNativeTarget "Lumen" */ = {
+		3822F81A2E12B87000D2598D /* Build configuration list for PBXNativeTarget "Lumen" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				A1B2C3D4E5F678A6 /* Debug */,
-				A1B2C3D4E5F678A7 /* Release */,
+				3822F81B2E12B87000D2598D /* Debug */,
+				3822F81C2E12B87000D2598D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3822F81D2E12B87000D2598D /* Build configuration list for PBXNativeTarget "LumenTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3822F81E2E12B87000D2598D /* Debug */,
+				3822F81F2E12B87000D2598D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3822F8202E12B87000D2598D /* Build configuration list for PBXNativeTarget "LumenUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3822F8212E12B87000D2598D /* Debug */,
+				3822F8222E12B87000D2598D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -454,23 +569,23 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		F1E2D3C4B5A69788ABCD1234 /* XCRemoteSwiftPackageReference "breez-sdk-liquid-swift" */ = {
+		3822F8822E12BC8100D2598D /* XCRemoteSwiftPackageReference "breez-sdk-liquid-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/breez/breez-sdk-liquid-swift.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 0.1.0;
+				minimumVersion = 0.9.1;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		355AFB6DD05A463EA6837E4B /* BreezSDKLiquid */ = {
+		3822F8832E12BC8100D2598D /* BreezSDKLiquid */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = F1E2D3C4B5A69788ABCD1234 /* XCRemoteSwiftPackageReference "breez-sdk-liquid-swift" */;
+			package = 3822F8822E12BC8100D2598D /* XCRemoteSwiftPackageReference "breez-sdk-liquid-swift" */;
 			productName = BreezSDKLiquid;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
-	rootObject = A1B2C3D4E5F678A2 /* Project object */;
+	rootObject = 3822F7F12E12B86E00D2598D /* Project object */;
 }

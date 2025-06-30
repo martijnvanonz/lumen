@@ -305,7 +305,7 @@ class ErrorHandler: ObservableObject {
         }
         
         // Map WalletManager errors
-        if let walletError = error as? WalletManager.WalletError {
+        if let walletError = error as? WalletError {
             switch walletError {
             case .notConnected:
                 return .wallet(.notConnected)
