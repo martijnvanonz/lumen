@@ -1,19 +1,41 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var walletManager = WalletManager.shared
+    @State private var showOnboarding = true
+
     var body: some View {
-        VStack {
-            Image(systemName: "lightbulb.fill")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Lumen")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-            Text("Bright, simple payments.")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
+        Group {
+            if showOnboarding {
+                OnboardingView()
+                    .onReceive(walletManager.$isConnected) { isConnected in
+                        if isConnected {
+                            showOnboarding = false
+                        }
+                    }
+            } else {
+                WalletView()
+            }
         }
-        .padding()
+        .onAppear {
+            checkWalletStatus()
+        }
+    }
+
+    private func checkWalletStatus() {
+        // Check if wallet is already connected
+        if walletManager.isConnected {
+            showOnboarding = false
+        } else {
+            // Check if we have a mnemonic stored (returning user)
+            let keychainManager = KeychainManager.shared
+            if keychainManager.mnemonicExists() {
+                // Try to initialize wallet automatically
+                Task {
+                    await walletManager.initializeWallet()
+                }
+            }
+        }
     }
 }
 

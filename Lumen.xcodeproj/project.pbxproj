@@ -15,6 +15,8 @@
 		AB26FBFD4E5F441EA2159880 /* BiometricManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0270EDAC7C44AA680D3D5B9 /* BiometricManager.swift */; };
 		AD39264313C0442185C0132E /* BreezSDKLiquid in Frameworks */ = {isa = PBXBuildFile; productRef = 355AFB6DD05A463EA6837E4B /* BreezSDKLiquid */; };
 		B8F7E6D5C4A39281F0E5B7C9 /* WalletManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A8B7F6E5D4C3B2A1908F7E /* WalletManager.swift */; };
+		A7B8C9D0E1F2A3B4C5D6E7F8 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8E7D6C5B4A39281F0E5B7C9 /* OnboardingView.swift */; };
+		B9C8D7E6F5A4B3C2D1E0F9A8 /* WalletView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8F9E0D1C2B3A4F5E6D7C8B9 /* WalletView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,6 +28,8 @@
 		589CF27EA81040B7A4D32DB0 /* KeychainManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainManager.swift; sourceTree = "<group>"; };
 		D0270EDAC7C44AA680D3D5B9 /* BiometricManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiometricManager.swift; sourceTree = "<group>"; };
 		C9A8B7F6E5D4C3B2A1908F7E /* WalletManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletManager.swift; sourceTree = "<group>"; };
+		F8E7D6C5B4A39281F0E5B7C9 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		A8F9E0D1C2B3A4F5E6D7C8B9 /* WalletView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,6 +65,7 @@
 			children = (
 				A1B2C3D4E5F67891 /* LumenApp.swift */,
 				A1B2C3D4E5F67893 /* ContentView.swift */,
+				D1E2F3A4B5C6D7E8F9A0B1C2 /* Views */,
 				E2098C9A87924639B2F78499 /* Security */,
 				F2E1D0C9B8A79685A4B3C2E1 /* Wallet */,
 				A1B2C3D4E5F67895 /* Assets.xcassets */,
@@ -76,6 +81,15 @@
 				D0270EDAC7C44AA680D3D5B9 /* BiometricManager.swift */,
 			);
 			path = Security;
+			sourceTree = "<group>";
+		};
+		D1E2F3A4B5C6D7E8F9A0B1C2 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				F8E7D6C5B4A39281F0E5B7C9 /* OnboardingView.swift */,
+				A8F9E0D1C2B3A4F5E6D7C8B9 /* WalletView.swift */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 		F2E1D0C9B8A79685A4B3C2E1 /* Wallet */ = {
@@ -175,6 +189,8 @@
 				338E9485D51B4E1490986799 /* KeychainManager.swift in Sources */,
 				AB26FBFD4E5F441EA2159880 /* BiometricManager.swift in Sources */,
 				B8F7E6D5C4A39281F0E5B7C9 /* WalletManager.swift in Sources */,
+				A7B8C9D0E1F2A3B4C5D6E7F8 /* OnboardingView.swift in Sources */,
+				B9C8D7E6F5A4B3C2D1E0F9A8 /* WalletView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
