@@ -425,6 +425,114 @@ class WalletManager: ObservableObject {
         await loadPaymentHistory()
     }
 
+    // MARK: - Refund Management
+
+    /// Lists all refundable swaps (failed Bitcoin payments)
+    func listRefundableSwaps() async throws -> [RefundableSwap] {
+        guard let sdk = sdk else {
+            throw WalletError.notConnected
+        }
+
+        logInfo("Fetching refundable swaps...")
+
+        do {
+            let refundables = try sdk.listRefundables()
+            logInfo("Found \(refundables.count) refundable swaps")
+            return refundables
+        } catch {
+            logError("Failed to list refundables: \(error)")
+            throw error
+        }
+    }
+
+    /// Gets recommended fees for Bitcoin transactions
+    func getRecommendedFees() async throws -> RecommendedFees {
+        guard let sdk = sdk else {
+            throw WalletError.notConnected
+        }
+
+        logInfo("Fetching recommended fees...")
+
+        do {
+            let fees = try sdk.recommendedFees()
+            logInfo("Recommended fees - Fast: \(fees.fastestFee), Half hour: \(fees.halfHourFee), Hour: \(fees.hourFee), Economy: \(fees.economyFee)")
+            return fees
+        } catch {
+            logError("Failed to get recommended fees: \(error)")
+            throw error
+        }
+    }
+
+    /// Executes a refund for a failed swap
+    func executeRefund(
+        swapAddress: String,
+        refundAddress: String,
+        feeRateSatPerVbyte: UInt32
+    ) async throws -> RefundResponse {
+        guard let sdk = sdk else {
+            throw WalletError.notConnected
+        }
+
+        logInfo("Executing refund for swap \(swapAddress) to \(refundAddress) with fee rate \(feeRateSatPerVbyte)")
+
+        let request = RefundRequest(
+            swapAddress: swapAddress,
+            refundAddress: refundAddress,
+            feeRateSatPerVbyte: feeRateSatPerVbyte
+        )
+
+        do {
+            let response = try sdk.refund(req: request)
+            logInfo("Refund executed successfully. TX ID: \(response.refundTxId)")
+
+            // Refresh payment history to reflect the refund
+            await loadPaymentHistory()
+
+            return response
+        } catch {
+            logError("Failed to execute refund: \(error)")
+            throw error
+        }
+    }
+
+    /// Estimates the cost of a refund transaction
+    func estimateRefundCost(
+        swapAddress: String,
+        refundAddress: String,
+        feeRateSatPerVbyte: UInt32
+    ) -> RefundEstimate {
+        // Estimate transaction size (typical refund transaction is ~200-250 vbytes)
+        let estimatedVbytes: UInt32 = 225
+        let estimatedFee = estimatedVbytes * feeRateSatPerVbyte
+
+        return RefundEstimate(
+            estimatedVbytes: estimatedVbytes,
+            estimatedFeeSats: estimatedFee,
+            feeRateSatPerVbyte: feeRateSatPerVbyte
+        )
+    }
+
+    /// Validates a Bitcoin address for refunds
+    func validateBitcoinAddress(_ address: String) -> Bool {
+        // Basic Bitcoin address validation
+        // In production, you might want more sophisticated validation
+        let trimmedAddress = address.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // Check length and format for common Bitcoin address types
+        if trimmedAddress.hasPrefix("bc1") && trimmedAddress.count >= 42 && trimmedAddress.count <= 62 {
+            // Bech32 (native segwit)
+            return true
+        } else if trimmedAddress.hasPrefix("3") && trimmedAddress.count >= 26 && trimmedAddress.count <= 35 {
+            // P2SH
+            return true
+        } else if trimmedAddress.hasPrefix("1") && trimmedAddress.count >= 26 && trimmedAddress.count <= 35 {
+            // P2PKH (legacy)
+            return true
+        }
+
+        return false
+    }
+
     // MARK: - Input Parsing
 
     /// Parses various input types (BOLT11, LNURL, Bitcoin addresses, etc.)
@@ -698,5 +806,17 @@ enum PaymentInputType {
         case .lnUrlAuth: return .red
         case .unsupported: return .gray
         }
+    }
+}
+
+// MARK: - Refund Types
+
+struct RefundEstimate {
+    let estimatedVbytes: UInt32
+    let estimatedFeeSats: UInt32
+    let feeRateSatPerVbyte: UInt32
+
+    var costDescription: String {
+        return "~\(estimatedFeeSats) sats (\(feeRateSatPerVbyte) sat/vB)"
     }
 }

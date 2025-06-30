@@ -4,6 +4,7 @@ struct WalletView: View {
     @StateObject private var walletManager = WalletManager.shared
     @State private var showingSendView = false
     @State private var showingReceiveView = false
+    @State private var showingRefundView = false
 
     var body: some View {
         NavigationView {
@@ -20,22 +21,50 @@ struct WalletView: View {
                         BalanceCard(balance: walletManager.balance)
 
                         // Action Buttons
-                        HStack(spacing: 16) {
-                            ActionButton(
-                                title: "Send",
-                                icon: "arrow.up.circle.fill",
-                                color: .orange
-                            ) {
-                                showingSendView = true
+                        VStack(spacing: 16) {
+                            HStack(spacing: 16) {
+                                ActionButton(
+                                    title: "Send",
+                                    icon: "arrow.up.circle.fill",
+                                    color: .orange
+                                ) {
+                                    showingSendView = true
+                                }
+
+                                ActionButton(
+                                    title: "Receive",
+                                    icon: "arrow.down.circle.fill",
+                                    color: .green
+                                ) {
+                                    showingReceiveView = true
+                                }
                             }
 
-                            ActionButton(
-                                title: "Receive",
-                                icon: "arrow.down.circle.fill",
-                                color: .green
-                            ) {
-                                showingReceiveView = true
+                            // Refund button (smaller, secondary action)
+                            Button(action: {
+                                showingRefundView = true
+                            }) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "arrow.counterclockwise.circle")
+                                        .font(.title3)
+                                        .foregroundColor(.blue)
+
+                                    Text("Manage Refunds")
+                                        .font(.subheadline)
+                                        .foregroundColor(.blue)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 12)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(Color.blue.opacity(0.1))
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 8)
+                                                .stroke(Color.blue.opacity(0.3), lineWidth: 1)
+                                        )
+                                )
                             }
+                            .buttonStyle(PlainButtonStyle())
                         }
                         .padding(.horizontal)
 
@@ -64,6 +93,9 @@ struct WalletView: View {
         }
         .sheet(isPresented: $showingReceiveView) {
             ReceivePaymentView()
+        }
+        .sheet(isPresented: $showingRefundView) {
+            RefundView()
         }
     }
     
