@@ -66,34 +66,7 @@ struct NotificationCard: View {
     }
 }
 
-struct ConnectionStatusBar: View {
-    @StateObject private var eventHandler = PaymentEventHandler.shared
 
-    var body: some View {
-        if eventHandler.connectionStatus != .connected {
-            HStack(spacing: 8) {
-                if eventHandler.connectionStatus == .connecting || eventHandler.connectionStatus == .syncing {
-                    ProgressView()
-                        .scaleEffect(0.8)
-                        .progressViewStyle(CircularProgressViewStyle(tint: eventHandler.connectionStatus.color))
-                } else {
-                    Image(systemName: "wifi.slash")
-                        .font(.caption)
-                        .foregroundColor(eventHandler.connectionStatus.color)
-                }
-
-                Text(eventHandler.connectionStatus.displayText)
-                    .font(.caption)
-                    .foregroundColor(eventHandler.connectionStatus.color)
-
-                Spacer()
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .background(eventHandler.connectionStatus.color.opacity(0.1))
-        }
-    }
-}
 
 // MARK: - Connection Status Icon (Top-Right Corner)
 

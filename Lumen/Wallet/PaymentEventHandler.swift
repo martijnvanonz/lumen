@@ -144,11 +144,7 @@ class PaymentEventHandler: ObservableObject {
             switch event {
             case .synced:
                 self.connectionStatus = .connected
-                self.addNotification(
-                    title: "Wallet Synced",
-                    message: "Your wallet is up to date",
-                    type: .info
-                )
+                // Connection status is now shown via the top-right icon instead of toast notifications
                 
             case .paymentSucceeded(let details):
                 self.handlePaymentSucceeded(details)

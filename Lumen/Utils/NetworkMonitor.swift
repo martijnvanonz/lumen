@@ -242,49 +242,7 @@ extension Notification.Name {
     static let networkDisconnected = Notification.Name("networkDisconnected")
 }
 
-// MARK: - Network Status View
-
-struct NetworkStatusView: View {
-    @StateObject private var networkMonitor = NetworkMonitor.shared
-    
-    var body: some View {
-        let quality = networkMonitor.getNetworkQuality()
-        
-        if quality.shouldShowWarning {
-            HStack(spacing: 8) {
-                Image(systemName: networkMonitor.connectionType.icon)
-                    .foregroundColor(quality.color)
-                
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Network: \(quality.displayName)")
-                        .font(.caption)
-                        .foregroundColor(quality.color)
-                    
-                    if networkMonitor.shouldWarnAboutExpensiveConnection() {
-                        Text("Using cellular data")
-                            .font(.caption2)
-                            .foregroundColor(.orange)
-                    }
-                }
-                
-                Spacer()
-                
-                if !networkMonitor.isConnected {
-                    Button("Retry") {
-                        Task {
-                            await networkMonitor.attemptReconnection()
-                        }
-                    }
-                    .font(.caption)
-                    .buttonStyle(.bordered)
-                }
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .background(quality.color.opacity(0.1))
-        }
-    }
-}
+// MARK: - Network Status (now handled by ConnectionStatusIcon in top-right corner)
 
 // MARK: - Offline Mode View
 
@@ -320,10 +278,4 @@ struct OfflineModeView: View {
     }
 }
 
-#Preview {
-    VStack {
-        NetworkStatusView()
-        Spacer()
-        OfflineModeView()
-    }
-}
+// Preview removed - NetworkStatusView replaced by ConnectionStatusIcon in navigation bar
