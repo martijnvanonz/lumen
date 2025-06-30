@@ -1,5 +1,5 @@
 {
-  "originHash" : "d44ae3320d0ae571ff5cca25d2b1e053934377c4bbf9e3d48016cd3bcae2997d",
+  "originHash" : "a4bdcbd545a4778619c89c9d27b3c054fbcaff932e788ee6c0f2133051628dc6",
   "pins" : [
     {
       "identity" : "breez-sdk-liquid-swift",
@@ -8,6 +8,15 @@
       "state" : {
         "revision" : "6af1f1c8b150d7005c21ece09167621ede92628c",
         "version" : "0.9.1"
+      }
+    },
+    {
+      "identity" : "cryptoswift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/krzyzanowskim/CryptoSwift",
+      "state" : {
+        "revision" : "132f5b209cd0251067f29cdb59c97d9f8a63252a",
+        "version" : "1.8.5"
       }
     }
   ],

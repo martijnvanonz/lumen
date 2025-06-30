@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		3822F8842E12BC8100D2598D /* BreezSDKLiquid in Frameworks */ = {isa = PBXBuildFile; productRef = 3822F8832E12BC8100D2598D /* BreezSDKLiquid */; };
+		3822F8F12E12E42E00D2598D /* CryptoSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 3822F8F02E12E42E00D2598D /* CryptoSwift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,6 +58,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3822F8842E12BC8100D2598D /* BreezSDKLiquid in Frameworks */,
+				3822F8F12E12E42E00D2598D /* CryptoSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -118,6 +120,7 @@
 			name = Lumen;
 			packageProductDependencies = (
 				3822F8832E12BC8100D2598D /* BreezSDKLiquid */,
+				3822F8F02E12E42E00D2598D /* CryptoSwift */,
 			);
 			productName = Lumen;
 			productReference = 3822F7F92E12B86E00D2598D /* Lumen.app */;
@@ -203,6 +206,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				3822F8822E12BC8100D2598D /* XCRemoteSwiftPackageReference "breez-sdk-liquid-swift" */,
+				3822F8EF2E12E42E00D2598D /* XCRemoteSwiftPackageReference "CryptoSwift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 3822F7FA2E12B86E00D2598D /* Products */;
@@ -581,6 +585,14 @@
 				minimumVersion = 0.9.1;
 			};
 		};
+		3822F8EF2E12E42E00D2598D /* XCRemoteSwiftPackageReference "CryptoSwift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/krzyzanowskim/CryptoSwift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.8.5;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -588,6 +600,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 3822F8822E12BC8100D2598D /* XCRemoteSwiftPackageReference "breez-sdk-liquid-swift" */;
 			productName = BreezSDKLiquid;
+		};
+		3822F8F02E12E42E00D2598D /* CryptoSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3822F8EF2E12E42E00D2598D /* XCRemoteSwiftPackageReference "CryptoSwift" */;
+			productName = CryptoSwift;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
