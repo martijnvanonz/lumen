@@ -98,7 +98,7 @@ class PaymentEventHandler: ObservableObject {
         }
     }
     
-    struct PaymentNotification: Identifiable {
+    struct PaymentNotification: Identifiable, Equatable {
         let id = UUID()
         let title: String
         let message: String

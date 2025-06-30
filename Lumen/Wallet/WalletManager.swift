@@ -125,7 +125,7 @@ class WalletManager: ObservableObject {
             // Get configuration with API key from ConfigurationManager
             let config = try configManager.getBreezSDKConfig()
 
-            let connectRequest = ConnectRequest(mnemonic: mnemonic, config: config)
+            let connectRequest = ConnectRequest(config: config, mnemonic: mnemonic)
 
             // Connect to the SDK
             sdk = try connect(req: connectRequest)
@@ -206,6 +206,18 @@ class WalletManager: ObservableObject {
         case .paymentWaitingConfirmation(let details):
             await loadPaymentHistory()
             logInfo("Payment waiting confirmation: \(details.txId ?? "unknown")")
+        case .paymentRefundable(let details):
+            await loadPaymentHistory()
+            logInfo("Payment refundable: \(details.txId ?? "unknown")")
+        case .paymentWaitingFeeAcceptance(let details):
+            await loadPaymentHistory()
+            logInfo("Payment waiting fee acceptance: \(details.txId ?? "unknown")")
+        case .dataSynced(let didPullNewRecords):
+            if didPullNewRecords {
+                await updateBalance()
+                await loadPaymentHistory()
+                logInfo("Data synced with new records")
+            }
         }
     }
     
@@ -216,7 +228,7 @@ class WalletManager: ObservableObject {
         do {
             let walletInfo = try sdk.getInfo()
             await MainActor.run {
-                self.balance = walletInfo.balanceSat
+                self.balance = walletInfo.walletInfo.balanceSat
             }
         } catch {
             print("Failed to get wallet info: \(error)")
@@ -275,7 +287,7 @@ class WalletManager: ObservableObject {
     }
 
     /// Receives a payment using prepared response
-    func receivePayment(prepareResponse: PrepareReceiveResponse) async throws -> ReceivePaymentResponse {
+    func receivePayment(prepareResponse: PrepareReceiveResponse, description: String? = nil) async throws -> ReceivePaymentResponse {
         guard let sdk = sdk else {
             throw WalletError.notConnected
         }
