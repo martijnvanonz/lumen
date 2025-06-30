@@ -226,23 +226,23 @@ class WalletManager: ObservableObject {
     // MARK: - Payment Methods
     
     /// Prepares a payment for the given invoice
-    func preparePayment(invoice: String) async throws -> PreparePayResponse {
+    func preparePayment(invoice: String) async throws -> PrepareSendResponse {
         guard let sdk = sdk else {
             throw WalletError.notConnected
         }
-        
-        let request = PreparePayRequest(invoice: invoice)
-        return try sdk.preparePay(req: request)
+
+        let request = PrepareSendRequest(invoice: invoice)
+        return try sdk.prepareSendPayment(req: request)
     }
-    
+
     /// Sends a payment
-    func sendPayment(prepareResponse: PreparePayResponse) async throws -> PayResponse {
+    func sendPayment(prepareResponse: PrepareSendResponse) async throws -> SendPaymentResponse {
         guard let sdk = sdk else {
             throw WalletError.notConnected
         }
-        
-        let request = PayRequest(prepareResponse: prepareResponse)
-        let response = try sdk.pay(req: request)
+
+        let request = SendPaymentRequest(prepareResponse: prepareResponse)
+        let response = try sdk.sendPayment(req: request)
         
         // Update balance after payment
         await updateBalance()
@@ -414,7 +414,7 @@ class WalletManager: ObservableObject {
 
     /// Gets payments with optional filtering
     func getPayments(
-        filter: PaymentTypeFilter? = nil,
+        filters: [PaymentType]? = nil,
         limit: UInt32? = nil,
         offset: UInt32? = nil
     ) async throws -> [Payment] {
@@ -424,7 +424,7 @@ class WalletManager: ObservableObject {
 
         // Create list payments request with filters
         let request = ListPaymentsRequest(
-            filters: filter.map { [$0] },
+            filters: filters,
             metadataFilters: nil,
             fromTimestamp: nil,
             toTimestamp: nil,
@@ -433,7 +433,7 @@ class WalletManager: ObservableObject {
             offset: offset
         )
 
-        logInfo("Fetching payments with filters: \(String(describing: filter))")
+        logInfo("Fetching payments with filters: \(String(describing: filters))")
         return try sdk.listPayments(req: request)
     }
 
@@ -593,7 +593,7 @@ class WalletManager: ObservableObject {
     }
 
     /// Validates and prepares a payment based on parsed input
-    func validateAndPreparePayment(from inputType: InputType) async throws -> PreparePayResponse {
+    func validateAndPreparePayment(from inputType: InputType) async throws -> PrepareSendResponse {
         guard let sdk = sdk else {
             throw WalletError.notConnected
         }
@@ -629,17 +629,17 @@ class WalletManager: ObservableObject {
     }
 
     /// Prepares a BOLT11 invoice payment
-    private func prepareBolt11Payment(invoice: LnInvoice) async throws -> PreparePayResponse {
+    private func prepareBolt11Payment(invoice: LnInvoice) async throws -> PrepareSendResponse {
         guard let sdk = sdk else {
             throw WalletError.notConnected
         }
 
-        let request = PreparePayRequest(invoice: invoice.bolt11)
+        let request = PrepareSendRequest(invoice: invoice.bolt11)
 
         logInfo("Preparing BOLT11 payment for \(invoice.amountMsat ?? 0) msats")
 
         do {
-            let response = try sdk.preparePay(req: request)
+            let response = try sdk.prepareSendPayment(req: request)
             logInfo("Payment prepared successfully. Fee: \(response.feesSat) sats")
             return response
         } catch {
@@ -649,14 +649,14 @@ class WalletManager: ObservableObject {
     }
 
     /// Prepares an LNURL-Pay payment
-    private func prepareLnUrlPayment(data: LnUrlPayRequestData, bip353Address: String?) async throws -> PreparePayResponse {
+    private func prepareLnUrlPayment(data: LnUrlPayRequestData, bip353Address: String?) async throws -> PrepareSendResponse {
         // For LNURL-Pay, we need to first get the invoice from the LNURL service
         // This is a simplified implementation - full LNURL-Pay requires more steps
         throw WalletError.unsupportedPaymentType("LNURL-Pay requires additional implementation")
     }
 
     /// Prepares a BOLT12 offer payment
-    private func prepareBolt12Payment(offer: Offer, bip353Address: String?) async throws -> PreparePayResponse {
+    private func prepareBolt12Payment(offer: LnOffer, bip353Address: String?) async throws -> PrepareSendResponse {
         // BOLT12 offers require additional implementation
         throw WalletError.unsupportedPaymentType("BOLT12 offers require additional implementation")
     }

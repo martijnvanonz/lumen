@@ -16,7 +16,7 @@ struct RefundView: View {
         NavigationView {
             VStack(spacing: 0) {
                 if isLoading {
-                    LoadingView()
+                    RefundLoadingView()
                 } else if refundableSwaps.isEmpty {
                     EmptyRefundsView()
                 } else {
@@ -413,7 +413,7 @@ struct EmptyRefundsView: View {
     }
 }
 
-struct LoadingView: View {
+struct RefundLoadingView: View {
     var body: some View {
         VStack(spacing: 16) {
             ProgressView()

@@ -219,7 +219,7 @@ struct EducationPoint: View {
 // MARK: - Fee Breakdown View
 
 struct FeeBreakdownView: View {
-    let preparedPayment: PreparePayResponse
+    let preparedPayment: PrepareSendResponse
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -307,8 +307,8 @@ struct FeeBreakdownRow: View {
         
         FeeEducationView()
         
-        // Mock PreparePayResponse for preview
-        // FeeBreakdownView(preparedPayment: mockPreparePayResponse)
+        // Mock PrepareSendResponse for preview
+        // FeeBreakdownView(preparedPayment: mockPrepareSendResponse)
     }
     .padding()
 }

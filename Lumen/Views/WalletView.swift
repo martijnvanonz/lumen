@@ -216,7 +216,7 @@ struct SendPaymentView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var paymentInfo: PaymentInputInfo?
-    @State private var preparedPayment: PreparePayResponse?
+    @State private var preparedPayment: PrepareSendResponse?
     @State private var showingConfirmation = false
     @State private var showingFeeDetails = false
     
@@ -538,7 +538,7 @@ struct PaymentInfoCard: View {
 // MARK: - Fee Estimation Card
 
 struct FeeEstimationCard: View {
-    let preparedPayment: PreparePayResponse
+    let preparedPayment: PrepareSendResponse
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -864,7 +864,7 @@ struct ReceiveFeeCard: View {
 // MARK: - Fee Details Sheet
 
 struct FeeDetailsSheet: View {
-    let preparedPayment: PreparePayResponse
+    let preparedPayment: PrepareSendResponse
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
