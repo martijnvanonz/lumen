@@ -424,6 +424,157 @@ class WalletManager: ObservableObject {
     func refreshPayments() async {
         await loadPaymentHistory()
     }
+
+    // MARK: - Input Parsing
+
+    /// Parses various input types (BOLT11, LNURL, Bitcoin addresses, etc.)
+    func parseInput(_ input: String) async throws -> InputType {
+        guard let sdk = sdk else {
+            throw WalletError.notConnected
+        }
+
+        let trimmedInput = input.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedInput.isEmpty else {
+            throw WalletError.invalidInvoice
+        }
+
+        logInfo("Parsing input: \(trimmedInput.prefix(50))...")
+
+        do {
+            let inputType = try sdk.parse(input: trimmedInput)
+            logInfo("Successfully parsed input as: \(inputType)")
+            return inputType
+        } catch {
+            logError("Failed to parse input: \(error)")
+            throw WalletError.invalidInvoice
+        }
+    }
+
+    /// Validates and prepares a payment based on parsed input
+    func validateAndPreparePayment(from inputType: InputType) async throws -> PreparePayResponse {
+        guard let sdk = sdk else {
+            throw WalletError.notConnected
+        }
+
+        switch inputType {
+        case .bolt11(let invoice):
+            return try await prepareBolt11Payment(invoice: invoice)
+
+        case .lnUrlPay(let data, let bip353Address):
+            return try await prepareLnUrlPayment(data: data, bip353Address: bip353Address)
+
+        case .bolt12Offer(let offer, let bip353Address):
+            return try await prepareBolt12Payment(offer: offer, bip353Address: bip353Address)
+
+        case .bitcoinAddress(let address):
+            throw WalletError.unsupportedPaymentType("Bitcoin on-chain payments not yet supported")
+
+        case .lnUrlWithdraw(let data):
+            throw WalletError.unsupportedPaymentType("LNURL-Withdraw not yet supported")
+
+        case .lnUrlAuth(let data):
+            throw WalletError.unsupportedPaymentType("LNURL-Auth not yet supported")
+
+        case .lnUrlError(let data):
+            throw WalletError.invalidInvoice
+
+        case .nodeId(let nodeId):
+            throw WalletError.unsupportedPaymentType("Direct node payments not supported")
+
+        case .url(let url):
+            throw WalletError.unsupportedPaymentType("URL payments not yet supported")
+        }
+    }
+
+    /// Prepares a BOLT11 invoice payment
+    private func prepareBolt11Payment(invoice: LnInvoice) async throws -> PreparePayResponse {
+        guard let sdk = sdk else {
+            throw WalletError.notConnected
+        }
+
+        let request = PreparePayRequest(invoice: invoice.bolt11)
+
+        logInfo("Preparing BOLT11 payment for \(invoice.amountMsat ?? 0) msats")
+
+        do {
+            let response = try sdk.preparePay(req: request)
+            logInfo("Payment prepared successfully. Fee: \(response.feesSat) sats")
+            return response
+        } catch {
+            logError("Failed to prepare BOLT11 payment: \(error)")
+            throw error
+        }
+    }
+
+    /// Prepares an LNURL-Pay payment
+    private func prepareLnUrlPayment(data: LnUrlPayRequestData, bip353Address: String?) async throws -> PreparePayResponse {
+        // For LNURL-Pay, we need to first get the invoice from the LNURL service
+        // This is a simplified implementation - full LNURL-Pay requires more steps
+        throw WalletError.unsupportedPaymentType("LNURL-Pay requires additional implementation")
+    }
+
+    /// Prepares a BOLT12 offer payment
+    private func prepareBolt12Payment(offer: Offer, bip353Address: String?) async throws -> PreparePayResponse {
+        // BOLT12 offers require additional implementation
+        throw WalletError.unsupportedPaymentType("BOLT12 offers require additional implementation")
+    }
+
+    /// Gets payment information from parsed input without preparing
+    func getPaymentInfo(from inputType: InputType) -> PaymentInputInfo {
+        switch inputType {
+        case .bolt11(let invoice):
+            return PaymentInputInfo(
+                type: .bolt11,
+                amount: invoice.amountMsat,
+                description: invoice.description,
+                destination: invoice.payeePubkey,
+                expiry: invoice.expiry.map { Date(timeIntervalSince1970: TimeInterval($0)) },
+                isExpired: invoice.expiry.map { $0 < UInt64(Date().timeIntervalSince1970) } ?? false
+            )
+
+        case .lnUrlPay(let data, let bip353Address):
+            return PaymentInputInfo(
+                type: .lnUrlPay,
+                amount: nil, // LNURL-Pay allows variable amounts
+                description: data.commentAllowed > 0 ? "LNURL-Pay (comment allowed)" : "LNURL-Pay",
+                destination: bip353Address ?? data.callback,
+                expiry: nil,
+                isExpired: false,
+                minAmount: data.minSendable,
+                maxAmount: data.maxSendable
+            )
+
+        case .bolt12Offer(let offer, let bip353Address):
+            return PaymentInputInfo(
+                type: .bolt12Offer,
+                amount: offer.minAmount,
+                description: offer.description,
+                destination: bip353Address,
+                expiry: nil,
+                isExpired: false
+            )
+
+        case .bitcoinAddress(let address):
+            return PaymentInputInfo(
+                type: .bitcoinAddress,
+                amount: nil,
+                description: "Bitcoin on-chain payment",
+                destination: address.address,
+                expiry: nil,
+                isExpired: false
+            )
+
+        default:
+            return PaymentInputInfo(
+                type: .unsupported,
+                amount: nil,
+                description: "Unsupported payment type",
+                destination: nil,
+                expiry: nil,
+                isExpired: false
+            )
+        }
+    }
 }
 
 // MARK: - Event Listener
@@ -447,7 +598,10 @@ enum WalletError: Error, LocalizedError {
     case invalidInvoice
     case insufficientFunds
     case networkError
-    
+    case unsupportedPaymentType(String)
+    case paymentExpired
+    case amountOutOfRange
+
     var errorDescription: String? {
         switch self {
         case .notConnected:
@@ -458,6 +612,91 @@ enum WalletError: Error, LocalizedError {
             return "Insufficient funds for this payment"
         case .networkError:
             return "Network connection error"
+        case .unsupportedPaymentType(let type):
+            return "Unsupported payment type: \(type)"
+        case .paymentExpired:
+            return "Payment request has expired"
+        case .amountOutOfRange:
+            return "Payment amount is out of allowed range"
+        }
+    }
+}
+
+// MARK: - Payment Input Types
+
+struct PaymentInputInfo {
+    let type: PaymentInputType
+    let amount: UInt64?
+    let description: String?
+    let destination: String?
+    let expiry: Date?
+    let isExpired: Bool
+    let minAmount: UInt64?
+    let maxAmount: UInt64?
+
+    init(
+        type: PaymentInputType,
+        amount: UInt64? = nil,
+        description: String? = nil,
+        destination: String? = nil,
+        expiry: Date? = nil,
+        isExpired: Bool = false,
+        minAmount: UInt64? = nil,
+        maxAmount: UInt64? = nil
+    ) {
+        self.type = type
+        self.amount = amount
+        self.description = description
+        self.destination = destination
+        self.expiry = expiry
+        self.isExpired = isExpired
+        self.minAmount = minAmount
+        self.maxAmount = maxAmount
+    }
+}
+
+enum PaymentInputType {
+    case bolt11
+    case lnUrlPay
+    case bolt12Offer
+    case bitcoinAddress
+    case lnUrlWithdraw
+    case lnUrlAuth
+    case unsupported
+
+    var displayName: String {
+        switch self {
+        case .bolt11: return "Lightning Invoice"
+        case .lnUrlPay: return "Lightning Address"
+        case .bolt12Offer: return "BOLT12 Offer"
+        case .bitcoinAddress: return "Bitcoin Address"
+        case .lnUrlWithdraw: return "LNURL Withdraw"
+        case .lnUrlAuth: return "LNURL Auth"
+        case .unsupported: return "Unsupported"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .bolt11: return "bolt.fill"
+        case .lnUrlPay: return "at"
+        case .bolt12Offer: return "gift.fill"
+        case .bitcoinAddress: return "bitcoinsign.circle.fill"
+        case .lnUrlWithdraw: return "arrow.down.circle.fill"
+        case .lnUrlAuth: return "key.fill"
+        case .unsupported: return "questionmark.circle.fill"
+        }
+    }
+
+    var color: Color {
+        switch self {
+        case .bolt11: return .yellow
+        case .lnUrlPay: return .blue
+        case .bolt12Offer: return .purple
+        case .bitcoinAddress: return .orange
+        case .lnUrlWithdraw: return .green
+        case .lnUrlAuth: return .red
+        case .unsupported: return .gray
         }
     }
 }

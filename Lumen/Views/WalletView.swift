@@ -161,9 +161,12 @@ struct ActionButton: View {
 
 struct SendPaymentView: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var invoice = ""
+    @State private var inputText = ""
     @State private var isLoading = false
     @State private var errorMessage: String?
+    @State private var paymentInfo: PaymentInputInfo?
+    @State private var preparedPayment: PreparePayResponse?
+    @State private var showingConfirmation = false
     
     var body: some View {
         NavigationView {
@@ -172,41 +175,74 @@ struct SendPaymentView: View {
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .padding(.top)
-                
+
+                // Input field
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Lightning Invoice")
+                    Text("Payment Details")
                         .font(.headline)
-                    
-                    TextField("Paste invoice here...", text: $invoice, axis: .vertical)
+
+                    TextField("Paste invoice, Lightning address, or Bitcoin address...", text: $inputText, axis: .vertical)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .lineLimit(3...6)
+                        .onChange(of: inputText) { _, newValue in
+                            if !newValue.isEmpty {
+                                parseInput()
+                            } else {
+                                paymentInfo = nil
+                                preparedPayment = nil
+                            }
+                        }
                 }
                 .padding(.horizontal)
-                
+
+                // Payment info display
+                if let paymentInfo = paymentInfo {
+                    PaymentInfoCard(paymentInfo: paymentInfo)
+                        .padding(.horizontal)
+                }
+
+                // Error message
                 if let errorMessage = errorMessage {
                     Text(errorMessage)
                         .foregroundColor(.red)
                         .padding(.horizontal)
                 }
-                
+
                 Spacer()
-                
-                Button(action: sendPayment) {
+
+                // Action buttons
+                VStack(spacing: 12) {
+                    if paymentInfo != nil && preparedPayment == nil && !isLoading {
+                        Button(action: preparePayment) {
+                            Text("Prepare Payment")
+                        }
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.orange)
+                        .cornerRadius(12)
+                        .padding(.horizontal)
+                    }
+
+                    if let preparedPayment = preparedPayment {
+                        Button(action: { showingConfirmation = true }) {
+                            Text("Send Payment")
+                        }
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.green)
+                        .cornerRadius(12)
+                        .padding(.horizontal)
+                    }
+
                     if isLoading {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                    } else {
-                        Text("Send Payment")
+                        ProgressView("Processing...")
+                            .padding()
                     }
                 }
-                .font(.headline)
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(invoice.isEmpty ? Color.gray : Color.blue)
-                .cornerRadius(12)
-                .disabled(invoice.isEmpty || isLoading)
-                .padding(.horizontal)
                 .padding(.bottom)
             }
             .navigationBarTitleDisplayMode(.inline)
@@ -218,19 +254,85 @@ struct SendPaymentView: View {
                     }
                 }
             }
+            .alert("Confirm Payment", isPresented: $showingConfirmation) {
+                Button("Cancel", role: .cancel) { }
+                Button("Send") {
+                    sendPayment()
+                }
+            } message: {
+                if let preparedPayment = preparedPayment {
+                    Text("Send \(preparedPayment.amountSat) sats with \(preparedPayment.feesSat) sats fee?")
+                }
+            }
         }
     }
     
-    private func sendPayment() {
-        isLoading = true
-        errorMessage = nil
-        
+    private func parseInput() {
+        guard !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return
+        }
+
         Task {
             do {
                 let walletManager = WalletManager.shared
-                let prepareResponse = try await walletManager.preparePayment(invoice: invoice)
-                let _ = try await walletManager.sendPayment(prepareResponse: prepareResponse)
-                
+                let inputType = try await walletManager.parseInput(inputText)
+                let info = walletManager.getPaymentInfo(from: inputType)
+
+                await MainActor.run {
+                    paymentInfo = info
+                    errorMessage = nil
+
+                    // Check for expired payments
+                    if info.isExpired {
+                        errorMessage = "This payment request has expired"
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    paymentInfo = nil
+                    preparedPayment = nil
+                    errorMessage = error.localizedDescription
+                }
+            }
+        }
+    }
+
+    private func preparePayment() {
+        guard let paymentInfo = paymentInfo else { return }
+
+        isLoading = true
+        errorMessage = nil
+
+        Task {
+            do {
+                let walletManager = WalletManager.shared
+                let inputType = try await walletManager.parseInput(inputText)
+                let prepared = try await walletManager.validateAndPreparePayment(from: inputType)
+
+                await MainActor.run {
+                    preparedPayment = prepared
+                    isLoading = false
+                }
+            } catch {
+                await MainActor.run {
+                    errorMessage = error.localizedDescription
+                    isLoading = false
+                }
+            }
+        }
+    }
+
+    private func sendPayment() {
+        guard let preparedPayment = preparedPayment else { return }
+
+        isLoading = true
+        errorMessage = nil
+
+        Task {
+            do {
+                let walletManager = WalletManager.shared
+                let _ = try await walletManager.sendPayment(prepareResponse: preparedPayment)
+
                 await MainActor.run {
                     dismiss()
                 }
@@ -241,6 +343,120 @@ struct SendPaymentView: View {
                 }
             }
         }
+    }
+}
+
+// MARK: - Payment Info Card
+
+struct PaymentInfoCard: View {
+    let paymentInfo: PaymentInputInfo
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            // Header with type
+            HStack {
+                Image(systemName: paymentInfo.type.icon)
+                    .foregroundColor(paymentInfo.type.color)
+
+                Text(paymentInfo.type.displayName)
+                    .font(.headline)
+                    .foregroundColor(paymentInfo.type.color)
+
+                Spacer()
+
+                if paymentInfo.isExpired {
+                    Text("EXPIRED")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.red)
+                        .cornerRadius(4)
+                }
+            }
+
+            // Amount information
+            if let amount = paymentInfo.amount {
+                HStack {
+                    Text("Amount:")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+
+                    Spacer()
+
+                    Text("\(amount) sats")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                }
+            } else if let minAmount = paymentInfo.minAmount, let maxAmount = paymentInfo.maxAmount {
+                HStack {
+                    Text("Amount Range:")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+
+                    Spacer()
+
+                    Text("\(minAmount) - \(maxAmount) sats")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                }
+            }
+
+            // Description
+            if let description = paymentInfo.description, !description.isEmpty {
+                HStack {
+                    Text("Description:")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+
+                    Spacer()
+
+                    Text(description)
+                        .font(.subheadline)
+                        .multilineTextAlignment(.trailing)
+                }
+            }
+
+            // Destination
+            if let destination = paymentInfo.destination {
+                HStack {
+                    Text("To:")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+
+                    Spacer()
+
+                    Text(destination.count > 20 ? "\(destination.prefix(20))..." : destination)
+                        .font(.subheadline)
+                        .fontFamily(.monospaced)
+                }
+            }
+
+            // Expiry
+            if let expiry = paymentInfo.expiry {
+                HStack {
+                    Text("Expires:")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+
+                    Spacer()
+
+                    Text(expiry, style: .relative)
+                        .font(.subheadline)
+                        .foregroundColor(paymentInfo.isExpired ? .red : .primary)
+                }
+            }
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(.secondarySystemBackground))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(paymentInfo.type.color.opacity(0.3), lineWidth: 1)
+                )
+        )
     }
 }
 
