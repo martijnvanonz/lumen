@@ -231,7 +231,7 @@ class WalletManager: ObservableObject {
             throw WalletError.notConnected
         }
 
-        let request = PrepareSendRequest(invoice: invoice)
+        let request = PrepareSendRequest(destination: invoice)
         return try sdk.prepareSendPayment(req: request)
     }
 
@@ -256,9 +256,10 @@ class WalletManager: ObservableObject {
             throw WalletError.notConnected
         }
 
+        let receiveAmount = ReceiveAmount.bitcoin(payerAmountSat: amountSat)
         let request = PrepareReceiveRequest(
-            amountSat: amountSat,
-            description: description
+            paymentMethod: .lightning,
+            amount: receiveAmount
         )
 
         logInfo("Preparing receive payment for \(amountSat) sats")
@@ -282,7 +283,11 @@ class WalletManager: ObservableObject {
         logInfo("Executing receive payment")
 
         do {
-            let response = try sdk.receivePayment(req: prepareResponse)
+            let request = ReceivePaymentRequest(
+                prepareResponse: prepareResponse,
+                description: description
+            )
+            let response = try sdk.receivePayment(req: request)
             logInfo("Receive payment executed successfully")
             return response
         } catch {
@@ -338,7 +343,8 @@ class WalletManager: ObservableObject {
 
         do {
             logInfo("Loading payment history...")
-            let paymentList = try sdk.listPayments()
+            let request = ListPaymentsRequest()
+            let paymentList = try sdk.listPayments(req: request)
 
             await MainActor.run {
                 self.payments = paymentList
@@ -372,12 +378,16 @@ class WalletManager: ObservableObject {
 
                 // Add to appropriate list based on status
                 switch payment.status {
-                case .pending:
+                case .created, .pending:
                     eventHandler.pendingPayments.append(paymentInfo)
                 case .complete:
                     eventHandler.recentPayments.append(paymentInfo)
-                case .failed:
+                case .failed, .timedOut:
                     eventHandler.recentPayments.append(paymentInfo)
+                case .refundable, .refundPending:
+                    eventHandler.recentPayments.append(paymentInfo)
+                case .waitingFeeAcceptance:
+                    eventHandler.pendingPayments.append(paymentInfo)
                 }
             }
 
@@ -394,12 +404,16 @@ class WalletManager: ObservableObject {
 
         let status: PaymentEventHandler.PaymentInfo.PaymentStatus
         switch payment.status {
-        case .pending:
+        case .created, .pending:
             status = .pending
         case .complete:
             status = .succeeded
-        case .failed:
+        case .failed, .timedOut:
             status = .failed
+        case .refundable, .refundPending:
+            status = .failed
+        case .waitingFeeAcceptance:
+            status = .waitingConfirmation
         }
 
         return PaymentEventHandler.PaymentInfo(
@@ -425,12 +439,13 @@ class WalletManager: ObservableObject {
         // Create list payments request with filters
         let request = ListPaymentsRequest(
             filters: filters,
-            metadataFilters: nil,
+            states: nil,
             fromTimestamp: nil,
             toTimestamp: nil,
-            includeFailures: true,
+            offset: offset,
             limit: limit,
-            offset: offset
+            details: nil,
+            sortAscending: nil
         )
 
         logInfo("Fetching payments with filters: \(String(describing: filters))")
@@ -611,8 +626,23 @@ class WalletManager: ObservableObject {
         case .bitcoinAddress(let address):
             throw WalletError.unsupportedPaymentType("Bitcoin on-chain payments not yet supported")
 
+        case .liquidAddress(let address):
+            throw WalletError.unsupportedPaymentType("Liquid address payments not yet supported")
+
         case .lnUrlWithdraw(let data):
             throw WalletError.unsupportedPaymentType("LNURL-Withdraw not yet supported")
+
+        case .nodeId(let nodeId):
+            throw WalletError.unsupportedPaymentType("Node ID payments not yet supported")
+
+        case .url(let url):
+            throw WalletError.unsupportedPaymentType("URL payments not yet supported")
+
+        case .lnUrlAuth(let data):
+            throw WalletError.unsupportedPaymentType("LNURL-Auth not yet supported")
+
+        case .lnUrlError(let data):
+            throw WalletError.unsupportedPaymentType("LNURL error: \(data.reason)")
 
         case .lnUrlAuth(let data):
             throw WalletError.unsupportedPaymentType("LNURL-Auth not yet supported")
@@ -634,7 +664,7 @@ class WalletManager: ObservableObject {
             throw WalletError.notConnected
         }
 
-        let request = PrepareSendRequest(invoice: invoice.bolt11)
+        let request = PrepareSendRequest(destination: invoice.bolt11)
 
         logInfo("Preparing BOLT11 payment for \(invoice.amountMsat ?? 0) msats")
 
@@ -670,8 +700,8 @@ class WalletManager: ObservableObject {
                 amount: invoice.amountMsat,
                 description: invoice.description,
                 destination: invoice.payeePubkey,
-                expiry: invoice.expiry.map { Date(timeIntervalSince1970: TimeInterval($0)) },
-                isExpired: invoice.expiry.map { $0 < UInt64(Date().timeIntervalSince1970) } ?? false
+                expiry: Date(timeIntervalSince1970: TimeInterval(invoice.expiry)),
+                isExpired: invoice.expiry < UInt64(Date().timeIntervalSince1970)
             )
 
         case .lnUrlPay(let data, let bip353Address):
@@ -689,7 +719,7 @@ class WalletManager: ObservableObject {
         case .bolt12Offer(let offer, let bip353Address):
             return PaymentInputInfo(
                 type: .bolt12Offer,
-                amount: offer.minAmount,
+                amount: offer.minAmount?.toMsat(),
                 description: offer.description,
                 destination: bip353Address,
                 expiry: nil,
@@ -875,4 +905,20 @@ private func generateBIP39Mnemonic() throws -> String {
     }
 
     return mnemonic.joined(separator: " ")
+}
+
+// MARK: - Extensions
+
+extension Amount {
+    /// Converts Amount to millisatoshis (UInt64)
+    func toMsat() -> UInt64 {
+        switch self {
+        case .bitcoin(let amountMsat):
+            return amountMsat
+        case .currency(_, let fractionalAmount):
+            // For currency amounts, we'll need to convert to bitcoin equivalent
+            // This is a simplified conversion - in production you'd use exchange rates
+            return fractionalAmount
+        }
+    }
 }

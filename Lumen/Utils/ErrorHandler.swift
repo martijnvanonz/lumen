@@ -113,6 +113,11 @@ class ErrorHandler: ObservableObject {
         case invalidInvoice = "invalid_invoice"
         case insufficientFunds = "insufficient_funds"
         case networkError = "network_error"
+        case unsupportedPaymentType = "unsupported_payment_type"
+
+        static func unsupportedPaymentType(_ message: String) -> WalletError {
+            return .unsupportedPaymentType
+        }
 
         var userMessage: String {
             switch self {
@@ -130,6 +135,8 @@ class ErrorHandler: ObservableObject {
                 return "Insufficient funds to complete this payment."
             case .networkError:
                 return "Network connection error. Please check your internet connection."
+            case .unsupportedPaymentType:
+                return "This payment type is not yet supported."
             }
         }
     }
@@ -330,6 +337,8 @@ class ErrorHandler: ObservableObject {
                 return .payment(.insufficientFunds)
             case .networkError:
                 return .network(.noConnection)
+            case .unsupportedPaymentType:
+                return .payment(.invalidInvoice)
             }
         }
         
