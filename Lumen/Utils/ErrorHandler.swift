@@ -110,7 +110,10 @@ class ErrorHandler: ObservableObject {
         case initializationFailed = "initialization_failed"
         case syncFailed = "sync_failed"
         case balanceUnavailable = "balance_unavailable"
-        
+        case invalidInvoice = "invalid_invoice"
+        case insufficientFunds = "insufficient_funds"
+        case networkError = "network_error"
+
         var userMessage: String {
             switch self {
             case .notConnected:
@@ -121,6 +124,12 @@ class ErrorHandler: ObservableObject {
                 return "Failed to sync wallet data. Check your connection."
             case .balanceUnavailable:
                 return "Unable to retrieve wallet balance."
+            case .invalidInvoice:
+                return "The provided invoice is invalid or expired."
+            case .insufficientFunds:
+                return "Insufficient funds to complete this payment."
+            case .networkError:
+                return "Network connection error. Please check your internet connection."
             }
         }
     }
@@ -309,6 +318,12 @@ class ErrorHandler: ObservableObject {
             switch walletError {
             case .notConnected:
                 return .wallet(.notConnected)
+            case .initializationFailed:
+                return .wallet(.initializationFailed)
+            case .syncFailed:
+                return .wallet(.syncFailed)
+            case .balanceUnavailable:
+                return .wallet(.balanceUnavailable)
             case .invalidInvoice:
                 return .payment(.invalidInvoice)
             case .insufficientFunds:

@@ -1,4 +1,5 @@
 import SwiftUI
+import BreezSDKLiquid
 
 struct FeeComparisonView: View {
     let lightningFeeSats: UInt64

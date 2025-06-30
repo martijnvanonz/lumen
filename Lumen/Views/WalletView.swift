@@ -1,4 +1,5 @@
 import SwiftUI
+import BreezSDKLiquid
 
 struct WalletView: View {
     @StateObject private var walletManager = WalletManager.shared
