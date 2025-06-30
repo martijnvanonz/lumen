@@ -125,10 +125,10 @@ struct ConnectionStatusCard: View {
                     )
                 }
                 
-                if let pendingSendSat = walletInfo.pendingSendSat {
+                if walletInfo.walletInfo.pendingSendSat > 0 {
                     InfoRow(
                         label: "Pending Send",
-                        value: "\(pendingSendSat) sats",
+                        value: "\(walletInfo.walletInfo.pendingSendSat) sats",
                         valueColor: .orange
                     )
                 }
@@ -341,13 +341,24 @@ struct InfoRow: View {
                 }
             }
             
-            Text(value)
-                .font(isHighlighted ? .headline : .subheadline)
-                .fontWeight(isHighlighted ? .semibold : .regular)
-                .font(isMonospace ? .system(.subheadline, design: .monospaced) : .subheadline)
-                .foregroundStyle(valueColor)
-                .textSelection(isCopyable ? .enabled : .disabled)
-                .lineLimit(isMonospace ? nil : 1)
+            Group {
+                if isCopyable {
+                    Text(value)
+                        .font(isHighlighted ? .headline : .subheadline)
+                        .fontWeight(isHighlighted ? .semibold : .regular)
+                        .font(isMonospace ? .system(.subheadline, design: .monospaced) : .subheadline)
+                        .foregroundStyle(valueColor)
+                        .textSelection(.enabled)
+                        .lineLimit(isMonospace ? nil : 1)
+                } else {
+                    Text(value)
+                        .font(isHighlighted ? .headline : .subheadline)
+                        .fontWeight(isHighlighted ? .semibold : .regular)
+                        .font(isMonospace ? .system(.subheadline, design: .monospaced) : .subheadline)
+                        .foregroundStyle(valueColor)
+                        .lineLimit(isMonospace ? nil : 1)
+                }
+            }
         }
         .padding(.vertical, isHighlighted ? 4 : 0)
         .background(
