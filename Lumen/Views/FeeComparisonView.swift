@@ -230,13 +230,13 @@ struct FeeBreakdownView: View {
             VStack(spacing: 8) {
                 FeeBreakdownRow(
                     label: "Base Fee",
-                    amount: preparedPayment.feesSat / 2, // Simplified breakdown
+                    amount: (preparedPayment.feesSat ?? 0) / 2, // Simplified breakdown
                     description: "Fixed cost per transaction"
                 )
-                
+
                 FeeBreakdownRow(
                     label: "Routing Fee",
-                    amount: preparedPayment.feesSat / 2,
+                    amount: (preparedPayment.feesSat ?? 0) / 2,
                     description: "Cost to route through Lightning Network"
                 )
                 
@@ -244,7 +244,7 @@ struct FeeBreakdownView: View {
                 
                 FeeBreakdownRow(
                     label: "Total Lightning Fee",
-                    amount: preparedPayment.feesSat,
+                    amount: preparedPayment.feesSat ?? 0,
                     description: "All fees included",
                     isTotal: true
                 )
