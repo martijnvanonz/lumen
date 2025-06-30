@@ -249,18 +249,51 @@ class WalletManager: ObservableObject {
         return response
     }
     
-    /// Receives a payment by generating an invoice
-    func receivePayment(amountSat: UInt64, description: String) async throws -> ReceivePaymentResponse {
+    /// Prepares a receive payment (gets fee information)
+    func prepareReceivePayment(amountSat: UInt64, description: String) async throws -> PrepareReceiveResponse {
         guard let sdk = sdk else {
             throw WalletError.notConnected
         }
-        
-        let request = ReceivePaymentRequest(
+
+        let request = PrepareReceiveRequest(
             amountSat: amountSat,
             description: description
         )
-        
-        return try sdk.receivePayment(req: request)
+
+        logInfo("Preparing receive payment for \(amountSat) sats")
+
+        do {
+            let response = try sdk.prepareReceivePayment(req: request)
+            logInfo("Receive payment prepared. Fee: \(response.feesSat) sats")
+            return response
+        } catch {
+            logError("Failed to prepare receive payment: \(error)")
+            throw error
+        }
+    }
+
+    /// Receives a payment using prepared response
+    func receivePayment(prepareResponse: PrepareReceiveResponse) async throws -> ReceivePaymentResponse {
+        guard let sdk = sdk else {
+            throw WalletError.notConnected
+        }
+
+        logInfo("Executing receive payment")
+
+        do {
+            let response = try sdk.receivePayment(req: prepareResponse)
+            logInfo("Receive payment executed successfully")
+            return response
+        } catch {
+            logError("Failed to execute receive payment: \(error)")
+            throw error
+        }
+    }
+
+    /// Legacy method for backward compatibility
+    func receivePayment(amountSat: UInt64, description: String) async throws -> ReceivePaymentResponse {
+        let prepared = try await prepareReceivePayment(amountSat: amountSat, description: description)
+        return try await receivePayment(prepareResponse: prepared)
     }
     
     // MARK: - Utility Methods

@@ -199,6 +199,7 @@ struct SendPaymentView: View {
     @State private var paymentInfo: PaymentInputInfo?
     @State private var preparedPayment: PreparePayResponse?
     @State private var showingConfirmation = false
+    @State private var showingFeeDetails = false
     
     var body: some View {
         NavigationView {
@@ -231,6 +232,20 @@ struct SendPaymentView: View {
                 if let paymentInfo = paymentInfo {
                     PaymentInfoCard(paymentInfo: paymentInfo)
                         .padding(.horizontal)
+                }
+
+                // Fee estimation display
+                if let preparedPayment = preparedPayment {
+                    VStack(spacing: 12) {
+                        FeeEstimationCard(preparedPayment: preparedPayment)
+
+                        Button("View Fee Details") {
+                            showingFeeDetails = true
+                        }
+                        .font(.caption)
+                        .foregroundColor(.blue)
+                    }
+                    .padding(.horizontal)
                 }
 
                 // Error message
@@ -293,7 +308,16 @@ struct SendPaymentView: View {
                 }
             } message: {
                 if let preparedPayment = preparedPayment {
-                    Text("Send \(preparedPayment.amountSat) sats with \(preparedPayment.feesSat) sats fee?")
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Amount: \(preparedPayment.amountSat) sats")
+                        Text("Fee: \(preparedPayment.feesSat) sats")
+                        Text("Total: \(preparedPayment.amountSat + preparedPayment.feesSat) sats")
+                    }
+                }
+            }
+            .sheet(isPresented: $showingFeeDetails) {
+                if let preparedPayment = preparedPayment {
+                    FeeDetailsSheet(preparedPayment: preparedPayment)
                 }
             }
         }
@@ -492,6 +516,116 @@ struct PaymentInfoCard: View {
     }
 }
 
+// MARK: - Fee Estimation Card
+
+struct FeeEstimationCard: View {
+    let preparedPayment: PreparePayResponse
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            // Header
+            HStack {
+                Image(systemName: "creditcard")
+                    .foregroundColor(.blue)
+
+                Text("Payment Summary")
+                    .font(.headline)
+                    .foregroundColor(.blue)
+
+                Spacer()
+
+                Text("Ready to Send")
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.green)
+                    .cornerRadius(4)
+            }
+
+            // Payment breakdown
+            VStack(spacing: 8) {
+                FeeRowView(
+                    label: "Payment Amount",
+                    amount: preparedPayment.amountSat,
+                    isTotal: false
+                )
+
+                FeeRowView(
+                    label: "Lightning Fee",
+                    amount: preparedPayment.feesSat,
+                    isTotal: false,
+                    color: .orange
+                )
+
+                Divider()
+
+                FeeRowView(
+                    label: "Total",
+                    amount: preparedPayment.amountSat + preparedPayment.feesSat,
+                    isTotal: true
+                )
+            }
+
+            // Fee percentage
+            let feePercentage = Double(preparedPayment.feesSat) / Double(preparedPayment.amountSat) * 100
+            if feePercentage > 0 {
+                HStack {
+                    Text("Fee Rate:")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+
+                    Spacer()
+
+                    Text(String(format: "%.2f%%", feePercentage))
+                        .font(.caption)
+                        .foregroundColor(feePercentage > 5 ? .orange : .secondary)
+                }
+            }
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(.secondarySystemBackground))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.blue.opacity(0.3), lineWidth: 1)
+                )
+        )
+    }
+}
+
+struct FeeRowView: View {
+    let label: String
+    let amount: UInt64
+    let isTotal: Bool
+    let color: Color
+
+    init(label: String, amount: UInt64, isTotal: Bool = false, color: Color = .primary) {
+        self.label = label
+        self.amount = amount
+        self.isTotal = isTotal
+        self.color = color
+    }
+
+    var body: some View {
+        HStack {
+            Text(label)
+                .font(isTotal ? .headline : .subheadline)
+                .fontWeight(isTotal ? .semibold : .regular)
+                .foregroundColor(isTotal ? .primary : .secondary)
+
+            Spacer()
+
+            Text("\(amount) sats")
+                .font(isTotal ? .headline : .subheadline)
+                .fontWeight(isTotal ? .semibold : .regular)
+                .foregroundColor(color)
+        }
+    }
+}
+
 // MARK: - Receive Payment View
 
 struct ReceivePaymentView: View {
@@ -501,6 +635,7 @@ struct ReceivePaymentView: View {
     @State private var invoice: String?
     @State private var isLoading = false
     @State private var errorMessage: String?
+    @State private var preparedReceive: PrepareReceiveResponse?
     
     var body: some View {
         NavigationView {
@@ -516,14 +651,19 @@ struct ReceivePaymentView: View {
                         Text("Payment Request Created")
                             .font(.headline)
                             .foregroundColor(.green)
-                        
+
+                        // Fee information for receive
+                        if let preparedReceive = preparedReceive {
+                            ReceiveFeeCard(preparedReceive: preparedReceive)
+                        }
+
                         Text(invoice)
                             .font(.caption)
                             .padding()
                             .background(Color(.systemGray6))
                             .cornerRadius(8)
                             .textSelection(.enabled)
-                        
+
                         Button("Copy Invoice") {
                             UIPasteboard.general.string = invoice
                         }
@@ -598,19 +738,27 @@ struct ReceivePaymentView: View {
             errorMessage = "Invalid amount"
             return
         }
-        
+
         isLoading = true
         errorMessage = nil
-        
+
         Task {
             do {
                 let walletManager = WalletManager.shared
-                let response = try await walletManager.receivePayment(
+
+                // First prepare the receive payment to get fee information
+                let prepared = try await walletManager.prepareReceivePayment(
                     amountSat: amountSats,
                     description: description.isEmpty ? "Lumen payment" : description
                 )
-                
+
+                // Then execute the receive payment
+                let response = try await walletManager.receivePayment(
+                    prepareResponse: prepared
+                )
+
                 await MainActor.run {
+                    preparedReceive = prepared
                     invoice = response.invoice
                     isLoading = false
                 }
@@ -618,6 +766,113 @@ struct ReceivePaymentView: View {
                 await MainActor.run {
                     errorMessage = error.localizedDescription
                     isLoading = false
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Receive Fee Card
+
+struct ReceiveFeeCard: View {
+    let preparedReceive: PrepareReceiveResponse
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Image(systemName: "info.circle")
+                    .foregroundColor(.blue)
+
+                Text("Receive Information")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.blue)
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                if preparedReceive.feesSat > 0 {
+                    HStack {
+                        Text("Service Fee:")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+
+                        Spacer()
+
+                        Text("\(preparedReceive.feesSat) sats")
+                            .font(.caption)
+                            .foregroundColor(.orange)
+                    }
+
+                    HStack {
+                        Text("You'll Receive:")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+
+                        Spacer()
+
+                        Text("\(preparedReceive.amountSat - preparedReceive.feesSat) sats")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.green)
+                    }
+                } else {
+                    HStack {
+                        Text("No fees for this payment")
+                            .font(.caption)
+                            .foregroundColor(.green)
+
+                        Spacer()
+
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.caption)
+                            .foregroundColor(.green)
+                    }
+                }
+            }
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(Color.blue.opacity(0.1))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.blue.opacity(0.3), lineWidth: 1)
+                )
+        )
+    }
+}
+
+// MARK: - Fee Details Sheet
+
+struct FeeDetailsSheet: View {
+    let preparedPayment: PreparePayResponse
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(spacing: 20) {
+                    // Fee comparison
+                    FeeComparisonView(
+                        lightningFeeSats: preparedPayment.feesSat,
+                        paymentAmountSats: preparedPayment.amountSat
+                    )
+
+                    // Fee breakdown
+                    FeeBreakdownView(preparedPayment: preparedPayment)
+
+                    // Educational content
+                    FeeEducationView()
+                }
+                .padding()
+            }
+            .navigationTitle("Fee Details")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
                 }
             }
         }
