@@ -12,6 +12,7 @@
 		A1B2C3D4E5F67894 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F67895 /* Assets.xcassets */; };
 		A1B2C3D4E5F67896 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F67897 /* Preview Assets.xcassets */; };
 		338E9485D51B4E1490986799 /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 589CF27EA81040B7A4D32DB0 /* KeychainManager.swift */; };
+		AB26FBFD4E5F441EA2159880 /* BiometricManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0270EDAC7C44AA680D3D5B9 /* BiometricManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -21,6 +22,7 @@
 		A1B2C3D4E5F67895 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A1B2C3D4E5F67897 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		589CF27EA81040B7A4D32DB0 /* KeychainManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainManager.swift; sourceTree = "<group>"; };
+		D0270EDAC7C44AA680D3D5B9 /* BiometricManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiometricManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -66,6 +68,7 @@
 			isa = PBXGroup;
 			children = (
 				589CF27EA81040B7A4D32DB0 /* KeychainManager.swift */,
+				D0270EDAC7C44AA680D3D5B9 /* BiometricManager.swift */,
 			);
 			path = Security;
 			sourceTree = "<group>";
@@ -151,6 +154,7 @@
 				A1B2C3D4E5F67892 /* ContentView.swift in Sources */,
 				A1B2C3D4E5F67890 /* LumenApp.swift in Sources */,
 				338E9485D51B4E1490986799 /* KeychainManager.swift in Sources */,
+				AB26FBFD4E5F441EA2159880 /* BiometricManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
