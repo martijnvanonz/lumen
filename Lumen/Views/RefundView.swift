@@ -140,9 +140,8 @@ struct RefundRowView: View {
                     .foregroundColor(.secondary)
                 
                 Text(swap.swapAddress)
-                    .font(.caption)
-                    .fontFamily(.monospaced)
-                    .foregroundColor(.secondary)
+                    .font(.system(.caption, design: .monospaced))
+                    .foregroundStyle(.secondary)
                     .textSelection(.enabled)
             }
         }
@@ -260,7 +259,7 @@ struct RefundExecutionView: View {
         }
         .onAppear {
             if let fees = recommendedFees {
-                selectedFeeRate = fees.halfHourFee
+                selectedFeeRate = UInt32(fees.halfHourFee)
             }
         }
     }
@@ -315,34 +314,34 @@ struct FeeSelectionView: View {
             VStack(spacing: 8) {
                 FeeOptionView(
                     title: "Fast (~10 min)",
-                    feeRate: recommendedFees.fastestFee,
-                    isSelected: selectedFeeRate == recommendedFees.fastestFee
+                    feeRate: UInt32(recommendedFees.fastestFee),
+                    isSelected: selectedFeeRate == UInt32(recommendedFees.fastestFee)
                 ) {
-                    selectedFeeRate = recommendedFees.fastestFee
+                    selectedFeeRate = UInt32(recommendedFees.fastestFee)
                 }
                 
                 FeeOptionView(
                     title: "Normal (~30 min)",
-                    feeRate: recommendedFees.halfHourFee,
-                    isSelected: selectedFeeRate == recommendedFees.halfHourFee
+                    feeRate: UInt32(recommendedFees.halfHourFee),
+                    isSelected: selectedFeeRate == UInt32(recommendedFees.halfHourFee)
                 ) {
-                    selectedFeeRate = recommendedFees.halfHourFee
+                    selectedFeeRate = UInt32(recommendedFees.halfHourFee)
                 }
                 
                 FeeOptionView(
                     title: "Slow (~1 hour)",
-                    feeRate: recommendedFees.hourFee,
-                    isSelected: selectedFeeRate == recommendedFees.hourFee
+                    feeRate: UInt32(recommendedFees.hourFee),
+                    isSelected: selectedFeeRate == UInt32(recommendedFees.hourFee)
                 ) {
-                    selectedFeeRate = recommendedFees.hourFee
+                    selectedFeeRate = UInt32(recommendedFees.hourFee)
                 }
                 
                 FeeOptionView(
                     title: "Economy (~24 hours)",
-                    feeRate: recommendedFees.economyFee,
-                    isSelected: selectedFeeRate == recommendedFees.economyFee
+                    feeRate: UInt32(recommendedFees.economyFee),
+                    isSelected: selectedFeeRate == UInt32(recommendedFees.economyFee)
                 ) {
-                    selectedFeeRate = recommendedFees.economyFee
+                    selectedFeeRate = UInt32(recommendedFees.economyFee)
                 }
             }
             .padding(.horizontal)
