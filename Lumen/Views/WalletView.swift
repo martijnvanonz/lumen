@@ -13,6 +13,9 @@ struct WalletView: View {
                         // Connection status bar
                         ConnectionStatusBar()
 
+                        // Network status bar
+                        NetworkStatusView()
+
                         // Balance Card
                         BalanceCard(balance: walletManager.balance)
 

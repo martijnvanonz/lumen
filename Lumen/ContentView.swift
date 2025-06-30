@@ -2,19 +2,31 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var walletManager = WalletManager.shared
+    @StateObject private var networkMonitor = NetworkMonitor.shared
     @State private var showOnboarding = true
 
     var body: some View {
-        Group {
-            if showOnboarding {
-                OnboardingView()
-                    .onReceive(walletManager.$isConnected) { isConnected in
-                        if isConnected {
-                            showOnboarding = false
+        ZStack {
+            Group {
+                if showOnboarding {
+                    OnboardingView()
+                        .onReceive(walletManager.$isConnected) { isConnected in
+                            if isConnected {
+                                showOnboarding = false
+                            }
                         }
-                    }
-            } else {
-                WalletView()
+                } else {
+                    WalletView()
+                }
+            }
+            .errorAlert()
+
+            // Overlay for offline mode
+            if !networkMonitor.isConnected {
+                Color.black.opacity(0.3)
+                    .ignoresSafeArea()
+
+                OfflineModeView()
             }
         }
         .onAppear {

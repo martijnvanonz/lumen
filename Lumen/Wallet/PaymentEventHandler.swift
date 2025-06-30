@@ -281,7 +281,7 @@ class PaymentEventHandler: ObservableObject {
         pendingPayments.removeAll { $0.paymentHash == paymentHash }
     }
     
-    private func addNotification(title: String, message: String, type: PaymentNotification.NotificationType) {
+    func addNotification(title: String, message: String, type: PaymentNotification.NotificationType) {
         let notification = PaymentNotification(
             title: title,
             message: message,

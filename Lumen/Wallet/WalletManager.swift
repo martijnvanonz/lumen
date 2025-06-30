@@ -17,6 +17,8 @@ class WalletManager: ObservableObject {
     private let keychainManager = KeychainManager.shared
     private let biometricManager = BiometricManager.shared
     private let eventHandler = PaymentEventHandler.shared
+    private let errorHandler = ErrorHandler.shared
+    private let networkMonitor = NetworkMonitor.shared
     
     // MARK: - Singleton
     
@@ -57,6 +59,9 @@ class WalletManager: ObservableObject {
                 errorMessage = "Failed to initialize wallet: \(error.localizedDescription)"
                 isLoading = false
             }
+
+            // Handle error through error handler
+            errorHandler.handle(error, context: "Wallet initialization")
         }
     }
     
@@ -103,29 +108,44 @@ class WalletManager: ObservableObject {
     
     /// Connects to the Breez SDK with the provided mnemonic
     private func connectToBreezSDK(mnemonic: String) async throws {
+        // Check network connectivity first
+        guard networkMonitor.isNetworkAvailableForLightning() else {
+            throw WalletError.networkError
+        }
+
         await MainActor.run {
             eventHandler.updateConnectionStatus(.connecting)
         }
 
-        let config = try defaultConfig(network: LiquidNetwork.mainnet)
+        do {
+            let config = try defaultConfig(network: LiquidNetwork.mainnet)
 
-        let connectRequest = ConnectRequest(mnemonic: mnemonic, config: config)
+            let connectRequest = ConnectRequest(mnemonic: mnemonic, config: config)
 
-        // Connect to the SDK
-        sdk = try connect(req: connectRequest)
+            // Connect to the SDK
+            sdk = try connect(req: connectRequest)
 
-        // Start listening for events
-        startEventListener()
+            // Start listening for events
+            startEventListener()
 
-        await MainActor.run {
-            eventHandler.updateConnectionStatus(.syncing)
-        }
+            await MainActor.run {
+                eventHandler.updateConnectionStatus(.syncing)
+            }
 
-        // Get initial balance
-        await updateBalance()
+            // Get initial balance
+            await updateBalance()
 
-        await MainActor.run {
-            eventHandler.updateConnectionStatus(.connected)
+            await MainActor.run {
+                eventHandler.updateConnectionStatus(.connected)
+            }
+        } catch {
+            await MainActor.run {
+                eventHandler.updateConnectionStatus(.disconnected)
+            }
+
+            // Log error and re-throw
+            errorHandler.logError(.sdk(.connectionFailed), context: "SDK connection")
+            throw error
         }
     }
     

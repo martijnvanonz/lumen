@@ -19,6 +19,9 @@
 		B9C8D7E6F5A4B3C2D1E0F9A8 /* WalletView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8F9E0D1C2B3A4F5E6D7C8B9 /* WalletView.swift */; };
 		C1D2E3F4A5B6C7D8E9F0A1B2 /* PaymentEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A1F0E9D8C7B6A5F4E3D2C1 /* PaymentEventHandler.swift */; };
 		D3E4F5A6B7C8D9E0F1A2B3C4 /* NotificationOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4B3A2F1E0D9C8B7A6F5E4D3 /* NotificationOverlay.swift */; };
+		E5F6A7B8C9D0E1F2A3B4C5D6 /* ErrorHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C5B4A3F2E1D0C9B8A7F6E5 /* ErrorHandler.swift */; };
+		F7A8B9C0D1E2F3A4B5C6D7E8 /* NetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8D7C6B5A4F3E2D1C0B9A8F7 /* NetworkMonitor.swift */; };
+		A9B0C1D2E3F4A5B6C7D8E9F0 /* ErrorAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E9D8C7B6A5F4E3D2C1B0A9 /* ErrorAlertView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +37,9 @@
 		A8F9E0D1C2B3A4F5E6D7C8B9 /* WalletView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletView.swift; sourceTree = "<group>"; };
 		B2A1F0E9D8C7B6A5F4E3D2C1 /* PaymentEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentEventHandler.swift; sourceTree = "<group>"; };
 		C4B3A2F1E0D9C8B7A6F5E4D3 /* NotificationOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationOverlay.swift; sourceTree = "<group>"; };
+		D6C5B4A3F2E1D0C9B8A7F6E5 /* ErrorHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorHandler.swift; sourceTree = "<group>"; };
+		E8D7C6B5A4F3E2D1C0B9A8F7 /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
+		F0E9D8C7B6A5F4E3D2C1B0A9 /* ErrorAlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorAlertView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -72,6 +78,7 @@
 				D1E2F3A4B5C6D7E8F9A0B1C2 /* Views */,
 				E2098C9A87924639B2F78499 /* Security */,
 				F2E1D0C9B8A79685A4B3C2E1 /* Wallet */,
+				B1C2D3E4F5A6B7C8D9E0F1A2 /* Utils */,
 				A1B2C3D4E5F67895 /* Assets.xcassets */,
 				A1B2C3D4E5F6789D /* Preview Content */,
 			);
@@ -93,8 +100,18 @@
 				F8E7D6C5B4A39281F0E5B7C9 /* OnboardingView.swift */,
 				A8F9E0D1C2B3A4F5E6D7C8B9 /* WalletView.swift */,
 				C4B3A2F1E0D9C8B7A6F5E4D3 /* NotificationOverlay.swift */,
+				F0E9D8C7B6A5F4E3D2C1B0A9 /* ErrorAlertView.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		B1C2D3E4F5A6B7C8D9E0F1A2 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				D6C5B4A3F2E1D0C9B8A7F6E5 /* ErrorHandler.swift */,
+				E8D7C6B5A4F3E2D1C0B9A8F7 /* NetworkMonitor.swift */,
+			);
+			path = Utils;
 			sourceTree = "<group>";
 		};
 		F2E1D0C9B8A79685A4B3C2E1 /* Wallet */ = {
@@ -199,6 +216,9 @@
 				B9C8D7E6F5A4B3C2D1E0F9A8 /* WalletView.swift in Sources */,
 				C1D2E3F4A5B6C7D8E9F0A1B2 /* PaymentEventHandler.swift in Sources */,
 				D3E4F5A6B7C8D9E0F1A2B3C4 /* NotificationOverlay.swift in Sources */,
+				E5F6A7B8C9D0E1F2A3B4C5D6 /* ErrorHandler.swift in Sources */,
+				F7A8B9C0D1E2F3A4B5C6D7E8 /* NetworkMonitor.swift in Sources */,
+				A9B0C1D2E3F4A5B6C7D8E9F0 /* ErrorAlertView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
