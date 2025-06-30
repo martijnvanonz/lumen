@@ -16,6 +16,7 @@ class WalletManager: ObservableObject {
     private var sdk: BindingLiquidSdk?
     private let keychainManager = KeychainManager.shared
     private let biometricManager = BiometricManager.shared
+    private let eventHandler = PaymentEventHandler.shared
     
     // MARK: - Singleton
     
@@ -102,18 +103,30 @@ class WalletManager: ObservableObject {
     
     /// Connects to the Breez SDK with the provided mnemonic
     private func connectToBreezSDK(mnemonic: String) async throws {
+        await MainActor.run {
+            eventHandler.updateConnectionStatus(.connecting)
+        }
+
         let config = try defaultConfig(network: LiquidNetwork.mainnet)
-        
+
         let connectRequest = ConnectRequest(mnemonic: mnemonic, config: config)
-        
+
         // Connect to the SDK
         sdk = try connect(req: connectRequest)
-        
+
         // Start listening for events
         startEventListener()
-        
+
+        await MainActor.run {
+            eventHandler.updateConnectionStatus(.syncing)
+        }
+
         // Get initial balance
         await updateBalance()
+
+        await MainActor.run {
+            eventHandler.updateConnectionStatus(.connected)
+        }
     }
     
     /// Starts listening for Breez SDK events
@@ -122,6 +135,10 @@ class WalletManager: ObservableObject {
         
         // Set up event listener for real-time updates
         let eventListener = LumenEventListener { [weak self] event in
+            // Handle event through the event handler
+            self?.eventHandler.handleSDKEvent(event)
+
+            // Also handle wallet-specific updates
             Task { @MainActor in
                 await self?.handleSDKEvent(event)
             }

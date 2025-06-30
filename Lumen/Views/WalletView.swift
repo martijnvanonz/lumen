@@ -4,44 +4,56 @@ struct WalletView: View {
     @StateObject private var walletManager = WalletManager.shared
     @State private var showingSendView = false
     @State private var showingReceiveView = false
-    
+
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(spacing: 24) {
-                    // Balance Card
-                    BalanceCard(balance: walletManager.balance)
-                    
-                    // Action Buttons
-                    HStack(spacing: 16) {
-                        ActionButton(
-                            title: "Send",
-                            icon: "arrow.up.circle.fill",
-                            color: .orange
-                        ) {
-                            showingSendView = true
+            ZStack(alignment: .top) {
+                ScrollView {
+                    VStack(spacing: 24) {
+                        // Connection status bar
+                        ConnectionStatusBar()
+
+                        // Balance Card
+                        BalanceCard(balance: walletManager.balance)
+
+                        // Action Buttons
+                        HStack(spacing: 16) {
+                            ActionButton(
+                                title: "Send",
+                                icon: "arrow.up.circle.fill",
+                                color: .orange
+                            ) {
+                                showingSendView = true
+                            }
+
+                            ActionButton(
+                                title: "Receive",
+                                icon: "arrow.down.circle.fill",
+                                color: .green
+                            ) {
+                                showingReceiveView = true
+                            }
                         }
-                        
-                        ActionButton(
-                            title: "Receive",
-                            icon: "arrow.down.circle.fill",
-                            color: .green
-                        ) {
-                            showingReceiveView = true
-                        }
+                        .padding(.horizontal)
+
+                        // Enhanced Transaction History with real-time updates
+                        EnhancedTransactionHistoryView()
                     }
-                    .padding(.horizontal)
-                    
-                    // Recent Transactions (placeholder)
-                    TransactionHistoryView()
+                    .padding(.top)
                 }
-                .padding(.top)
-            }
-            .navigationTitle("Lumen")
-            .navigationBarTitleDisplayMode(.large)
-            .refreshable {
-                // Refresh wallet data
-                await refreshWallet()
+                .navigationTitle("Lumen")
+                .navigationBarTitleDisplayMode(.large)
+                .refreshable {
+                    // Refresh wallet data
+                    await refreshWallet()
+                }
+
+                // Notification overlay
+                VStack {
+                    NotificationOverlay()
+                    Spacer()
+                }
+                .allowsHitTesting(false)
             }
         }
         .sheet(isPresented: $showingSendView) {
@@ -143,103 +155,7 @@ struct ActionButton: View {
     }
 }
 
-// MARK: - Transaction History
 
-struct TransactionHistoryView: View {
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Text("Recent Transactions")
-                    .font(.headline)
-                
-                Spacer()
-                
-                Button("See All") {
-                    // Navigate to full transaction history
-                }
-                .font(.caption)
-                .foregroundColor(.blue)
-            }
-            .padding(.horizontal)
-            
-            // Placeholder for transactions
-            VStack(spacing: 12) {
-                ForEach(0..<3, id: \.self) { index in
-                    TransactionRow(
-                        type: index % 2 == 0 ? .received : .sent,
-                        amount: UInt64.random(in: 1000...50000),
-                        timestamp: Date().addingTimeInterval(-Double(index * 3600))
-                    )
-                }
-            }
-            .padding(.horizontal)
-        }
-    }
-}
-
-// MARK: - Transaction Row
-
-struct TransactionRow: View {
-    enum TransactionType {
-        case sent
-        case received
-        
-        var icon: String {
-            switch self {
-            case .sent: return "arrow.up.circle.fill"
-            case .received: return "arrow.down.circle.fill"
-            }
-        }
-        
-        var color: Color {
-            switch self {
-            case .sent: return .orange
-            case .received: return .green
-            }
-        }
-        
-        var prefix: String {
-            switch self {
-            case .sent: return "-"
-            case .received: return "+"
-            }
-        }
-    }
-    
-    let type: TransactionType
-    let amount: UInt64
-    let timestamp: Date
-    
-    var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: type.icon)
-                .font(.title3)
-                .foregroundColor(type.color)
-                .frame(width: 24)
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text(type == .sent ? "Sent" : "Received")
-                    .font(.headline)
-                
-                Text(timestamp, style: .relative)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            
-            Spacer()
-            
-            Text("\(type.prefix)\(amount) sats")
-                .font(.headline)
-                .foregroundColor(type.color)
-        }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 12)
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color(.tertiarySystemBackground))
-        )
-    }
-}
 
 // MARK: - Send Payment View
 

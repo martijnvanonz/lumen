@@ -17,6 +17,8 @@
 		B8F7E6D5C4A39281F0E5B7C9 /* WalletManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A8B7F6E5D4C3B2A1908F7E /* WalletManager.swift */; };
 		A7B8C9D0E1F2A3B4C5D6E7F8 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8E7D6C5B4A39281F0E5B7C9 /* OnboardingView.swift */; };
 		B9C8D7E6F5A4B3C2D1E0F9A8 /* WalletView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8F9E0D1C2B3A4F5E6D7C8B9 /* WalletView.swift */; };
+		C1D2E3F4A5B6C7D8E9F0A1B2 /* PaymentEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A1F0E9D8C7B6A5F4E3D2C1 /* PaymentEventHandler.swift */; };
+		D3E4F5A6B7C8D9E0F1A2B3C4 /* NotificationOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4B3A2F1E0D9C8B7A6F5E4D3 /* NotificationOverlay.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +32,8 @@
 		C9A8B7F6E5D4C3B2A1908F7E /* WalletManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletManager.swift; sourceTree = "<group>"; };
 		F8E7D6C5B4A39281F0E5B7C9 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		A8F9E0D1C2B3A4F5E6D7C8B9 /* WalletView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletView.swift; sourceTree = "<group>"; };
+		B2A1F0E9D8C7B6A5F4E3D2C1 /* PaymentEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentEventHandler.swift; sourceTree = "<group>"; };
+		C4B3A2F1E0D9C8B7A6F5E4D3 /* NotificationOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationOverlay.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -88,6 +92,7 @@
 			children = (
 				F8E7D6C5B4A39281F0E5B7C9 /* OnboardingView.swift */,
 				A8F9E0D1C2B3A4F5E6D7C8B9 /* WalletView.swift */,
+				C4B3A2F1E0D9C8B7A6F5E4D3 /* NotificationOverlay.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -96,6 +101,7 @@
 			isa = PBXGroup;
 			children = (
 				C9A8B7F6E5D4C3B2A1908F7E /* WalletManager.swift */,
+				B2A1F0E9D8C7B6A5F4E3D2C1 /* PaymentEventHandler.swift */,
 			);
 			path = Wallet;
 			sourceTree = "<group>";
@@ -191,6 +197,8 @@
 				B8F7E6D5C4A39281F0E5B7C9 /* WalletManager.swift in Sources */,
 				A7B8C9D0E1F2A3B4C5D6E7F8 /* OnboardingView.swift in Sources */,
 				B9C8D7E6F5A4B3C2D1E0F9A8 /* WalletView.swift in Sources */,
+				C1D2E3F4A5B6C7D8E9F0A1B2 /* PaymentEventHandler.swift in Sources */,
+				D3E4F5A6B7C8D9E0F1A2B3C4 /* NotificationOverlay.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
