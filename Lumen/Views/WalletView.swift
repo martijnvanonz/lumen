@@ -7,6 +7,7 @@ struct WalletView: View {
     @State private var showingReceiveView = false
     @State private var showingRefundView = false
     @State private var showingWalletInfo = false
+    @State private var showingSettings = false
 
     var body: some View {
         NavigationView {
@@ -88,7 +89,17 @@ struct WalletView: View {
                 .navigationBarTitleDisplayMode(.large)
                 .toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        ConnectionStatusIcon()
+                        HStack(spacing: 16) {
+                            ConnectionStatusIcon()
+
+                            Button(action: {
+                                showingSettings = true
+                            }) {
+                                Image(systemName: "gearshape")
+                                    .font(.title2)
+                                    .foregroundColor(.primary)
+                            }
+                        }
                     }
                 }
                 .refreshable {
@@ -116,6 +127,9 @@ struct WalletView: View {
         .sheet(isPresented: $showingWalletInfo) {
             WalletInfoView()
         }
+        .sheet(isPresented: $showingSettings) {
+            SettingsView()
+        }
     }
     
     private func refreshWallet() async {
@@ -129,7 +143,8 @@ struct WalletView: View {
 
 struct BalanceCard: View {
     let balance: UInt64
-    
+    @StateObject private var currencyManager = CurrencyManager.shared
+
     var body: some View {
         VStack(spacing: 16) {
             VStack(spacing: 8) {
@@ -141,9 +156,15 @@ struct BalanceCard: View {
                     .font(.system(size: 36, weight: .bold, design: .rounded))
                     .foregroundColor(.primary)
                 
-                Text("≈ $\(formattedUSDValue)")
-                    .font(.title3)
-                    .foregroundColor(.secondary)
+                if let fiatValue = formattedFiatValue {
+                    Text("≈ \(fiatValue)")
+                        .font(.title3)
+                        .foregroundColor(.secondary)
+                } else if currencyManager.isLoadingRates {
+                    Text("Loading rate...")
+                        .font(.title3)
+                        .foregroundColor(.secondary)
+                }
             }
             
             // Lightning Network indicator
@@ -166,13 +187,12 @@ struct BalanceCard: View {
         .padding(.horizontal)
     }
     
-    private var formattedUSDValue: String {
-        // Placeholder conversion - in real app, you'd fetch current BTC price
-        let btcPrice = 45000.0 // Placeholder
-        let btcAmount = Double(balance) / 100_000_000.0 // Convert sats to BTC
-        let usdValue = btcAmount * btcPrice
-        
-        return String(format: "%.2f", usdValue)
+    private var formattedFiatValue: String? {
+        guard let fiatAmount = currencyManager.convertSatsToFiat(balance) else {
+            return nil
+        }
+
+        return currencyManager.formatFiatAmount(fiatAmount)
     }
 }
 

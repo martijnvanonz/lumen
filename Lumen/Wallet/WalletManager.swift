@@ -17,7 +17,7 @@ class WalletManager: ObservableObject {
     
     // MARK: - Private Properties
 
-    private var sdk: BindingLiquidSdk?
+    private(set) var sdk: BindingLiquidSdk?
     private let keychainManager = KeychainManager.shared
     private let eventHandler = PaymentEventHandler.shared
     private let errorHandler = ErrorHandler.shared
@@ -118,6 +118,11 @@ class WalletManager: ObservableObject {
 
             // Load payment history
             await loadPaymentHistory()
+
+            // Start currency manager rate updates
+            await MainActor.run {
+                CurrencyManager.shared.startRateUpdates()
+            }
 
             await MainActor.run {
                 eventHandler.updateConnectionStatus(.connected)
@@ -301,6 +306,8 @@ class WalletManager: ObservableObject {
             await MainActor.run {
                 self.isConnected = false
                 self.sdk = nil
+                // Stop currency manager rate updates
+                CurrencyManager.shared.stopRateUpdates()
             }
         } catch {
             print("Failed to disconnect: \(error)")

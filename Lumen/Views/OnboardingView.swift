@@ -1,4 +1,5 @@
 import SwiftUI
+import BreezSDKLiquid
 
 struct OnboardingView: View {
     @StateObject private var walletManager = WalletManager.shared
@@ -19,6 +20,8 @@ struct OnboardingView: View {
                     switch onboardingState.currentStep {
                     case .welcome:
                         WelcomeStepView(onboardingState: onboardingState)
+                    case .currencySelection:
+                        CurrencySelectionView(onboardingState: onboardingState)
                     case .biometricSetup:
                         BiometricSetupView(onboardingState: onboardingState)
                     case .walletInitialization:
@@ -108,7 +111,7 @@ struct WelcomeStepView: View {
             
             // Continue Button
             Button(action: {
-                onboardingState.currentStep = .biometricSetup
+                onboardingState.currentStep = .currencySelection
             }) {
                 Text("Get Started")
                     .font(.headline)
@@ -419,9 +422,154 @@ class OnboardingState: ObservableObject {
     
     enum OnboardingStep {
         case welcome
+        case currencySelection
         case biometricSetup
         case walletInitialization
         case completed
+    }
+}
+
+// MARK: - Currency Selection Step
+
+struct CurrencySelectionView: View {
+    @ObservedObject var onboardingState: OnboardingState
+    @StateObject private var currencyManager = CurrencyManager.shared
+    @State private var searchText = ""
+
+    var filteredCurrencies: [FiatCurrency] {
+        if searchText.isEmpty {
+            return currencyManager.availableCurrencies
+        } else {
+            return currencyManager.availableCurrencies.filter { currency in
+                currency.id.localizedCaseInsensitiveContains(searchText) ||
+                currency.info.name.localizedCaseInsensitiveContains(searchText)
+            }
+        }
+    }
+
+    var body: some View {
+        VStack(spacing: 32) {
+            Spacer()
+
+            // Header
+            VStack(spacing: 16) {
+                Image(systemName: "globe")
+                    .font(.system(size: 60))
+                    .foregroundColor(.yellow)
+
+                Text("Choose Your Currency")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .multilineTextAlignment(.center)
+
+                Text("Select your preferred currency for displaying Bitcoin values. You can change this later in settings.")
+                    .font(.body)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+            }
+
+            // Currency List
+            VStack(spacing: 16) {
+                // Search Bar
+                HStack {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(.secondary)
+
+                    TextField("Search currencies...", text: $searchText)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                }
+                .padding(.horizontal)
+
+                if currencyManager.isLoadingCurrencies {
+                    ProgressView("Loading currencies...")
+                        .frame(height: 200)
+                } else {
+                    ScrollView {
+                        LazyVStack(spacing: 8) {
+                            ForEach(filteredCurrencies, id: \.id) { currency in
+                                CurrencyRowView(
+                                    currency: currency,
+                                    isSelected: currencyManager.selectedCurrency?.id == currency.id
+                                ) {
+                                    currencyManager.setSelectedCurrency(currency)
+                                }
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
+                    .frame(maxHeight: 300)
+                }
+            }
+
+            Spacer()
+
+            // Continue Button
+            Button(action: {
+                onboardingState.currentStep = .biometricSetup
+            }) {
+                Text("Continue")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(
+                        currencyManager.selectedCurrency != nil ?
+                        Color.yellow : Color.gray
+                    )
+                    .cornerRadius(12)
+            }
+            .disabled(currencyManager.selectedCurrency == nil)
+            .padding(.horizontal)
+            .padding(.bottom, 32)
+        }
+        .onAppear {
+            Task {
+                await currencyManager.loadAvailableCurrencies()
+            }
+        }
+    }
+}
+
+// MARK: - Currency Row View
+
+struct CurrencyRowView: View {
+    let currency: FiatCurrency
+    let isSelected: Bool
+    let onTap: () -> Void
+
+    var body: some View {
+        Button(action: onTap) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(currency.id.uppercased())
+                        .font(.headline)
+                        .foregroundColor(.primary)
+
+                    Text(currency.info.name)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                Spacer()
+
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.yellow)
+                        .font(.title2)
+                }
+            }
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(isSelected ? Color.yellow.opacity(0.1) : Color.clear)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(isSelected ? Color.yellow : Color.gray.opacity(0.3), lineWidth: 1)
+                    )
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
     }
 }
 
