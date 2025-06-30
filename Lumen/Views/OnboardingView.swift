@@ -20,12 +20,12 @@ struct OnboardingView: View {
                     switch onboardingState.currentStep {
                     case .welcome:
                         WelcomeStepView(onboardingState: onboardingState)
-                    case .currencySelection:
-                        CurrencySelectionView(onboardingState: onboardingState)
                     case .biometricSetup:
                         BiometricSetupView(onboardingState: onboardingState)
                     case .walletInitialization:
                         WalletInitializationView(onboardingState: onboardingState)
+                    case .currencySelection:
+                        CurrencySelectionView(onboardingState: onboardingState)
                     case .completed:
                         CompletedView()
                     }
@@ -89,8 +89,8 @@ struct WelcomeStepView: View {
                 try await walletManager.resetWallet()
 
                 await MainActor.run {
-                    // Continue with new wallet creation
-                    onboardingState.currentStep = .currencySelection
+                    // Continue with new wallet creation - go to biometric setup
+                    onboardingState.currentStep = .biometricSetup
                 }
             } catch {
                 print("❌ Failed to reset wallet: \(error)")
@@ -188,21 +188,15 @@ struct ExistingWalletView: View {
 
     private func continueWithExistingWallet() {
         let biometricManager = BiometricManager.shared
-        let currencyManager = CurrencyManager.shared
 
-        // Check if user has already selected a currency
-        if currencyManager.selectedCurrency != nil {
-            // Currency already selected, check biometric setup
-            if biometricManager.isBiometricAvailable() {
-                // Biometrics available, go directly to wallet initialization
-                onboardingState.currentStep = .walletInitialization
-            } else {
-                // Need to set up biometrics first
-                onboardingState.currentStep = .biometricSetup
-            }
+        // Always go to biometric setup first, then wallet initialization
+        // Currency selection will happen after wallet is initialized
+        if biometricManager.isBiometricAvailable() {
+            // Biometrics available, go directly to wallet initialization
+            onboardingState.currentStep = .walletInitialization
         } else {
-            // No currency selected yet, go to currency selection
-            onboardingState.currentStep = .currencySelection
+            // Need to set up biometrics first
+            onboardingState.currentStep = .biometricSetup
         }
     }
 }
@@ -262,7 +256,7 @@ struct NewWalletWelcomeView: View {
 
             // Continue Button
             Button(action: {
-                onboardingState.currentStep = .currencySelection
+                onboardingState.currentStep = .biometricSetup
             }) {
                 Text("Get Started")
                     .font(.headline)
@@ -446,9 +440,16 @@ struct WalletInitializationView: View {
             // Continue Button (only show when connected)
             if walletManager.isConnected {
                 Button(action: {
-                    onboardingState.currentStep = .completed
+                    // Check if currency is already selected
+                    if CurrencyManager.shared.selectedCurrency != nil {
+                        // Currency already selected, go to completed
+                        onboardingState.currentStep = .completed
+                    } else {
+                        // Need to select currency first
+                        onboardingState.currentStep = .currencySelection
+                    }
                 }) {
-                    Text("Continue to Wallet")
+                    Text("Continue")
                         .font(.headline)
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
@@ -573,9 +574,9 @@ class OnboardingState: ObservableObject {
     
     enum OnboardingStep {
         case welcome
-        case currencySelection
         case biometricSetup
         case walletInitialization
+        case currencySelection
         case completed
     }
 }
@@ -657,7 +658,7 @@ struct CurrencySelectionView: View {
 
             // Continue Button
             Button(action: {
-                onboardingState.currentStep = .biometricSetup
+                onboardingState.currentStep = .completed
             }) {
                 Text("Continue")
                     .font(.headline)
