@@ -222,7 +222,7 @@ class WalletManager: ObservableObject {
     }
     
     /// Updates the wallet balance
-    private func updateBalance() async {
+    func updateBalance() async {
         guard let sdk = sdk else { return }
         
         do {
