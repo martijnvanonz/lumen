@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		3822F8842E12BC8100D2598D /* BreezSDKLiquid in Frameworks */ = {isa = PBXBuildFile; productRef = 3822F8832E12BC8100D2598D /* BreezSDKLiquid */; };
 		3822F8F12E12E42E00D2598D /* CryptoSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 3822F8F02E12E42E00D2598D /* CryptoSwift */; };
+		3822F8F42E12E65A00D2598D /* web3swift in Frameworks */ = {isa = PBXBuildFile; productRef = 3822F8F32E12E65A00D2598D /* web3swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,6 +60,7 @@
 			files = (
 				3822F8842E12BC8100D2598D /* BreezSDKLiquid in Frameworks */,
 				3822F8F12E12E42E00D2598D /* CryptoSwift in Frameworks */,
+				3822F8F42E12E65A00D2598D /* web3swift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -121,6 +123,7 @@
 			packageProductDependencies = (
 				3822F8832E12BC8100D2598D /* BreezSDKLiquid */,
 				3822F8F02E12E42E00D2598D /* CryptoSwift */,
+				3822F8F32E12E65A00D2598D /* web3swift */,
 			);
 			productName = Lumen;
 			productReference = 3822F7F92E12B86E00D2598D /* Lumen.app */;
@@ -207,6 +210,7 @@
 			packageReferences = (
 				3822F8822E12BC8100D2598D /* XCRemoteSwiftPackageReference "breez-sdk-liquid-swift" */,
 				3822F8EF2E12E42E00D2598D /* XCRemoteSwiftPackageReference "CryptoSwift" */,
+				3822F8F22E12E65A00D2598D /* XCRemoteSwiftPackageReference "web3swift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 3822F7FA2E12B86E00D2598D /* Products */;
@@ -593,6 +597,14 @@
 				minimumVersion = 1.8.5;
 			};
 		};
+		3822F8F22E12E65A00D2598D /* XCRemoteSwiftPackageReference "web3swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/web3swift-team/web3swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.3.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -605,6 +617,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 3822F8EF2E12E42E00D2598D /* XCRemoteSwiftPackageReference "CryptoSwift" */;
 			productName = CryptoSwift;
+		};
+		3822F8F32E12E65A00D2598D /* web3swift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3822F8F22E12E65A00D2598D /* XCRemoteSwiftPackageReference "web3swift" */;
+			productName = web3swift;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
