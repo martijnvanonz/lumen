@@ -207,8 +207,9 @@ struct PaymentRowView: View {
                         .foregroundColor(.secondary)
                 }
                 
-                if let description = payment.description, !description.isEmpty {
-                    Text(description)
+                // Payment details based on type
+                if let destination = payment.destination, !destination.isEmpty {
+                    Text(destination)
                         .font(.caption)
                         .foregroundColor(.secondary)
                         .lineLimit(2)
@@ -234,25 +235,40 @@ struct PaymentRowView: View {
     
     private var statusText: String {
         switch payment.status {
+        case .created: return "Created"
         case .pending: return "Pending"
         case .complete: return "Completed"
         case .failed: return "Failed"
+        case .timedOut: return "Timed Out"
+        case .refundable: return "Refundable"
+        case .refundPending: return "Refund Pending"
+        case .waitingFeeAcceptance: return "Waiting Fee Acceptance"
         }
     }
     
     private var statusIcon: String {
         switch payment.status {
+        case .created: return "plus.circle"
         case .pending: return "clock"
         case .complete: return payment.paymentType == .send ? "arrow.up.circle.fill" : "arrow.down.circle.fill"
         case .failed: return "xmark.circle.fill"
+        case .timedOut: return "clock.badge.xmark"
+        case .refundable: return "arrow.counterclockwise.circle"
+        case .refundPending: return "arrow.counterclockwise.circle.fill"
+        case .waitingFeeAcceptance: return "clock.arrow.circlepath"
         }
     }
     
     private var statusColor: Color {
         switch payment.status {
+        case .created: return .blue
         case .pending: return .orange
         case .complete: return payment.paymentType == .send ? .orange : .green
         case .failed: return .red
+        case .timedOut: return .red
+        case .refundable: return .yellow
+        case .refundPending: return .orange
+        case .waitingFeeAcceptance: return .blue
         }
     }
     
