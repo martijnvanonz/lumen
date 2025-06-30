@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import BreezSDKLiquid
+import Web3Core
 
 /// Manages the Breez SDK Liquid wallet integration
 class WalletManager: ObservableObject {
@@ -805,6 +806,7 @@ enum WalletError: Error, LocalizedError {
     case unsupportedPaymentType(String)
     case paymentExpired
     case amountOutOfRange
+    case mnemonicGenerationFailed
 
     var errorDescription: String? {
         switch self {
@@ -822,6 +824,8 @@ enum WalletError: Error, LocalizedError {
             return "Payment request has expired"
         case .amountOutOfRange:
             return "Payment amount is out of allowed range"
+        case .mnemonicGenerationFailed:
+            return "Failed to generate secure wallet seed phrase"
         }
     }
 }
@@ -919,10 +923,20 @@ struct RefundEstimate {
 
 // MARK: - Helper Functions
 
-/// Generates a BIP39 mnemonic phrase using Breez SDK
+/// Generates a BIP39 mnemonic phrase using Web3Swift
+/// Uses 256 bits of entropy for maximum security (24 words)
 private func generateBIP39Mnemonic() throws -> String {
-    // Use Breez SDK's built-in mnemonic generation which ensures proper BIP39 compliance
-    return try BreezSDKLiquid.generateMnemonic()
+    do {
+        // Generate 24-word mnemonic with 256 bits of entropy for maximum security
+        let mnemonicArray = try BIP39.generateMnemonics(entropy: 256)
+        let mnemonic = mnemonicArray.joined(separator: " ")
+
+        print("✅ Generated secure BIP39 mnemonic with 256 bits of entropy")
+        return mnemonic
+    } catch {
+        print("❌ Failed to generate BIP39 mnemonic: \(error)")
+        throw WalletError.mnemonicGenerationFailed
+    }
 }
 
 // MARK: - Extensions
