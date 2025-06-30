@@ -51,8 +51,6 @@ struct WelcomeStepView: View {
     @ObservedObject var onboardingState: OnboardingState
     @StateObject private var walletManager = WalletManager.shared
     @StateObject private var currencyManager = CurrencyManager.shared
-    @State private var existingWalletBalance: UInt64?
-    @State private var isCheckingExistingWallet = true
     @State private var showingNewWalletWarning = false
 
     var hasExistingWallet: Bool {
@@ -64,19 +62,12 @@ struct WelcomeStepView: View {
             if hasExistingWallet {
                 ExistingWalletView(
                     onboardingState: onboardingState,
-                    balance: existingWalletBalance,
-                    isCheckingBalance: isCheckingExistingWallet,
                     onCreateNewWallet: {
                         showingNewWalletWarning = true
                     }
                 )
             } else {
                 NewWalletWelcomeView(onboardingState: onboardingState)
-            }
-        }
-        .onAppear {
-            if hasExistingWallet {
-                checkExistingWalletBalance()
             }
         }
         .alert("Create New Wallet", isPresented: $showingNewWalletWarning) {
@@ -90,16 +81,6 @@ struct WelcomeStepView: View {
     }
 
     // MARK: - Private Methods
-
-    private func checkExistingWalletBalance() {
-        Task {
-            let balance = await walletManager.getExistingWalletBalance()
-            await MainActor.run {
-                self.existingWalletBalance = balance
-                self.isCheckingExistingWallet = false
-            }
-        }
-    }
 
     private func createNewWallet() {
         Task {
@@ -123,8 +104,6 @@ struct WelcomeStepView: View {
 struct ExistingWalletView: View {
     @ObservedObject var onboardingState: OnboardingState
     @StateObject private var currencyManager = CurrencyManager.shared
-    let balance: UInt64?
-    let isCheckingBalance: Bool
     let onCreateNewWallet: () -> Void
 
     var body: some View {
@@ -150,40 +129,24 @@ struct ExistingWalletView: View {
                 }
             }
 
-            // Balance Display
+            // Wallet Info Display
             VStack(spacing: 16) {
-                if isCheckingBalance {
-                    ProgressView("Checking balance...")
-                        .frame(height: 60)
-                } else if let balance = balance {
-                    VStack(spacing: 8) {
-                        Text("Current Balance")
-                            .font(.headline)
-                            .foregroundColor(.secondary)
-
-                        Text("\(balance) sats")
-                            .font(.title)
-                            .fontWeight(.bold)
-
-                        if let fiatValue = currencyManager.convertSatsToFiat(balance) {
-                            let formattedFiat = currencyManager.formatFiatAmount(fiatValue)
-                            if !formattedFiat.isEmpty {
-                                Text("≈ \(formattedFiat)")
-                                    .font(.title3)
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                    }
-                    .padding()
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.secondary.opacity(0.1))
-                    )
-                } else {
-                    Text("Unable to check balance")
-                        .font(.caption)
+                VStack(spacing: 8) {
+                    Text("Ready to Continue")
+                        .font(.headline)
                         .foregroundColor(.secondary)
+
+                    Text("Your wallet will be restored and your balance will be available once connected")
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
                 }
+                .padding()
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.secondary.opacity(0.1))
+                )
             }
 
             Spacer()
