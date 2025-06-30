@@ -89,5 +89,19 @@ fastlane/test_output
 
 iOSInjectionProject/
 
+# Environment Variables - NEVER commit these!
+.env
+.env.local
+.env.development
+.env.staging
+.env.production
+*.env
+
+# API Keys and Secrets
+secrets.plist
+config.plist
+**/secrets/**
+**/config/secrets/**
+
 # macOS
 .DS_Store

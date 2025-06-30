@@ -19,6 +19,7 @@ class WalletManager: ObservableObject {
     private let eventHandler = PaymentEventHandler.shared
     private let errorHandler = ErrorHandler.shared
     private let networkMonitor = NetworkMonitor.shared
+    private let configManager = ConfigurationManager.shared
     
     // MARK: - Singleton
     
@@ -118,7 +119,8 @@ class WalletManager: ObservableObject {
         }
 
         do {
-            let config = try defaultConfig(network: LiquidNetwork.mainnet)
+            // Get configuration with API key from ConfigurationManager
+            let config = try configManager.getBreezSDKConfig()
 
             let connectRequest = ConnectRequest(mnemonic: mnemonic, config: config)
 
