@@ -16,9 +16,13 @@ struct RefundView: View {
         NavigationView {
             VStack(spacing: 0) {
                 if isLoading {
-                    RefundLoadingView()
+                    LoadingView(text: "Loading refundable swaps...")
                 } else if refundableSwaps.isEmpty {
-                    EmptyRefundsView()
+                    EmptyStateView(
+                        icon: AppTheme.Icons.success,
+                        title: "No Refunds Needed",
+                        message: "All your Bitcoin payments have been processed successfully. Failed payments that can be refunded will appear here."
+                    )
                 } else {
                     RefundListView(
                         refundableSwaps: refundableSwaps,
@@ -29,15 +33,12 @@ struct RefundView: View {
                     )
                 }
             }
-            .navigationTitle("Refunds")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                }
-            }
+            .standardToolbar(
+                title: "Refunds",
+                displayMode: .large,
+                showsDoneButton: true,
+                onDone: { dismiss() }
+            )
             .refreshable {
                 await loadRefundableSwaps()
             }
@@ -46,7 +47,7 @@ struct RefundView: View {
                     await loadRefundableSwaps()
                 }
             }
-            .sheet(isPresented: $showingRefundSheet) {
+            .standardSheet(isPresented: $showingRefundSheet) {
                 if let selectedSwap = selectedSwap {
                     RefundExecutionView(
                         swap: selectedSwap,
