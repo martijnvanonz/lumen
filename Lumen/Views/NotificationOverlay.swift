@@ -99,15 +99,17 @@ struct ConnectionStatusBar: View {
 
 struct EnhancedTransactionHistoryView: View {
     @StateObject private var eventHandler = PaymentEventHandler.shared
-    
+    @StateObject private var walletManager = WalletManager.shared
+    @State private var showingPaymentHistory = false
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
                 Text("Recent Activity")
                     .font(.headline)
-                
+
                 Spacer()
-                
+
                 if !eventHandler.pendingPayments.isEmpty {
                     Text("\(eventHandler.pendingPayments.count) pending")
                         .font(.caption)
@@ -117,9 +119,9 @@ struct EnhancedTransactionHistoryView: View {
                         .background(Color.orange.opacity(0.1))
                         .cornerRadius(8)
                 }
-                
+
                 Button("See All") {
-                    // Navigate to full transaction history
+                    showingPaymentHistory = true
                 }
                 .font(.caption)
                 .foregroundColor(.blue)
@@ -155,17 +157,17 @@ struct EnhancedTransactionHistoryView: View {
                         EnhancedTransactionRow(payment: payment)
                     }
                 }
-            } else if eventHandler.pendingPayments.isEmpty {
+            } else if eventHandler.pendingPayments.isEmpty && eventHandler.recentPayments.isEmpty {
                 // Empty state
                 VStack(spacing: 12) {
                     Image(systemName: "clock")
                         .font(.title2)
                         .foregroundColor(.secondary)
-                    
+
                     Text("No recent activity")
                         .font(.body)
                         .foregroundColor(.secondary)
-                    
+
                     Text("Your payments will appear here")
                         .font(.caption)
                         .foregroundColor(.secondary)
@@ -173,6 +175,9 @@ struct EnhancedTransactionHistoryView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 32)
             }
+        }
+        .sheet(isPresented: $showingPaymentHistory) {
+            PaymentHistoryView()
         }
     }
 }

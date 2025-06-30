@@ -24,6 +24,7 @@
 		A9B0C1D2E3F4A5B6C7D8E9F0 /* ErrorAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E9D8C7B6A5F4E3D2C1B0A9 /* ErrorAlertView.swift */; };
 		B1C2D3E4F5A6B7C8D9E0F1A2 /* ConfigurationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2F1E0D9C8B7A6F5E4D3C2B1 /* ConfigurationManager.swift */; };
 		C3D4E5F6A7B8C9D0E1F2A3B4 /* .env.example in Resources */ = {isa = PBXBuildFile; fileRef = B4A3F2E1D0C9B8A7F6E5D4C3 /* .env.example */; };
+		D5E6F7A8B9C0D1E2F3A4B5C6 /* PaymentHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6B5A4F3E2D1C0B9A8F7E6D5 /* PaymentHistoryView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -44,6 +45,7 @@
 		F0E9D8C7B6A5F4E3D2C1B0A9 /* ErrorAlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorAlertView.swift; sourceTree = "<group>"; };
 		A2F1E0D9C8B7A6F5E4D3C2B1 /* ConfigurationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationManager.swift; sourceTree = "<group>"; };
 		B4A3F2E1D0C9B8A7F6E5D4C3 /* .env.example */ = {isa = PBXFileReference; lastKnownFileType = text; path = .env.example; sourceTree = "<group>"; };
+		C6B5A4F3E2D1C0B9A8F7E6D5 /* PaymentHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentHistoryView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,6 +108,7 @@
 				A8F9E0D1C2B3A4F5E6D7C8B9 /* WalletView.swift */,
 				C4B3A2F1E0D9C8B7A6F5E4D3 /* NotificationOverlay.swift */,
 				F0E9D8C7B6A5F4E3D2C1B0A9 /* ErrorAlertView.swift */,
+				C6B5A4F3E2D1C0B9A8F7E6D5 /* PaymentHistoryView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -227,6 +230,7 @@
 				F7A8B9C0D1E2F3A4B5C6D7E8 /* NetworkMonitor.swift in Sources */,
 				A9B0C1D2E3F4A5B6C7D8E9F0 /* ErrorAlertView.swift in Sources */,
 				B1C2D3E4F5A6B7C8D9E0F1A2 /* ConfigurationManager.swift in Sources */,
+				D5E6F7A8B9C0D1E2F3A4B5C6 /* PaymentHistoryView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

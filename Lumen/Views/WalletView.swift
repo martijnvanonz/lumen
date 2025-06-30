@@ -47,7 +47,7 @@ struct WalletView: View {
                 .navigationTitle("Lumen")
                 .navigationBarTitleDisplayMode(.large)
                 .refreshable {
-                    // Refresh wallet data
+                    // Refresh wallet data and payment history
                     await refreshWallet()
                 }
 
@@ -68,12 +68,9 @@ struct WalletView: View {
     }
     
     private func refreshWallet() async {
-        // Refresh wallet balance and transactions
-        do {
-            let _ = try await walletManager.getWalletInfo()
-        } catch {
-            print("Failed to refresh wallet: \(error)")
-        }
+        // Refresh wallet balance and payment history
+        await walletManager.updateBalance()
+        await walletManager.refreshPayments()
     }
 }
 

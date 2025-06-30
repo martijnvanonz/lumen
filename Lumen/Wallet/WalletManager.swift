@@ -5,11 +5,13 @@ import BreezSDKLiquid
 class WalletManager: ObservableObject {
     
     // MARK: - Published Properties
-    
+
     @Published var isConnected = false
     @Published var balance: UInt64 = 0
     @Published var isLoading = false
     @Published var errorMessage: String?
+    @Published var payments: [Payment] = []
+    @Published var isLoadingPayments = false
     
     // MARK: - Private Properties
     
@@ -137,6 +139,9 @@ class WalletManager: ObservableObject {
             // Get initial balance
             await updateBalance()
 
+            // Load payment history
+            await loadPaymentHistory()
+
             await MainActor.run {
                 eventHandler.updateConnectionStatus(.connected)
             }
@@ -179,20 +184,27 @@ class WalletManager: ObservableObject {
         switch event {
         case .synced:
             await updateBalance()
+            await loadPaymentHistory()
         case .paymentSucceeded(let details):
             await updateBalance()
-            print("Payment succeeded: \(details)")
+            await loadPaymentHistory()
+            logInfo("Payment succeeded: \(details.txId ?? "unknown")")
         case .paymentFailed(let details):
-            print("Payment failed: \(details)")
+            await loadPaymentHistory()
+            logWarning("Payment failed: \(details.txId ?? "unknown")")
         case .paymentPending(let details):
-            print("Payment pending: \(details)")
+            await loadPaymentHistory()
+            logInfo("Payment pending: \(details.txId ?? "unknown")")
         case .paymentRefunded(let details):
             await updateBalance()
-            print("Payment refunded: \(details)")
+            await loadPaymentHistory()
+            logInfo("Payment refunded: \(details.txId ?? "unknown")")
         case .paymentRefundPending(let details):
-            print("Payment refund pending: \(details)")
+            await loadPaymentHistory()
+            logInfo("Payment refund pending: \(details.txId ?? "unknown")")
         case .paymentWaitingConfirmation(let details):
-            print("Payment waiting confirmation: \(details)")
+            await loadPaymentHistory()
+            logInfo("Payment waiting confirmation: \(details.txId ?? "unknown")")
         }
     }
     
@@ -273,8 +285,144 @@ class WalletManager: ObservableObject {
         guard let sdk = sdk else {
             throw WalletError.notConnected
         }
-        
+
         return try sdk.getInfo()
+    }
+
+    // MARK: - Payment Management
+
+    /// Loads payment history from the SDK
+    func loadPaymentHistory() async {
+        guard let sdk = sdk else {
+            logError("Cannot load payments: SDK not connected")
+            return
+        }
+
+        await MainActor.run {
+            isLoadingPayments = true
+        }
+
+        do {
+            logInfo("Loading payment history...")
+            let paymentList = try sdk.listPayments()
+
+            await MainActor.run {
+                self.payments = paymentList
+                self.isLoadingPayments = false
+                logInfo("Loaded \(paymentList.count) payments")
+            }
+
+            // Update the PaymentEventHandler with real payment data
+            await updatePaymentEventHandler(with: paymentList)
+
+        } catch {
+            await MainActor.run {
+                self.isLoadingPayments = false
+            }
+
+            logError("Failed to load payment history: \(error)")
+            errorHandler.handle(error, context: "Loading payment history")
+        }
+    }
+
+    /// Updates the PaymentEventHandler with real payment data
+    private func updatePaymentEventHandler(with payments: [Payment]) async {
+        await MainActor.run {
+            // Clear existing placeholder data
+            eventHandler.recentPayments.removeAll()
+            eventHandler.pendingPayments.removeAll()
+
+            // Convert SDK payments to PaymentEventHandler format
+            for payment in payments {
+                let paymentInfo = createPaymentInfo(from: payment)
+
+                // Add to appropriate list based on status
+                switch payment.status {
+                case .pending:
+                    eventHandler.pendingPayments.append(paymentInfo)
+                case .complete:
+                    eventHandler.recentPayments.append(paymentInfo)
+                case .failed:
+                    eventHandler.recentPayments.append(paymentInfo)
+                }
+            }
+
+            // Sort by timestamp (most recent first)
+            eventHandler.recentPayments.sort { $0.timestamp > $1.timestamp }
+            eventHandler.pendingPayments.sort { $0.timestamp > $1.timestamp }
+        }
+    }
+
+    /// Converts SDK Payment to PaymentEventHandler.PaymentInfo
+    private func createPaymentInfo(from payment: Payment) -> PaymentEventHandler.PaymentInfo {
+        let direction: PaymentEventHandler.PaymentInfo.PaymentDirection =
+            payment.paymentType == .receive ? .incoming : .outgoing
+
+        let status: PaymentEventHandler.PaymentInfo.PaymentStatus
+        switch payment.status {
+        case .pending:
+            status = .pending
+        case .complete:
+            status = .succeeded
+        case .failed:
+            status = .failed
+        }
+
+        return PaymentEventHandler.PaymentInfo(
+            paymentHash: payment.txId ?? UUID().uuidString,
+            amountSat: payment.amountSat,
+            direction: direction,
+            status: status,
+            timestamp: Date(timeIntervalSince1970: TimeInterval(payment.timestamp)),
+            description: payment.description
+        )
+    }
+
+    /// Gets payments with optional filtering
+    func getPayments(
+        filter: PaymentTypeFilter? = nil,
+        limit: UInt32? = nil,
+        offset: UInt32? = nil
+    ) async throws -> [Payment] {
+        guard let sdk = sdk else {
+            throw WalletError.notConnected
+        }
+
+        // Create list payments request with filters
+        let request = ListPaymentsRequest(
+            filters: filter.map { [$0] },
+            metadataFilters: nil,
+            fromTimestamp: nil,
+            toTimestamp: nil,
+            includeFailures: true,
+            limit: limit,
+            offset: offset
+        )
+
+        logInfo("Fetching payments with filters: \(String(describing: filter))")
+        return try sdk.listPayments(req: request)
+    }
+
+    /// Gets recent payments (last 50)
+    func getRecentPayments() async throws -> [Payment] {
+        return try await getPayments(limit: 50)
+    }
+
+    /// Gets pending payments only
+    func getPendingPayments() async throws -> [Payment] {
+        let allPayments = try await getPayments()
+        return allPayments.filter { $0.status == .pending }
+    }
+
+    /// Gets completed payments only
+    func getCompletedPayments() async throws -> [Payment] {
+        let allPayments = try await getPayments()
+        return allPayments.filter { $0.status == .complete }
+    }
+
+    /// Refreshes payment data
+    func refreshPayments() async {
+        await loadPaymentHistory()
     }
 }
 
