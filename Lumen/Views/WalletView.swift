@@ -832,7 +832,7 @@ struct ReceiveFeeCard: View {
 
                         Spacer()
 
-                        Text("\(preparedReceive.amountSat - preparedReceive.feesSat) sats")
+                        Text("\(amountSatsFromReceiveAmount(preparedReceive.amount) - preparedReceive.feesSat) sats")
                             .font(.caption)
                             .fontWeight(.semibold)
                             .foregroundColor(.green)
@@ -916,6 +916,20 @@ private func amountSatsFromPayAmount(_ payAmount: PayAmount?) -> UInt64 {
         return UInt64(receiverAmount)
     case .drain:
         return 0 // Drain means send all available, amount is determined dynamically
+    }
+}
+
+/// Extracts the amount in satoshis from a ReceiveAmount enum
+private func amountSatsFromReceiveAmount(_ receiveAmount: ReceiveAmount?) -> UInt64 {
+    guard let receiveAmount = receiveAmount else { return 0 }
+
+    switch receiveAmount {
+    case .bitcoin(let payerAmountSat):
+        return payerAmountSat
+    case .asset(_, let payerAmount):
+        // For assets, we approximate using the payer amount
+        // In a real app, you'd need proper conversion logic
+        return UInt64(payerAmount ?? 0)
     }
 }
 
