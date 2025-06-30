@@ -90,6 +90,9 @@ struct WalletDetailsView: View {
             
             // Limits Information
             LimitsInfoCard(walletInfo: walletInfo)
+
+            // Debug Section (Development only)
+            DebugActionsCard()
         }
     }
 }
@@ -366,6 +369,72 @@ struct InfoRow: View {
             RoundedRectangle(cornerRadius: 6)
                 .fill(Color.blue.opacity(0.1)) : nil
         )
+    }
+}
+
+// MARK: - Debug Actions Card
+
+struct DebugActionsCard: View {
+    @StateObject private var walletManager = WalletManager.shared
+    @State private var showingResetConfirmation = false
+    @State private var isResetting = false
+
+    var body: some View {
+        InfoCard(
+            title: "Debug Actions",
+            icon: "wrench.and.screwdriver",
+            iconColor: .orange
+        ) {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("⚠️ Development Tools")
+                    .font(.caption)
+                    .foregroundColor(.orange)
+                    .fontWeight(.semibold)
+
+                Button(action: {
+                    showingResetConfirmation = true
+                }) {
+                    HStack {
+                        Image(systemName: "trash.circle")
+                        Text("Reset Wallet")
+                        Spacer()
+                        if isResetting {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                        }
+                    }
+                    .foregroundColor(.red)
+                }
+                .disabled(isResetting)
+                .alert("Reset Wallet", isPresented: $showingResetConfirmation) {
+                    Button("Cancel", role: .cancel) { }
+                    Button("Reset", role: .destructive) {
+                        Task {
+                            await resetWallet()
+                        }
+                    }
+                } message: {
+                    Text("This will delete your wallet data and mnemonic. You'll need to create a new wallet. This action cannot be undone.")
+                }
+
+                Text("Use this to recover from corrupted wallet state or invalid mnemonic errors.")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+        }
+    }
+
+    private func resetWallet() async {
+        isResetting = true
+
+        do {
+            try await walletManager.resetWallet()
+            print("✅ Wallet reset successful")
+        } catch {
+            print("❌ Wallet reset failed: \(error)")
+        }
+
+        isResetting = false
     }
 }
 

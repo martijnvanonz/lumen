@@ -315,11 +315,11 @@ class WalletManager: ObservableObject {
     }
     
     // MARK: - Utility Methods
-    
+
     /// Disconnects from the Breez SDK
     func disconnect() async {
         guard let sdk = sdk else { return }
-        
+
         do {
             try sdk.disconnect()
             await MainActor.run {
@@ -329,6 +329,26 @@ class WalletManager: ObservableObject {
         } catch {
             print("Failed to disconnect: \(error)")
         }
+    }
+
+    /// Resets the wallet by clearing stored mnemonic and disconnecting
+    /// Use this to recover from corrupted wallet state
+    func resetWallet() async throws {
+        // Disconnect from SDK first
+        await disconnect()
+
+        // Clear stored mnemonic from keychain
+        try keychainManager.deleteMnemonic()
+
+        await MainActor.run {
+            self.balance = 0
+            self.payments = []
+            self.errorMessage = nil
+            self.isConnected = false
+            self.isLoading = false
+        }
+
+        print("✅ Wallet reset completed - ready for fresh initialization")
     }
     
     /// Gets the current wallet info
@@ -899,24 +919,10 @@ struct RefundEstimate {
 
 // MARK: - Helper Functions
 
-/// Generates a BIP39 mnemonic phrase
+/// Generates a BIP39 mnemonic phrase using Breez SDK
 private func generateBIP39Mnemonic() throws -> String {
-    // Simple BIP39 word list (subset for demo - in production use full 2048 word list)
-    let words = [
-        "abandon", "ability", "able", "about", "above", "absent", "absorb", "abstract",
-        "absurd", "abuse", "access", "accident", "account", "accuse", "achieve", "acid",
-        "acoustic", "acquire", "across", "act", "action", "actor", "actress", "actual",
-        "adapt", "add", "addict", "address", "adjust", "admit", "adult", "advance"
-    ]
-
-    // Generate 12 random words (simplified - real BIP39 requires proper entropy and checksum)
-    var mnemonic: [String] = []
-    for _ in 0..<12 {
-        let randomIndex = Int.random(in: 0..<words.count)
-        mnemonic.append(words[randomIndex])
-    }
-
-    return mnemonic.joined(separator: " ")
+    // Use Breez SDK's built-in mnemonic generation which ensures proper BIP39 compliance
+    return try BreezSDKLiquid.generateMnemonic()
 }
 
 // MARK: - Extensions
