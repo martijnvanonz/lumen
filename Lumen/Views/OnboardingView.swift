@@ -263,12 +263,23 @@ struct WalletInitializationView: View {
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                     
-                    Button("Try Again") {
-                        Task {
-                            await walletManager.initializeWallet()
+                    HStack(spacing: 16) {
+                        Button("Try Again") {
+                            Task {
+                                await walletManager.initializeWallet()
+                            }
                         }
+                        .buttonStyle(.bordered)
+
+                        Button("Reset Wallet") {
+                            Task {
+                                try? await walletManager.resetWallet()
+                                await walletManager.initializeWallet()
+                            }
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.orange)
                     }
-                    .buttonStyle(.bordered)
                 }
                 .padding()
                 .background(Color.red.opacity(0.1))
