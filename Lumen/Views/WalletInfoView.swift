@@ -428,7 +428,7 @@ struct DebugActionsCard: View {
         isResetting = true
 
         do {
-            try await walletManager.resetWallet()
+            try await walletManager.deleteWalletFromKeychain()
             print("✅ Wallet reset successful")
         } catch {
             print("❌ Wallet reset failed: \(error)")

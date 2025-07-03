@@ -10,11 +10,6 @@ struct ContentView: View {
             Group {
                 if showOnboarding {
                     OnboardingView()
-                        .onReceive(walletManager.$isConnected) { isConnected in
-                            if isConnected {
-                                showOnboarding = false
-                            }
-                        }
                 } else {
                     WalletView()
                 }
@@ -35,21 +30,40 @@ struct ContentView: View {
         .onReceive(NotificationCenter.default.publisher(for: .walletLoggedOut)) { _ in
             handleWalletLogout()
         }
+        .onReceive(NotificationCenter.default.publisher(for: .onboardingCompleted)) { _ in
+            handleOnboardingCompleted()
+        }
     }
 
     private func checkWalletStatus() {
-        // Check if wallet is already connected
-        if walletManager.isConnected {
-            showOnboarding = false
+        // If user is logged in, try to connect automatically
+        if walletManager.isLoggedIn {
+            if walletManager.isConnected {
+                // Already connected, go to main wallet view
+                showOnboarding = false
+            } else {
+                // User is logged in but not connected, initialize wallet automatically
+                Task {
+                    await walletManager.initializeWallet()
+                    await MainActor.run {
+                        if walletManager.isConnected {
+                            showOnboarding = false
+                        }
+                    }
+                }
+            }
         } else {
-            // Always show onboarding for wallet setup/recovery choice
-            // The onboarding flow will handle existing wallet detection
+            // User not logged in, show onboarding
             showOnboarding = true
         }
     }
 
     private func handleWalletLogout() {
         showOnboarding = true
+    }
+
+    private func handleOnboardingCompleted() {
+        showOnboarding = false
     }
 }
 
