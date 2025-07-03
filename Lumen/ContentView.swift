@@ -10,11 +10,6 @@ struct ContentView: View {
             Group {
                 if showOnboarding {
                     OnboardingView()
-                        .onReceive(walletManager.$isConnected) { isConnected in
-                            if isConnected {
-                                showOnboarding = false
-                            }
-                        }
                 } else {
                     WalletView()
                 }
