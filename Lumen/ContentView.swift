@@ -38,12 +38,24 @@ struct ContentView: View {
     }
 
     private func checkWalletStatus() {
-        // Check if user is logged in and wallet is connected
-        if walletManager.isLoggedIn && walletManager.isConnected {
-            showOnboarding = false
+        // If user is logged in, try to connect automatically
+        if walletManager.isLoggedIn {
+            if walletManager.isConnected {
+                // Already connected, go to main wallet view
+                showOnboarding = false
+            } else {
+                // User is logged in but not connected, initialize wallet automatically
+                Task {
+                    await walletManager.initializeWallet()
+                    await MainActor.run {
+                        if walletManager.isConnected {
+                            showOnboarding = false
+                        }
+                    }
+                }
+            }
         } else {
-            // Show onboarding for wallet setup/recovery choice
-            // The onboarding flow will handle existing wallet detection
+            // User not logged in, show onboarding
             showOnboarding = true
         }
     }
