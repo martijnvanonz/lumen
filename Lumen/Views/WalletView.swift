@@ -8,6 +8,7 @@ struct WalletView: View {
     @State private var showingRefundView = false
     @State private var showingWalletInfo = false
     @State private var showingSettings = false
+    @State private var refundableSwapsCount = 0
 
     var body: some View {
         NavigationView {
@@ -52,31 +53,53 @@ struct WalletView: View {
                                 }
                             }
 
-                            // Refund button (smaller, secondary action)
-                            Button(action: {
-                                showingRefundView = true
-                            }) {
-                                HStack(spacing: 8) {
-                                    Image(systemName: "arrow.counterclockwise.circle")
-                                        .font(.title3)
-                                        .foregroundColor(.blue)
+                            // Refund button (only show if there are refunds available)
+                            if refundableSwapsCount > 0 {
+                                Button(action: {
+                                    showingRefundView = true
+                                }) {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "arrow.uturn.backward.circle.fill")
+                                            .font(.title3)
+                                            .foregroundColor(.orange)
 
-                                    Text("Manage Refunds")
-                                        .font(.subheadline)
-                                        .foregroundColor(.blue)
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text("Get Money Back")
+                                                .font(.subheadline)
+                                                .fontWeight(.medium)
+                                                .foregroundColor(.orange)
+
+                                            Text("\(refundableSwapsCount) payment\(refundableSwapsCount == 1 ? "" : "s") to refund")
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
+                                        }
+
+                                        Spacer()
+
+                                        // Badge with count
+                                        Text("\(refundableSwapsCount)")
+                                            .font(.caption)
+                                            .fontWeight(.bold)
+                                            .foregroundColor(.white)
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 4)
+                                            .background(Color.orange)
+                                            .clipShape(Capsule())
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.vertical, 12)
+                                    .padding(.horizontal, 16)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .fill(Color.orange.opacity(0.1))
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 12)
+                                                    .stroke(Color.orange.opacity(0.3), lineWidth: 1)
+                                            )
+                                    )
                                 }
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 12)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .fill(Color.blue.opacity(0.1))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 8)
-                                                .stroke(Color.blue.opacity(0.3), lineWidth: 1)
-                                        )
-                                )
+                                .buttonStyle(PlainButtonStyle())
                             }
-                            .buttonStyle(PlainButtonStyle())
                         }
                         .padding(.horizontal)
 
@@ -105,6 +128,11 @@ struct WalletView: View {
                 .refreshable {
                     // Refresh wallet data and payment history
                     await refreshWallet()
+                }
+                .onAppear {
+                    Task {
+                        await checkRefundableSwaps()
+                    }
                 }
 
                 // Notification overlay
@@ -136,6 +164,22 @@ struct WalletView: View {
         // Refresh wallet balance and payment history
         await walletManager.updateBalance()
         await walletManager.refreshPayments()
+        await checkRefundableSwaps()
+    }
+
+    /// Check for refundable swaps and update the count
+    private func checkRefundableSwaps() async {
+        do {
+            let refundables = try await walletManager.listRefundableSwaps()
+            await MainActor.run {
+                refundableSwapsCount = refundables.count
+            }
+        } catch {
+            // Silently fail - refund button just won't show
+            await MainActor.run {
+                refundableSwapsCount = 0
+            }
+        }
     }
 }
 

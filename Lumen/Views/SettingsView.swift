@@ -8,6 +8,7 @@ struct SettingsView: View {
     @State private var showingCurrencySelection = false
     @State private var showingLogoutConfirmation = false
     @State private var showingDeleteWalletConfirmation = false
+    @State private var showingRefundView = false
     @State private var isLoggingOut = false
     @State private var isDeletingWallet = false
     
@@ -48,7 +49,36 @@ struct SettingsView: View {
                     }
                     .buttonStyle(PlainButtonStyle())
                 }
-                
+
+                // Refund Section (always available as backup)
+                Section("Money Recovery") {
+                    Button(action: {
+                        showingRefundView = true
+                    }) {
+                        HStack {
+                            Image(systemName: "arrow.uturn.backward.circle")
+                                .foregroundColor(.orange)
+                                .frame(width: 24)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Get Money Back")
+                                    .foregroundColor(.primary)
+
+                                Text("Recover funds from failed payments")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+
+                            Spacer()
+
+                            Image(systemName: "chevron.right")
+                                .foregroundColor(.secondary)
+                                .font(.caption)
+                        }
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+
                 // App Information Section
                 Section("About") {
                     HStack {
@@ -160,6 +190,9 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showingCurrencySelection) {
             CurrencySelectionSettingsView()
+        }
+        .sheet(isPresented: $showingRefundView) {
+            RefundView()
         }
         .alert("Logout Wallet", isPresented: $showingLogoutConfirmation) {
             Button("Cancel", role: .cancel) { }
