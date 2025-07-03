@@ -29,7 +29,7 @@ struct RefundView: View {
                     )
                 }
             }
-            .navigationTitle("Refunds")
+            .navigationTitle("Get Money Back")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -91,7 +91,7 @@ struct RefundView: View {
 struct RefundListView: View {
     let refundableSwaps: [RefundableSwap]
     let onRefundTapped: (RefundableSwap) -> Void
-    
+
     var body: some View {
         List {
             Section {
@@ -101,9 +101,9 @@ struct RefundListView: View {
                     }
                 }
             } header: {
-                Text("Failed Bitcoin Payments")
+                Text("Money to Get Back")
             } footer: {
-                Text("These are Bitcoin payments that failed and can be refunded to a Bitcoin address of your choice.")
+                Text("These payments didn't go through. Tap 'Get Money Back' to return the funds to your Bitcoin wallet.")
             }
         }
     }
@@ -112,40 +112,46 @@ struct RefundListView: View {
 struct RefundRowView: View {
     let swap: RefundableSwap
     let onRefundTapped: () -> Void
-    
+
+    private var formattedAmount: String {
+        let btcAmount = Double(swap.amountSat) / 100_000_000
+        return String(format: "%.6f BTC", btcAmount)
+    }
+
+    private var estimatedUSDValue: String {
+        // Rough estimate - in production you'd want real exchange rates
+        let btcAmount = Double(swap.amountSat) / 100_000_000
+        let usdValue = btcAmount * 45000 // Approximate BTC price
+        return String(format: "$%.2f", usdValue)
+    }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Failed Payment")
+                    Text("Payment Failed")
                         .font(.headline)
-                    
-                    Text("Amount: \(swap.amountSat) sats")
+                        .foregroundColor(.primary)
+
+                    Text("\(formattedAmount) (\(estimatedUSDValue))")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
+
+                    Text("\(swap.amountSat) sats")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
-                
+
                 Spacer()
-                
-                Button("Refund") {
+
+                Button("Get Money Back") {
                     onRefundTapped()
                 }
                 .buttonStyle(.borderedProminent)
-                .controlSize(.small)
-            }
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Swap Address:")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                
-                Text(swap.swapAddress)
-                    .font(.system(.caption, design: .monospaced))
-                    .foregroundStyle(.secondary)
-                    .textSelection(.enabled)
+                .controlSize(.regular)
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 8)
     }
 }
 
@@ -155,88 +161,152 @@ struct RefundExecutionView: View {
     let swap: RefundableSwap
     let recommendedFees: RecommendedFees?
     let onRefundCompleted: () -> Void
-    
+
     @Environment(\.dismiss) private var dismiss
     @StateObject private var walletManager = WalletManager.shared
-    
+
     @State private var refundAddress = ""
     @State private var selectedFeeRate: UInt32 = 0
-    @State private var customFeeRate = ""
     @State private var isExecuting = false
     @State private var errorMessage: String?
     @State private var showingSuccess = false
     @State private var refundTxId: String?
-    
+
+    private var formattedAmount: String {
+        let btcAmount = Double(swap.amountSat) / 100_000_000
+        return String(format: "%.6f BTC", btcAmount)
+    }
+
+    private var estimatedUSDValue: String {
+        let btcAmount = Double(swap.amountSat) / 100_000_000
+        let usdValue = btcAmount * 45000
+        return String(format: "$%.2f", usdValue)
+    }
+
+    private var estimatedFeeCost: String {
+        guard selectedFeeRate > 0 else { return "$0.00" }
+        let estimatedVbytes: UInt32 = 225 // Typical refund transaction size
+        let feeSats = estimatedVbytes * selectedFeeRate
+        let feeBTC = Double(feeSats) / 100_000_000
+        let feeUSD = feeBTC * 45000
+        return String(format: "$%.2f", feeUSD)
+    }
+
     var body: some View {
         NavigationView {
-            VStack(spacing: 24) {
-                // Header
-                VStack(spacing: 8) {
-                    Text("Refund Payment")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                    
-                    Text("Refund \(swap.amountSat) sats to a Bitcoin address")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                .padding(.top)
-                
-                // Refund address input
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Bitcoin Address")
-                        .font(.headline)
-                    
-                    TextField("Enter Bitcoin address...", text: $refundAddress)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .autocapitalization(.none)
-                        .disableAutocorrection(true)
-                    
-                    if !refundAddress.isEmpty && !walletManager.validateBitcoinAddress(refundAddress) {
-                        Text("Invalid Bitcoin address")
-                            .font(.caption)
-                            .foregroundColor(.red)
+            ScrollView {
+                VStack(spacing: 32) {
+                    // Header
+                    VStack(spacing: 12) {
+                        Image(systemName: "arrow.uturn.backward.circle.fill")
+                            .font(.system(size: 60))
+                            .foregroundColor(.orange)
+
+                        Text("Get Your Money Back")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .multilineTextAlignment(.center)
+
+                        Text("Return \(formattedAmount) (\(estimatedUSDValue)) to your Bitcoin wallet")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
                     }
-                }
-                .padding(.horizontal)
-                
-                // Fee selection
-                if let fees = recommendedFees {
-                    FeeSelectionView(
-                        recommendedFees: fees,
-                        selectedFeeRate: $selectedFeeRate,
-                        customFeeRate: $customFeeRate,
-                        swapAmount: swap.amountSat
-                    )
-                }
-                
-                // Error message
-                if let errorMessage = errorMessage {
-                    Text(errorMessage)
-                        .foregroundColor(.red)
+                    .padding(.top)
+
+                    // Simple explanation
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            Image(systemName: "info.circle.fill")
+                                .foregroundColor(.blue)
+                            Text("What happened?")
+                                .font(.headline)
+                        }
+
+                        Text("Your payment didn't go through, but your money is safe. We can send it back to any Bitcoin address you choose.")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(12)
+                    .padding(.horizontal)
+
+                    // Bitcoin address input
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Where should we send your money?")
+                            .font(.headline)
+
+                        Text("Enter your Bitcoin wallet address:")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+
+                        TextField("Paste Bitcoin address here...", text: $refundAddress)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .autocapitalization(.none)
+                            .disableAutocorrection(true)
+                            .font(.system(.body, design: .monospaced))
+
+                        if !refundAddress.isEmpty && !walletManager.validateBitcoinAddress(refundAddress) {
+                            HStack {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                    .foregroundColor(.red)
+                                Text("Please enter a valid Bitcoin address")
+                                    .font(.caption)
+                                    .foregroundColor(.red)
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+
+                    // Simple fee selection
+                    if let fees = recommendedFees {
+                        SimpleFeeSelectionView(
+                            recommendedFees: fees,
+                            selectedFeeRate: $selectedFeeRate,
+                            estimatedCost: estimatedFeeCost
+                        )
+                    }
+
+                    // Error message
+                    if let errorMessage = errorMessage {
+                        HStack {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundColor(.red)
+                            Text(errorMessage)
+                                .font(.subheadline)
+                                .foregroundColor(.red)
+                        }
+                        .padding()
+                        .background(Color.red.opacity(0.1))
+                        .cornerRadius(8)
                         .padding(.horizontal)
-                }
-                
-                Spacer()
-                
-                // Execute button
-                Button(action: executeRefund) {
-                    if isExecuting {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                    } else {
-                        Text("Execute Refund")
                     }
+
+                    // Big action button
+                    Button(action: executeRefund) {
+                        HStack(spacing: 12) {
+                            if isExecuting {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                    .scaleEffect(0.8)
+                                Text("Sending Your Money...")
+                            } else {
+                                Image(systemName: "arrow.uturn.backward.circle.fill")
+                                Text("Get My Money Back")
+                            }
+                        }
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(canExecuteRefund ? Color.orange : Color.gray)
+                        .cornerRadius(12)
+                    }
+                    .disabled(!canExecuteRefund || isExecuting)
+                    .padding(.horizontal)
+                    .padding(.bottom, 32)
                 }
-                .font(.headline)
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(canExecuteRefund ? Color.orange : Color.gray)
-                .cornerRadius(12)
-                .disabled(!canExecuteRefund || isExecuting)
-                .padding(.horizontal)
-                .padding(.bottom)
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -246,20 +316,18 @@ struct RefundExecutionView: View {
                     }
                 }
             }
-            .alert("Refund Successful", isPresented: $showingSuccess) {
-                Button("OK") {
+            .alert("Money Sent Successfully! 🎉", isPresented: $showingSuccess) {
+                Button("Great!") {
                     onRefundCompleted()
                     dismiss()
                 }
             } message: {
-                if let txId = refundTxId {
-                    Text("Refund transaction: \(txId)")
-                }
+                Text("Your money has been sent back to your Bitcoin wallet. It should arrive within the selected timeframe.")
             }
         }
         .onAppear {
             if let fees = recommendedFees {
-                selectedFeeRate = UInt32(fees.halfHourFee)
+                selectedFeeRate = UInt32(fees.halfHourFee) // Default to normal speed
             }
         }
     }
@@ -269,11 +337,11 @@ struct RefundExecutionView: View {
                walletManager.validateBitcoinAddress(refundAddress) &&
                selectedFeeRate > 0
     }
-    
+
     private func executeRefund() {
         isExecuting = true
         errorMessage = nil
-        
+
         Task {
             do {
                 let response = try await walletManager.executeRefund(
@@ -281,7 +349,7 @@ struct RefundExecutionView: View {
                     refundAddress: refundAddress,
                     feeRateSatPerVbyte: selectedFeeRate
                 )
-                
+
                 await MainActor.run {
                     refundTxId = response.refundTxId
                     showingSuccess = true
@@ -289,7 +357,7 @@ struct RefundExecutionView: View {
                 }
             } catch {
                 await MainActor.run {
-                    errorMessage = error.localizedDescription
+                    errorMessage = "Something went wrong. Please try again or contact support if the problem continues."
                     isExecuting = false
                 }
             }
@@ -297,95 +365,193 @@ struct RefundExecutionView: View {
     }
 }
 
-// MARK: - Fee Selection
+// MARK: - Simple Fee Selection
 
-struct FeeSelectionView: View {
+struct SimpleFeeSelectionView: View {
     let recommendedFees: RecommendedFees
     @Binding var selectedFeeRate: UInt32
-    @Binding var customFeeRate: String
-    let swapAmount: UInt64
-    
+    let estimatedCost: String
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Transaction Fee")
-                .font(.headline)
-                .padding(.horizontal)
-            
-            VStack(spacing: 8) {
-                FeeOptionView(
-                    title: "Fast (~10 min)",
+        VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("How fast do you want your money back?")
+                    .font(.headline)
+
+                Text("Faster delivery costs a bit more, just like express shipping.")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+
+            VStack(spacing: 12) {
+                SimpleFeeOptionView(
+                    title: "Fast",
+                    subtitle: "~10 minutes",
                     feeRate: UInt32(recommendedFees.fastestFee),
-                    isSelected: selectedFeeRate == UInt32(recommendedFees.fastestFee)
+                    isSelected: selectedFeeRate == UInt32(recommendedFees.fastestFee),
+                    icon: "hare.fill",
+                    color: .red
                 ) {
                     selectedFeeRate = UInt32(recommendedFees.fastestFee)
                 }
-                
-                FeeOptionView(
-                    title: "Normal (~30 min)",
+
+                SimpleFeeOptionView(
+                    title: "Normal",
+                    subtitle: "~30 minutes",
                     feeRate: UInt32(recommendedFees.halfHourFee),
-                    isSelected: selectedFeeRate == UInt32(recommendedFees.halfHourFee)
+                    isSelected: selectedFeeRate == UInt32(recommendedFees.halfHourFee),
+                    icon: "figure.walk",
+                    color: .blue,
+                    isRecommended: true
                 ) {
                     selectedFeeRate = UInt32(recommendedFees.halfHourFee)
                 }
-                
-                FeeOptionView(
-                    title: "Slow (~1 hour)",
+
+                SimpleFeeOptionView(
+                    title: "Slow",
+                    subtitle: "~1 hour",
                     feeRate: UInt32(recommendedFees.hourFee),
-                    isSelected: selectedFeeRate == UInt32(recommendedFees.hourFee)
+                    isSelected: selectedFeeRate == UInt32(recommendedFees.hourFee),
+                    icon: "tortoise.fill",
+                    color: .green
                 ) {
                     selectedFeeRate = UInt32(recommendedFees.hourFee)
                 }
-                
-                FeeOptionView(
-                    title: "Economy (~24 hours)",
-                    feeRate: UInt32(recommendedFees.economyFee),
-                    isSelected: selectedFeeRate == UInt32(recommendedFees.economyFee)
-                ) {
-                    selectedFeeRate = UInt32(recommendedFees.economyFee)
-                }
             }
-            .padding(.horizontal)
+
+            if selectedFeeRate > 0 {
+                HStack {
+                    Image(systemName: "info.circle.fill")
+                        .foregroundColor(.blue)
+                    Text("Transaction cost: \(estimatedCost)")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.top, 8)
+            }
         }
+        .padding(.horizontal)
     }
 }
 
-struct FeeOptionView: View {
+struct SimpleFeeOptionView: View {
     let title: String
+    let subtitle: String
     let feeRate: UInt32
     let isSelected: Bool
+    let icon: String
+    let color: Color
+    var isRecommended: Bool = false
     let onTap: () -> Void
-    
+
+    private var estimatedCost: String {
+        let estimatedVbytes: UInt32 = 225
+        let feeSats = estimatedVbytes * feeRate
+        let feeBTC = Double(feeSats) / 100_000_000
+        let feeUSD = feeBTC * 45000
+        return String(format: "$%.2f", feeUSD)
+    }
+
     var body: some View {
         Button(action: onTap) {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
+            HStack(spacing: 16) {
+                // Icon
+                Image(systemName: icon)
+                    .font(.title2)
+                    .foregroundColor(color)
+                    .frame(width: 30)
+
+                // Content
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text(title)
+                            .font(.headline)
+                            .foregroundColor(.primary)
+
+                        if isRecommended {
+                            Text("RECOMMENDED")
+                                .font(.caption2)
+                                .fontWeight(.bold)
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.green)
+                                .cornerRadius(4)
+                        }
+                    }
+
+                    Text(subtitle)
                         .font(.subheadline)
-                        .fontWeight(.medium)
-                    
-                    Text("\(feeRate) sat/vB")
+                        .foregroundColor(.secondary)
+
+                    Text("Cost: \(estimatedCost)")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
-                
+
                 Spacer()
-                
+
+                // Selection indicator
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
+                        .font(.title2)
                         .foregroundColor(.blue)
                 }
             }
             .padding()
             .background(
-                RoundedRectangle(cornerRadius: 8)
+                RoundedRectangle(cornerRadius: 12)
                     .fill(isSelected ? Color.blue.opacity(0.1) : Color(.systemGray6))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(isSelected ? Color.blue : Color.clear, lineWidth: 1)
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(isSelected ? Color.blue : Color.clear, lineWidth: 2)
                     )
             )
         }
         .buttonStyle(PlainButtonStyle())
+    }
+}
+
+// MARK: - Empty State
+
+struct EmptyRefundsView: View {
+    var body: some View {
+        VStack(spacing: 24) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 80))
+                .foregroundColor(.green)
+
+            VStack(spacing: 12) {
+                Text("All Good! 🎉")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+
+                Text("You don't have any failed payments to refund.")
+                    .font(.headline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+
+                Text("This means all your payments went through successfully!")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+        }
+        .padding()
+    }
+}
+
+struct RefundLoadingView: View {
+    var body: some View {
+        VStack(spacing: 20) {
+            ProgressView()
+                .scaleEffect(1.5)
+
+            Text("Checking for money to get back...")
+                .font(.headline)
+                .foregroundColor(.secondary)
+        }
+        .padding()
     }
 }
 
