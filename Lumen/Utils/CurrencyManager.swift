@@ -178,6 +178,13 @@ class CurrencyManager: ObservableObject {
         print("✅ Selected currency: \(currency.id)")
     }
 
+    /// Clear the selected currency (used when creating new wallet)
+    func clearSelectedCurrency() {
+        selectedCurrency = nil
+        userDefaults.removeObject(forKey: selectedCurrencyKey)
+        print("🗑️ Cleared selected currency")
+    }
+
     /// Reload currencies from SDK when it becomes available
     /// This replaces fallback currencies with real SDK currencies
     func reloadCurrenciesFromSDK(setDefaultIfNone: Bool = false) async {

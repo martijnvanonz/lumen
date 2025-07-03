@@ -96,6 +96,12 @@ class WalletManager: ObservableObject {
         // Store mnemonic directly in iCloud Keychain (no biometric auth needed)
         try keychainManager.storeOrUpdateMnemonic(mnemonic)
 
+        // Clear any previously selected currency for new wallet
+        await MainActor.run {
+            CurrencyManager.shared.clearSelectedCurrency()
+        }
+
+        print("✅ Generated secure BIP39 mnemonic with \(mnemonic.split(separator: " ").count * 11) bits of entropy")
         return mnemonic
     }
     
@@ -405,6 +411,9 @@ class WalletManager: ObservableObject {
         // Clear all UserDefaults state
         hasWallet = false
         isLoggedIn = false
+
+        // Clear selected currency
+        CurrencyManager.shared.clearSelectedCurrency()
 
         print("✅ Wallet permanently deleted from keychain")
     }
