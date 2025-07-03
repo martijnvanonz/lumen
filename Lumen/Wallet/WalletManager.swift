@@ -70,9 +70,9 @@ class WalletManager: ObservableObject {
             hasWallet = true
             isLoggedIn = true
 
-            // Load currencies and start rate updates now that SDK is available
+            // Load currencies but don't auto-select default during onboarding
             Task {
-                await CurrencyManager.shared.reloadCurrenciesFromSDK()
+                await CurrencyManager.shared.reloadCurrenciesFromSDK(setDefaultIfNone: false)
                 await CurrencyManager.shared.fetchCurrentRates()
                 CurrencyManager.shared.startRateUpdates()
             }

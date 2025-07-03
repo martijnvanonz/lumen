@@ -35,6 +35,9 @@ struct ContentView: View {
         .onReceive(NotificationCenter.default.publisher(for: .walletLoggedOut)) { _ in
             handleWalletLogout()
         }
+        .onReceive(NotificationCenter.default.publisher(for: .onboardingCompleted)) { _ in
+            handleOnboardingCompleted()
+        }
     }
 
     private func checkWalletStatus() {
@@ -62,6 +65,10 @@ struct ContentView: View {
 
     private func handleWalletLogout() {
         showOnboarding = true
+    }
+
+    private func handleOnboardingCompleted() {
+        showOnboarding = false
     }
 }
 

@@ -29,7 +29,7 @@ class CurrencyManager: ObservableObject {
     // MARK: - Public Methods
     
     /// Load available currencies from Breez SDK
-    func loadAvailableCurrencies() async {
+    func loadAvailableCurrencies(setDefaultIfNone: Bool = false) async {
         // Check if we already have currencies loaded
         if !availableCurrencies.isEmpty {
             return
@@ -42,7 +42,7 @@ class CurrencyManager: ObservableObject {
         // Try to get SDK, but don't fail if it's not available yet
         guard let sdk = WalletManager.shared.sdk else {
             print("⚠️ SDK not available for loading currencies, will load fallback currencies")
-            await loadFallbackCurrencies()
+            await loadFallbackCurrencies(setDefaultIfNone: setDefaultIfNone)
             return
         }
 
@@ -53,8 +53,8 @@ class CurrencyManager: ObservableObject {
                 self.availableCurrencies = currencies.sorted { $0.id < $1.id }
                 self.isLoadingCurrencies = false
 
-                // Set default currency if none selected
-                if self.selectedCurrency == nil {
+                // Only set default currency if explicitly requested
+                if setDefaultIfNone && self.selectedCurrency == nil {
                     self.setDefaultCurrency()
                 }
             }
@@ -66,20 +66,20 @@ class CurrencyManager: ObservableObject {
             }
             print("❌ Failed to load fiat currencies from SDK: \(error)")
             // Load fallback currencies as backup
-            await loadFallbackCurrencies()
+            await loadFallbackCurrencies(setDefaultIfNone: setDefaultIfNone)
         }
     }
 
     /// Load fallback currencies when SDK is not available
-    private func loadFallbackCurrencies() async {
+    private func loadFallbackCurrencies(setDefaultIfNone: Bool = false) async {
         let fallbackCurrencies = createFallbackCurrencies()
 
         await MainActor.run {
             self.availableCurrencies = fallbackCurrencies
             self.isLoadingCurrencies = false
 
-            // Set default currency if none selected
-            if self.selectedCurrency == nil {
+            // Only set default currency if explicitly requested
+            if setDefaultIfNone && self.selectedCurrency == nil {
                 self.setDefaultCurrency()
             }
         }
@@ -180,7 +180,7 @@ class CurrencyManager: ObservableObject {
 
     /// Reload currencies from SDK when it becomes available
     /// This replaces fallback currencies with real SDK currencies
-    func reloadCurrenciesFromSDK() async {
+    func reloadCurrenciesFromSDK(setDefaultIfNone: Bool = false) async {
         guard let sdk = WalletManager.shared.sdk else {
             print("⚠️ SDK still not available for reloading currencies")
             return
@@ -202,8 +202,8 @@ class CurrencyManager: ObservableObject {
                 if let selectedId = selectedCurrencyId,
                    let restoredCurrency = currencies.first(where: { $0.id == selectedId }) {
                     self.selectedCurrency = restoredCurrency
-                } else if self.selectedCurrency == nil {
-                    // Set default if no currency was selected
+                } else if setDefaultIfNone && self.selectedCurrency == nil {
+                    // Only set default if explicitly requested
                     self.setDefaultCurrency()
                 }
             }

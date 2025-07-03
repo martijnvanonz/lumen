@@ -499,24 +499,40 @@ struct CompletedView: View {
     var body: some View {
         VStack(spacing: 40) {
             Spacer()
-            
+
             VStack(spacing: 20) {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 80))
                     .foregroundColor(.green)
-                
+
                 VStack(spacing: 8) {
                     Text("Welcome to Lumen!")
                         .font(.largeTitle)
                         .fontWeight(.bold)
-                    
+
                     Text("Your Lightning wallet is ready to use")
                         .font(.title3)
                         .foregroundColor(.secondary)
                 }
             }
-            
+
             Spacer()
+
+            // Continue Button to finish onboarding
+            Button(action: {
+                // Post notification to signal onboarding completion
+                NotificationCenter.default.post(name: .onboardingCompleted, object: nil)
+            }) {
+                Text("Start Using Lumen")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.blue)
+                    .cornerRadius(12)
+            }
+            .padding(.horizontal)
+            .padding(.bottom, 40)
         }
     }
 }
@@ -678,7 +694,7 @@ struct CurrencySelectionView: View {
         }
         .onAppear {
             Task {
-                await currencyManager.loadAvailableCurrencies()
+                await currencyManager.loadAvailableCurrencies(setDefaultIfNone: false)
             }
         }
     }

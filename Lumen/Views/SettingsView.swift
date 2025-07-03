@@ -302,7 +302,7 @@ struct CurrencySelectionSettingsView: View {
         }
         .onAppear {
             Task {
-                await currencyManager.loadAvailableCurrencies()
+                await currencyManager.loadAvailableCurrencies(setDefaultIfNone: true)
             }
         }
     }
