@@ -561,42 +561,7 @@ struct RefundLoadingView: View {
     }
 }
 
-// MARK: - Empty and Loading States
 
-struct EmptyRefundsView: View {
-    var body: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 48))
-                .foregroundColor(.green)
-            
-            Text("No Refunds Needed")
-                .font(.title2)
-                .fontWeight(.semibold)
-            
-            Text("All your Bitcoin payments have been processed successfully. Failed payments that need refunds will appear here.")
-                .font(.body)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-}
-
-struct RefundLoadingView: View {
-    var body: some View {
-        VStack(spacing: 16) {
-            ProgressView()
-                .scaleEffect(1.2)
-            
-            Text("Loading refunds...")
-                .font(.headline)
-                .foregroundColor(.secondary)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-}
 
 #Preview {
     RefundView()
