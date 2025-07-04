@@ -6,7 +6,6 @@ struct WalletView: View {
     @State private var showingSendView = false
     @State private var showingReceiveView = false
     @State private var showingRefundView = false
-    @State private var showingWalletInfo = false
     @State private var showingSettings = false
     @State private var refundableSwapsCount = 0
 
@@ -18,19 +17,6 @@ struct WalletView: View {
                         // Balance Card with Info Button
                         VStack(spacing: 12) {
                             BalanceCard(balance: walletManager.balance)
-
-                            Button(action: {
-                                showingWalletInfo = true
-                            }) {
-                                HStack(spacing: 6) {
-                                    Image(systemName: "info.circle")
-                                        .font(.caption)
-
-                                    Text("Wallet Details")
-                                        .font(.caption)
-                                }
-                                .foregroundColor(.blue)
-                            }
                         }
 
                         // Action Buttons
@@ -151,9 +137,6 @@ struct WalletView: View {
         }
         .sheet(isPresented: $showingRefundView) {
             RefundView()
-        }
-        .sheet(isPresented: $showingWalletInfo) {
-            WalletInfoView()
         }
         .sheet(isPresented: $showingSettings) {
             SettingsView()

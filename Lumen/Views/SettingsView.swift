@@ -9,6 +9,7 @@ struct SettingsView: View {
     @State private var showingLogoutConfirmation = false
     @State private var showingDeleteWalletConfirmation = false
     @State private var showingRefundView = false
+    @State private var showingWalletInfo = false
     @State private var isLoggingOut = false
     @State private var isDeletingWallet = false
     
@@ -65,6 +66,35 @@ struct SettingsView: View {
                                     .foregroundColor(.primary)
 
                                 Text("Recover funds from failed payments")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+
+                            Spacer()
+
+                            Image(systemName: "chevron.right")
+                                .foregroundColor(.secondary)
+                                .font(.caption)
+                        }
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+
+                // Wallet Details Section
+                Section("Wallet Details") {
+                    Button(action: {
+                        showingWalletInfo = true
+                    }) {
+                        HStack {
+                            Image(systemName: "info.circle")
+                                .foregroundColor(.blue)
+                                .frame(width: 24)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Technical Information")
+                                    .foregroundColor(.primary)
+
+                                Text("View wallet status, limits, and network info")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
@@ -193,6 +223,9 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showingRefundView) {
             RefundView()
+        }
+        .sheet(isPresented: $showingWalletInfo) {
+            WalletInfoView()
         }
         .alert("Logout Wallet", isPresented: $showingLogoutConfirmation) {
             Button("Cancel", role: .cancel) { }
