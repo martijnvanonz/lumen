@@ -90,9 +90,6 @@ struct WalletDetailsView: View {
             
             // Limits Information
             LimitsInfoCard(walletInfo: walletInfo)
-
-            // Debug Section (Development only)
-            DebugActionsCard()
         }
     }
 }
@@ -232,24 +229,150 @@ struct NetworkInfoCard: View {
 
 struct LimitsInfoCard: View {
     let walletInfo: GetInfoResponse
-    
+    @StateObject private var walletManager = WalletManager.shared
+    @State private var lightningLimits: LightningPaymentLimitsResponse?
+    @State private var onchainLimits: OnchainPaymentLimitsResponse?
+    @State private var isLoadingLimits = false
+    @State private var limitsError: String?
+
     var body: some View {
         InfoCard(
             title: "Payment Limits",
             icon: "gauge",
             iconColor: .red
         ) {
-            VStack(alignment: .leading, spacing: 8) {
-                InfoRow(
-                    label: "Status",
-                    value: "Limits available via API"
-                )
+            VStack(alignment: .leading, spacing: 12) {
+                if isLoadingLimits {
+                    HStack {
+                        ProgressView()
+                            .scaleEffect(0.8)
+                        Text("Loading limits...")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                } else if let error = limitsError {
+                    VStack(alignment: .leading, spacing: 8) {
+                        InfoRow(
+                            label: "Status",
+                            value: "Error loading limits",
+                            valueColor: .red
+                        )
 
-                // TODO: Implement limits fetching using fetchLightningLimits() and fetchOnchainLimits()
-                Text("Payment limits can be fetched using dedicated API calls")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                        Text(error)
+                            .font(.caption)
+                            .foregroundColor(.red)
+
+                        Button("Retry") {
+                            Task { await loadLimits() }
+                        }
+                        .font(.caption)
+                        .foregroundColor(.blue)
+                    }
+                } else {
+                    // Lightning Limits
+                    if let lightningLimits = lightningLimits {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("⚡ Lightning")
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.blue)
+
+                            InfoRow(
+                                label: "Send Range",
+                                value: "\(lightningLimits.send.minSat) - \(formatSats(lightningLimits.send.maxSat)) sats"
+                            )
+
+                            InfoRow(
+                                label: "Receive Range",
+                                value: "\(lightningLimits.receive.minSat) - \(formatSats(lightningLimits.receive.maxSat)) sats"
+                            )
+                        }
+                    }
+
+                    // Onchain Limits
+                    if let onchainLimits = onchainLimits {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("₿ Bitcoin")
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.orange)
+
+                            InfoRow(
+                                label: "Send Range",
+                                value: "\(onchainLimits.send.minSat) - \(formatSats(onchainLimits.send.maxSat)) sats"
+                            )
+
+                            InfoRow(
+                                label: "Receive Range",
+                                value: "\(onchainLimits.receive.minSat) - \(formatSats(onchainLimits.receive.maxSat)) sats"
+                            )
+                        }
+                    }
+
+                    if lightningLimits == nil && onchainLimits == nil {
+                        InfoRow(
+                            label: "Status",
+                            value: "No limits loaded",
+                            valueColor: .secondary
+                        )
+                    }
+                }
             }
+        }
+        .onAppear {
+            Task { await loadLimits() }
+        }
+    }
+
+    private func loadLimits() async {
+        isLoadingLimits = true
+        limitsError = nil
+
+        // Load Lightning limits
+        do {
+            let limits = try await walletManager.fetchLightningLimits()
+            await MainActor.run {
+                lightningLimits = limits
+            }
+        } catch {
+            await MainActor.run {
+                limitsError = "Lightning limits: \(error.localizedDescription)"
+            }
+        }
+
+        // Load Onchain limits
+        do {
+            let limits = try await walletManager.fetchOnchainLimits()
+            await MainActor.run {
+                onchainLimits = limits
+            }
+        } catch {
+            await MainActor.run {
+                if limitsError == nil {
+                    limitsError = "Onchain limits: \(error.localizedDescription)"
+                } else {
+                    limitsError = "Both Lightning and Onchain limits failed to load"
+                }
+            }
+        }
+
+        await MainActor.run {
+            isLoadingLimits = false
+        }
+    }
+
+    private func formatSats(_ sats: UInt64) -> String {
+        if sats >= 100_000_000 {
+            let btc = Double(sats) / 100_000_000
+            return String(format: "%.2f BTC", btc)
+        } else if sats >= 1_000_000 {
+            let millions = Double(sats) / 1_000_000
+            return String(format: "%.1fM", millions)
+        } else if sats >= 1_000 {
+            let thousands = Double(sats) / 1_000
+            return String(format: "%.1fK", thousands)
+        } else {
+            return "\(sats)"
         }
     }
 }
@@ -372,71 +495,7 @@ struct InfoRow: View {
     }
 }
 
-// MARK: - Debug Actions Card
 
-struct DebugActionsCard: View {
-    @StateObject private var walletManager = WalletManager.shared
-    @State private var showingResetConfirmation = false
-    @State private var isResetting = false
-
-    var body: some View {
-        InfoCard(
-            title: "Debug Actions",
-            icon: "wrench.and.screwdriver",
-            iconColor: .orange
-        ) {
-            VStack(alignment: .leading, spacing: 12) {
-                Text("⚠️ Development Tools")
-                    .font(.caption)
-                    .foregroundColor(.orange)
-                    .fontWeight(.semibold)
-
-                Button(action: {
-                    showingResetConfirmation = true
-                }) {
-                    HStack {
-                        Image(systemName: "trash.circle")
-                        Text("Reset Wallet")
-                        Spacer()
-                        if isResetting {
-                            ProgressView()
-                                .scaleEffect(0.8)
-                        }
-                    }
-                    .foregroundColor(.red)
-                }
-                .disabled(isResetting)
-                .alert("Reset Wallet", isPresented: $showingResetConfirmation) {
-                    Button("Cancel", role: .cancel) { }
-                    Button("Reset", role: .destructive) {
-                        Task {
-                            await resetWallet()
-                        }
-                    }
-                } message: {
-                    Text("This will delete your wallet data and mnemonic. You'll need to create a new wallet. This action cannot be undone.")
-                }
-
-                Text("Use this to recover from corrupted wallet state or invalid mnemonic errors.")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-            }
-        }
-    }
-
-    private func resetWallet() async {
-        isResetting = true
-
-        do {
-            try await walletManager.deleteWalletFromKeychain()
-            print("✅ Wallet reset successful")
-        } catch {
-            print("❌ Wallet reset failed: \(error)")
-        }
-
-        isResetting = false
-    }
-}
 
 // MARK: - Loading and Error States
 

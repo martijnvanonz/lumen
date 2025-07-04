@@ -604,6 +604,44 @@ class WalletManager: ObservableObject {
         }
     }
 
+    // MARK: - Payment Limits
+
+    /// Fetches Lightning payment limits
+    func fetchLightningLimits() async throws -> LightningPaymentLimitsResponse {
+        guard let sdk = sdk else {
+            throw WalletError.notConnected
+        }
+
+        logInfo("Fetching Lightning payment limits...")
+
+        do {
+            let limits = try sdk.fetchLightningLimits()
+            logInfo("Lightning limits - Send: \(limits.send.minSat)-\(limits.send.maxSat) sats, Receive: \(limits.receive.minSat)-\(limits.receive.maxSat) sats")
+            return limits
+        } catch {
+            logError("Failed to fetch Lightning limits: \(error)")
+            throw error
+        }
+    }
+
+    /// Fetches onchain payment limits
+    func fetchOnchainLimits() async throws -> OnchainPaymentLimitsResponse {
+        guard let sdk = sdk else {
+            throw WalletError.notConnected
+        }
+
+        logInfo("Fetching onchain payment limits...")
+
+        do {
+            let limits = try sdk.fetchOnchainLimits()
+            logInfo("Onchain limits - Send: \(limits.send.minSat)-\(limits.send.maxSat) sats, Receive: \(limits.receive.minSat)-\(limits.receive.maxSat) sats")
+            return limits
+        } catch {
+            logError("Failed to fetch onchain limits: \(error)")
+            throw error
+        }
+    }
+
     /// Executes a refund for a failed swap
     func executeRefund(
         swapAddress: String,
