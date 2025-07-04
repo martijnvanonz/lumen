@@ -515,31 +515,19 @@ struct CurrencySelectionView: View {
                     ProgressView("Loading currencies...")
                         .frame(height: 200)
                 } else {
-                    List(filteredCurrencies, id: \.id) { currency in
-                        Button(action: {
-                            currencyManager.setSelectedCurrency(currency)
-                        }) {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(currency.id.uppercased())
-                                        .font(.headline)
-                                        .foregroundColor(.primary)
-
-                                    Text(currency.info.name)
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-
-                                Spacer()
-
-                                if currencyManager.selectedCurrency?.id == currency.id {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundColor(.yellow)
-                                        .font(.title2)
-                                }
+                    ScrollView {
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 3), spacing: 12) {
+                            ForEach(filteredCurrencies, id: \.id) { currency in
+                                CurrencyGridItem(
+                                    currency: currency,
+                                    isSelected: currencyManager.selectedCurrency?.id == currency.id,
+                                    onTap: {
+                                        currencyManager.setSelectedCurrency(currency)
+                                    }
+                                )
                             }
                         }
-                        .buttonStyle(PlainButtonStyle())
+                        .padding(.horizontal)
                     }
                     .frame(maxHeight: 300)
                 }
@@ -574,48 +562,7 @@ struct CurrencySelectionView: View {
     }
 }
 
-// MARK: - Currency Row View
 
-struct CurrencyRowView: View {
-    let currency: FiatCurrency
-    let isSelected: Bool
-    let onTap: () -> Void
-
-    var body: some View {
-        Button(action: onTap) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(currency.id.uppercased())
-                        .font(.headline)
-                        .foregroundColor(.primary)
-
-                    Text(currency.info.name)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-
-                Spacer()
-
-                if isSelected {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.yellow)
-                        .font(.title2)
-                }
-            }
-            .padding()
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(isSelected ? Color.yellow.opacity(0.1) : Color.clear)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(isSelected ? Color.yellow : Color.gray.opacity(0.3), lineWidth: 1)
-                    )
-            )
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-    }
-}
 
 #Preview {
     OnboardingView()
