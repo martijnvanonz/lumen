@@ -170,7 +170,6 @@ struct WalletView: View {
 
 struct BalanceCard: View {
     let balance: UInt64
-    @StateObject private var currencyManager = CurrencyManager.shared
 
     var body: some View {
         VStack(spacing: 16) {
@@ -179,19 +178,7 @@ struct BalanceCard: View {
                     .font(.headline)
                     .foregroundColor(.secondary)
                 
-                Text("\(balance) sats")
-                    .font(.system(size: 36, weight: .bold, design: .rounded))
-                    .foregroundColor(.primary)
-                
-                if let fiatValue = formattedFiatValue {
-                    Text("≈ \(fiatValue)")
-                        .font(.title3)
-                        .foregroundColor(.secondary)
-                } else if currencyManager.isLoadingRates {
-                    Text("Loading rate...")
-                        .font(.title3)
-                        .foregroundColor(.secondary)
-                }
+                SatsAmountView.balance(balance)
             }
             
             // Lightning Network indicator
@@ -213,16 +200,7 @@ struct BalanceCard: View {
         )
         .padding(.horizontal)
     }
-    
-    private var formattedFiatValue: String? {
-        guard let fiatAmount = currencyManager.convertSatsToFiat(balance),
-              fiatAmount.isFinite && !fiatAmount.isNaN else {
-            return nil
-        }
 
-        let formatted = currencyManager.formatFiatAmount(fiatAmount)
-        return formatted.isEmpty ? nil : formatted
-    }
 }
 
 // MARK: - Action Button

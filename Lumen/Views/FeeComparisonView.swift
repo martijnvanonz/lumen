@@ -118,24 +118,28 @@ struct FeeComparisonRow: View {
                     }
                 }
                 
-                Text("\(fee) sats (\(feePercentage)%)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                HStack(spacing: 4) {
+                    SatsAmountView(
+                        amount: fee,
+                        displayMode: .satsOnly,
+                        size: .compact,
+                        style: .secondary
+                    )
+                    Text("(\(feePercentage)%)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
             
             Spacer()
             
             // Fee amount
-            VStack(alignment: .trailing, spacing: 2) {
-                Text("\(fee)")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundColor(color)
-                
-                Text("sats")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-            }
+            SatsAmountView(
+                amount: fee,
+                displayMode: .satsOnly,
+                size: .regular,
+                style: .primary
+            )
         }
         .padding(.vertical, 4)
         .background(
