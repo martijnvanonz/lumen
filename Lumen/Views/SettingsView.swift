@@ -355,8 +355,11 @@ struct CurrencySelectionSettingsView: View {
             }
         }
         .onAppear {
-            Task {
-                await currencyManager.loadAvailableCurrencies(setDefaultIfNone: true)
+            // Only load if we don't have currencies yet
+            if currencyManager.availableCurrencies.isEmpty {
+                Task {
+                    await currencyManager.loadAvailableCurrencies(setDefaultIfNone: true)
+                }
             }
         }
     }

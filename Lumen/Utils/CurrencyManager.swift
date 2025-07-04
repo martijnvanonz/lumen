@@ -13,10 +13,13 @@ class CurrencyManager: ObservableObject {
     @Published var isLoadingCurrencies = false
     
     // MARK: - Private Properties
-    
+
     private let userDefaults = UserDefaults.standard
     private let selectedCurrencyKey = "selectedFiatCurrency"
     private var rateUpdateTimer: Timer?
+    private var currencyLoadingTask: Task<Void, Never>?
+    private var lastCurrencyLoadTime: Date?
+    private let currencyCacheTimeout: TimeInterval = 300 // 5 minutes
     
     // MARK: - Singleton
     
@@ -25,16 +28,38 @@ class CurrencyManager: ObservableObject {
     private init() {
         loadSelectedCurrency()
     }
+
+    deinit {
+        currencyLoadingTask?.cancel()
+        stopRateUpdates()
+    }
     
     // MARK: - Public Methods
     
-    /// Load available currencies from Breez SDK
-    func loadAvailableCurrencies(setDefaultIfNone: Bool = false) async {
-        // Check if we already have currencies loaded
-        if !availableCurrencies.isEmpty {
-            return
+    /// Load available currencies from Breez SDK with improved caching
+    func loadAvailableCurrencies(setDefaultIfNone: Bool = false, forceReload: Bool = false) async {
+        // Check if we already have currencies loaded and they're still fresh
+        if !forceReload && !availableCurrencies.isEmpty {
+            if let lastLoad = lastCurrencyLoadTime,
+               Date().timeIntervalSince(lastLoad) < currencyCacheTimeout {
+                print("💾 Using cached currencies (loaded \(Int(Date().timeIntervalSince(lastLoad)))s ago)")
+                return
+            }
         }
 
+        // Cancel any existing loading task
+        currencyLoadingTask?.cancel()
+
+        // Create new loading task
+        currencyLoadingTask = Task {
+            await performCurrencyLoad(setDefaultIfNone: setDefaultIfNone)
+        }
+
+        await currencyLoadingTask?.value
+    }
+
+    /// Perform the actual currency loading
+    private func performCurrencyLoad(setDefaultIfNone: Bool) async {
         await MainActor.run {
             isLoadingCurrencies = true
         }
@@ -52,6 +77,7 @@ class CurrencyManager: ObservableObject {
             await MainActor.run {
                 self.availableCurrencies = currencies.sorted { $0.id < $1.id }
                 self.isLoadingCurrencies = false
+                self.lastCurrencyLoadTime = Date()
 
                 // Only set default currency if explicitly requested
                 if setDefaultIfNone && self.selectedCurrency == nil {
@@ -77,6 +103,7 @@ class CurrencyManager: ObservableObject {
         await MainActor.run {
             self.availableCurrencies = fallbackCurrencies
             self.isLoadingCurrencies = false
+            self.lastCurrencyLoadTime = Date()
 
             // Only set default currency if explicitly requested
             if setDefaultIfNone && self.selectedCurrency == nil {
@@ -198,6 +225,9 @@ class CurrencyManager: ObservableObject {
 
         print("🔄 Reloading currencies from SDK...")
 
+        // Cancel any existing loading task
+        currencyLoadingTask?.cancel()
+
         do {
             let currencies = try sdk.listFiatCurrencies()
 
@@ -207,6 +237,7 @@ class CurrencyManager: ObservableObject {
 
                 // Update available currencies
                 self.availableCurrencies = currencies.sorted { $0.id < $1.id }
+                self.lastCurrencyLoadTime = Date()
 
                 // Restore selected currency if it exists in the new list
                 if let selectedId = selectedCurrencyId,
@@ -222,6 +253,18 @@ class CurrencyManager: ObservableObject {
         } catch {
             print("❌ Failed to reload currencies from SDK: \(error)")
         }
+    }
+
+    /// Force refresh currencies (ignores cache)
+    func refreshCurrencies() async {
+        await loadAvailableCurrencies(setDefaultIfNone: false, forceReload: true)
+    }
+
+    /// Clear currency cache
+    func clearCurrencyCache() {
+        lastCurrencyLoadTime = nil
+        currencyLoadingTask?.cancel()
+        currencyLoadingTask = nil
     }
     
     /// Get the current BTC rate for the selected currency
