@@ -173,9 +173,12 @@ class CurrencyManager: ObservableObject {
     
     /// Set the selected currency and save to UserDefaults
     func setSelectedCurrency(_ currency: FiatCurrency) {
-        selectedCurrency = currency
-        saveCurrencyToUserDefaults(currency)
-        print("✅ Selected currency: \(currency.id)")
+        // Ensure UI updates happen on main thread
+        DispatchQueue.main.async {
+            self.selectedCurrency = currency
+            self.saveCurrencyToUserDefaults(currency)
+            print("✅ Selected currency: \(currency.id)")
+        }
     }
 
     /// Clear the selected currency (used when creating new wallet)

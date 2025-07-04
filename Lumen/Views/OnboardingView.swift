@@ -678,7 +678,7 @@ struct CurrencySelectionView: View {
                                 }
                             }
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(PlainButtonStyle())
                     }
                     .frame(maxHeight: 300)
                 }
