@@ -79,7 +79,10 @@ class CurrencyManager: ObservableObject {
                 self.isLoadingCurrencies = false
                 self.lastCurrencyLoadTime = Date()
 
-                // Only set default currency if explicitly requested
+                // Preserve selected currency if it exists in new list
+                self.preserveSelectedCurrency()
+
+                // Only set default currency if explicitly requested and none selected
                 if setDefaultIfNone && self.selectedCurrency == nil {
                     self.setDefaultCurrency()
                 }
@@ -105,7 +108,10 @@ class CurrencyManager: ObservableObject {
             self.isLoadingCurrencies = false
             self.lastCurrencyLoadTime = Date()
 
-            // Only set default currency if explicitly requested
+            // Preserve selected currency if it exists in fallback list
+            self.preserveSelectedCurrency()
+
+            // Only set default currency if explicitly requested and none selected
             if setDefaultIfNone && self.selectedCurrency == nil {
                 self.setDefaultCurrency()
             }
@@ -316,16 +322,39 @@ class CurrencyManager: ObservableObject {
     
     private func loadSelectedCurrency() {
         guard let currencyId = userDefaults.string(forKey: selectedCurrencyKey) else {
+            print("💾 No saved currency found")
             return
         }
 
-        // We'll set the selected currency after loading available currencies
-        // by matching the stored currency ID
+        print("💾 Loading saved currency: \(currencyId)")
+
+        // Create a temporary currency object to show immediately in UI
+        // This will be replaced with the full currency object once SDK loads
+        let tempCurrency = FiatCurrency(
+            id: currencyId,
+            info: CurrencyInfo(
+                name: getCurrencyDisplayName(for: currencyId),
+                fractionSize: 2,
+                spacing: nil,
+                symbol: nil,
+                uniqSymbol: nil,
+                localizedName: [],
+                localeOverrides: []
+            )
+        )
+
+        // Set immediately for UI
+        selectedCurrency = tempCurrency
+        print("✅ Restored currency from storage: \(currencyId)")
+
+        // Load full currencies in background and update if needed
         Task {
             await loadAvailableCurrencies()
             await MainActor.run {
-                if let currency = self.availableCurrencies.first(where: { $0.id == currencyId }) {
-                    self.selectedCurrency = currency
+                // Replace with full currency object if available
+                if let fullCurrency = self.availableCurrencies.first(where: { $0.id == currencyId }) {
+                    self.selectedCurrency = fullCurrency
+                    print("🔄 Updated to full currency object: \(currencyId)")
                 }
             }
         }
@@ -333,6 +362,57 @@ class CurrencyManager: ObservableObject {
 
     private func saveCurrencyToUserDefaults(_ currency: FiatCurrency) {
         userDefaults.set(currency.id, forKey: selectedCurrencyKey)
+    }
+
+    /// Get display name for currency ID (used for temporary currency objects)
+    private func getCurrencyDisplayName(for currencyId: String) -> String {
+        let commonNames: [String: String] = [
+            "usd": "US Dollar",
+            "eur": "Euro",
+            "gbp": "British Pound",
+            "jpy": "Japanese Yen",
+            "cad": "Canadian Dollar",
+            "aud": "Australian Dollar",
+            "chf": "Swiss Franc",
+            "cny": "Chinese Yuan",
+            "sek": "Swedish Krona",
+            "nok": "Norwegian Krone",
+            "dkk": "Danish Krone",
+            "pln": "Polish Zloty",
+            "czk": "Czech Koruna",
+            "huf": "Hungarian Forint",
+            "rub": "Russian Ruble",
+            "brl": "Brazilian Real",
+            "mxn": "Mexican Peso",
+            "inr": "Indian Rupee",
+            "krw": "South Korean Won",
+            "sgd": "Singapore Dollar",
+            "hkd": "Hong Kong Dollar",
+            "nzd": "New Zealand Dollar",
+            "zar": "South African Rand",
+            "try": "Turkish Lira",
+            "ils": "Israeli Shekel",
+            "aed": "UAE Dirham",
+            "sar": "Saudi Riyal",
+            "thb": "Thai Baht",
+            "myr": "Malaysian Ringgit",
+            "php": "Philippine Peso"
+        ]
+
+        return commonNames[currencyId.lowercased()] ?? currencyId.uppercased()
+    }
+
+    /// Preserve the selected currency when loading new currency lists
+    private func preserveSelectedCurrency() {
+        guard let currentSelected = selectedCurrency else { return }
+
+        // Try to find the same currency in the new list
+        if let matchingCurrency = availableCurrencies.first(where: { $0.id == currentSelected.id }) {
+            selectedCurrency = matchingCurrency
+            print("🔄 Preserved selected currency: \(currentSelected.id)")
+        } else {
+            print("⚠️ Selected currency \(currentSelected.id) not found in new list")
+        }
     }
     
     private func setDefaultCurrency() {
