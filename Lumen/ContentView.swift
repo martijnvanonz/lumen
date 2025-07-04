@@ -3,12 +3,16 @@ import SwiftUI
 struct ContentView: View {
     @StateObject private var walletManager = WalletManager.shared
     @StateObject private var networkMonitor = NetworkMonitor.shared
+    @StateObject private var lifecycleManager = AppLifecycleManager.shared
     @State private var showOnboarding = true
 
     var body: some View {
         ZStack {
             Group {
-                if showOnboarding {
+                if lifecycleManager.requiresAuthentication && !showOnboarding {
+                    // Show authentication screen when required
+                    AuthenticationRequiredView()
+                } else if showOnboarding {
                     OnboardingView()
                 } else {
                     WalletView()
@@ -33,6 +37,11 @@ struct ContentView: View {
         .onReceive(NotificationCenter.default.publisher(for: .onboardingCompleted)) { _ in
             handleOnboardingCompleted()
         }
+        .onChange(of: lifecycleManager.requiresAuthentication) { _, requiresAuth in
+            if !requiresAuth && walletManager.isConnected {
+                showOnboarding = false
+            }
+        }
     }
 
     private func checkWalletStatus() {
@@ -42,12 +51,23 @@ struct ContentView: View {
                 // Already connected, go to main wallet view
                 showOnboarding = false
             } else {
-                // User is logged in but not connected, initialize wallet automatically
+                // User is logged in but not connected, try cache first then full initialization
                 Task {
-                    await walletManager.initializeWallet()
-                    await MainActor.run {
-                        if walletManager.isConnected {
+                    // First try quick initialization from cache
+                    let cacheSuccess = await walletManager.initializeWalletFromCache()
+
+                    if cacheSuccess {
+                        // Cache initialization successful
+                        await MainActor.run {
                             showOnboarding = false
+                        }
+                    } else {
+                        // Cache failed, do full initialization with biometric auth
+                        await walletManager.initializeWallet()
+                        await MainActor.run {
+                            if walletManager.isConnected {
+                                showOnboarding = false
+                            }
                         }
                     }
                 }

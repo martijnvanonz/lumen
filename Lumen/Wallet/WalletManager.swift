@@ -87,6 +87,49 @@ class WalletManager: ObservableObject {
             errorHandler.handle(error, context: "Wallet initialization")
         }
     }
+
+    /// Quick initialization using cached seed (no biometric auth required)
+    func initializeWalletFromCache() async -> Bool {
+        // Check if we have a valid cached seed
+        guard SecureSeedCache.shared.isCacheValid() else {
+            return false
+        }
+
+        do {
+            let cachedSeed = try SecureSeedCache.shared.retrieveSeed()
+
+            await MainActor.run {
+                isLoading = true
+                errorMessage = nil
+            }
+
+            // Connect to Breez SDK with cached mnemonic
+            try await connectToBreezSDK(mnemonic: cachedSeed)
+
+            await MainActor.run {
+                isConnected = true
+                isLoading = false
+            }
+
+            // Update state flags
+            hasWallet = true
+            isLoggedIn = true
+
+            // Load currencies
+            Task {
+                await CurrencyManager.shared.reloadCurrenciesFromSDK(setDefaultIfNone: false)
+                await CurrencyManager.shared.fetchCurrentRates()
+                CurrencyManager.shared.startRateUpdates()
+            }
+
+            print("✅ Wallet initialized from secure cache")
+            return true
+
+        } catch {
+            print("❌ Failed to initialize from cache: \(error)")
+            return false
+        }
+    }
     
     /// Generates a new mnemonic and stores it securely in iCloud Keychain
     private func generateAndStoreMnemonic() async throws -> String {
