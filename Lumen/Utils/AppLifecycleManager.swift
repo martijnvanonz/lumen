@@ -4,17 +4,22 @@ import SwiftUI
 
 /// Manages app lifecycle events and coordinates security measures
 class AppLifecycleManager: ObservableObject {
-    
+
     // MARK: - Published Properties
-    
+
     @Published var isAppActive = true
     @Published var requiresAuthentication = false
-    
+
     // MARK: - Private Properties
-    
+
     private var backgroundTime: Date?
     private let backgroundTimeout: TimeInterval = 300 // 5 minutes
     private let walletManager = WalletManager.shared
+
+    // Authentication state tracking
+    private var isAuthenticating = false
+    private var lastSuccessfulAuth: Date?
+    private let authGracePeriod: TimeInterval = 10 // 10 seconds grace period after successful auth
     
     // MARK: - Singleton
     
@@ -33,6 +38,13 @@ class AppLifecycleManager: ObservableObject {
     /// Handles app returning to foreground
     func handleAppDidBecomeActive() async {
         isAppActive = true
+        print("🔄 AppLifecycleManager: handleAppDidBecomeActive - isAuthenticating: \(isAuthenticating), requiresAuth: \(requiresAuthentication), isConnected: \(walletManager.isConnected)")
+
+        // Check if we should skip authentication logic entirely
+        if shouldSkipAuthentication() {
+            backgroundTime = nil
+            return
+        }
 
         // Check if biometric data has changed
         if BiometricManager.shared.hasBiometricDataChanged() {
@@ -57,7 +69,7 @@ class AppLifecycleManager: ObservableObject {
                 print("🔄 AppLifecycleManager: Quick return - trying cache initialization")
                 let cacheSuccess = await walletManager.initializeWalletFromCache()
                 print("🔄 AppLifecycleManager: Cache initialization result: \(cacheSuccess)")
-                if !cacheSuccess {
+                if !cacheSuccess && !walletManager.isConnected {
                     requiresAuthentication = true
                 }
             }
@@ -66,7 +78,7 @@ class AppLifecycleManager: ObservableObject {
             print("🔄 AppLifecycleManager: First launch - trying cache initialization")
             let cacheSuccess = await walletManager.initializeWalletFromCache()
             print("🔄 AppLifecycleManager: Cache initialization result: \(cacheSuccess)")
-            if !cacheSuccess {
+            if !cacheSuccess && !walletManager.isConnected {
                 requiresAuthentication = true
             }
         }
@@ -96,7 +108,10 @@ class AppLifecycleManager: ObservableObject {
     
     /// Handles successful authentication
     func handleAuthenticationSuccess() {
+        print("✅ AppLifecycleManager: Authentication successful")
+        isAuthenticating = false
         requiresAuthentication = false
+        lastSuccessfulAuth = Date()
 
         // Update biometric data after successful authentication
         BiometricManager.shared.updateBiometricData()
@@ -106,15 +121,58 @@ class AppLifecycleManager: ObservableObject {
             await walletManager.initializeWallet()
         }
     }
-    
+
     /// Handles authentication failure or cancellation
     func handleAuthenticationFailure() {
+        print("❌ AppLifecycleManager: Authentication failed")
+        isAuthenticating = false
+
         // Clear cache and require fresh authentication
         SecureSeedCache.shared.clearCache()
-        
+
         Task {
             await walletManager.logout()
         }
+    }
+
+    /// Called when authentication starts
+    func handleAuthenticationStart() {
+        print("🔄 AppLifecycleManager: Authentication started")
+        isAuthenticating = true
+    }
+
+    /// Checks if authentication should be skipped based on current state
+    private func shouldSkipAuthentication() -> Bool {
+        // Skip if already authenticating
+        if isAuthenticating {
+            print("🔄 AppLifecycleManager: Skipping - authentication in progress")
+            return true
+        }
+
+        // Skip if wallet is already connected and logged in
+        if walletManager.isConnected && walletManager.isLoggedIn {
+            print("🔄 AppLifecycleManager: Skipping - wallet already connected and logged in")
+            return true
+        }
+
+        // Skip if we recently authenticated successfully (grace period)
+        if let lastAuth = lastSuccessfulAuth {
+            let timeSinceAuth = Date().timeIntervalSince(lastAuth)
+            if timeSinceAuth < authGracePeriod {
+                print("🔄 AppLifecycleManager: Skipping - within auth grace period (\(timeSinceAuth)s)")
+                return true
+            }
+        }
+
+        return false
+    }
+
+    /// Resets authentication state (called on logout)
+    func resetAuthenticationState() {
+        print("🔄 AppLifecycleManager: Resetting authentication state")
+        isAuthenticating = false
+        lastSuccessfulAuth = nil
+        requiresAuthentication = false
     }
     
     // MARK: - Private Methods
@@ -245,11 +303,14 @@ struct AuthenticationRequiredView: View {
     private func authenticateUser() {
         isAuthenticating = true
         authError = nil
-        
+
+        // Notify lifecycle manager that authentication started
+        lifecycleManager.handleAuthenticationStart()
+
         biometricManager.authenticateUser(reason: "Authenticate to access your Lumen wallet") { result in
             DispatchQueue.main.async {
                 isAuthenticating = false
-                
+
                 switch result {
                 case .success:
                     lifecycleManager.handleAuthenticationSuccess()

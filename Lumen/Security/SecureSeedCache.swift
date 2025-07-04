@@ -57,14 +57,14 @@ class SecureSeedCache {
         accessQueue.async(flags: .barrier) {
             // Clear any existing seed first
             self.clearCacheInternal()
-            
+
             // Store new seed with metadata
             self.cachedSeed = seed
             self.cacheCreationTime = Date()
             self.lastAccessTime = Date()
             self.accessCount = 0
-            
-            print("🔒 Seed cached securely in memory")
+
+            print("🔒 Seed cached securely in memory - length: \(seed.count) chars, timeout: \(self.cacheTimeout)s")
         }
     }
     
@@ -73,27 +73,33 @@ class SecureSeedCache {
     /// - Throws: CacheError if cache is invalid
     func retrieveSeed() throws -> String {
         return try accessQueue.sync {
+            print("🔍 retrieveSeed() called - accessCount: \(accessCount)/\(maxAccessCount)")
+
             // Security check: prevent excessive access
             guard accessCount < maxAccessCount else {
+                print("❌ Security violation - too many access attempts")
                 clearCacheInternal()
                 throw CacheError.securityViolation
             }
-            
+
             // Check if cache exists
             guard let seed = cachedSeed else {
+                print("❌ Cache empty - no seed stored")
                 throw CacheError.cacheEmpty
             }
-            
+
             // Check if cache is expired
             guard isCacheValidInternal() else {
+                print("❌ Cache expired - clearing")
                 clearCacheInternal()
                 throw CacheError.cacheExpired
             }
-            
+
             // Update access metadata
             lastAccessTime = Date()
             accessCount += 1
-            
+
+            print("✅ Retrieved seed from cache - accessCount now: \(accessCount)")
             return seed
         }
     }
@@ -119,8 +125,9 @@ class SecureSeedCache {
     /// Clears cached seed from memory
     func clearCache() {
         accessQueue.async(flags: .barrier) {
+            let hadSeed = self.cachedSeed != nil
             self.clearCacheInternal()
-            print("🗑️ Seed cache cleared from memory")
+            print("🗑️ Seed cache cleared from memory - had seed: \(hadSeed)")
         }
     }
     

@@ -26,6 +26,7 @@ class WalletManager: ObservableObject {
     private let networkMonitor = NetworkMonitor.shared
     private let configManager = ConfigurationManager.shared
     private let userDefaults = UserDefaults.standard
+    private let lifecycleManager = AppLifecycleManager.shared
 
     // MARK: - UserDefaults Keys
 
@@ -226,8 +227,11 @@ class WalletManager: ObservableObject {
     
     /// Retrieves existing mnemonic with secure authentication and caching
     private func retrieveExistingMnemonic() async throws -> String {
+        print("🔐 WalletManager: Retrieving existing mnemonic with biometric auth")
         // Use secure mnemonic retrieval with biometric authentication and caching
-        return try await keychainManager.getSecureMnemonic(reason: "Unlock your Lumen wallet")
+        let mnemonic = try await keychainManager.getSecureMnemonic(reason: "Unlock your Lumen wallet")
+        print("✅ WalletManager: Successfully retrieved and cached mnemonic")
+        return mnemonic
     }
     
     /// Connects to the Breez SDK with the provided mnemonic
@@ -522,6 +526,9 @@ class WalletManager: ObservableObject {
 
         // Update UserDefaults state (preserve hasWallet, clear isLoggedIn)
         isLoggedIn = false
+
+        // Reset authentication state in lifecycle manager
+        lifecycleManager.resetAuthenticationState()
 
         print("✅ User logged out - wallet remains in keychain, secure cache cleared")
     }
