@@ -654,18 +654,31 @@ struct CurrencySelectionView: View {
                     ProgressView("Loading currencies...")
                         .frame(height: 200)
                 } else {
-                    ScrollView {
-                        LazyVStack(spacing: 8) {
-                            ForEach(filteredCurrencies, id: \.id) { currency in
-                                CurrencyRowView(
-                                    currency: currency,
-                                    isSelected: currencyManager.selectedCurrency?.id == currency.id
-                                ) {
-                                    currencyManager.setSelectedCurrency(currency)
+                    List(filteredCurrencies, id: \.id) { currency in
+                        Button(action: {
+                            currencyManager.setSelectedCurrency(currency)
+                        }) {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(currency.id.uppercased())
+                                        .font(.headline)
+                                        .foregroundColor(.primary)
+
+                                    Text(currency.info.name)
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+
+                                Spacer()
+
+                                if currencyManager.selectedCurrency?.id == currency.id {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(.yellow)
+                                        .font(.title2)
                                 }
                             }
                         }
-                        .padding(.horizontal)
+                        .buttonStyle(.plain)
                     }
                     .frame(maxHeight: 300)
                 }
@@ -737,8 +750,9 @@ struct CurrencyRowView: View {
                             .stroke(isSelected ? Color.yellow : Color.gray.opacity(0.3), lineWidth: 1)
                     )
             )
+            .contentShape(Rectangle())
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(.plain)
     }
 }
 
