@@ -846,9 +846,7 @@ struct ReceiveFeeCard: View {
 
                         Spacer()
 
-                        Text("\(preparedReceive.feesSat) sats")
-                            .font(.caption)
-                            .foregroundColor(.orange)
+                        SatsAmountView.fee(preparedReceive.feesSat)
                     }
 
                     HStack {
@@ -858,10 +856,12 @@ struct ReceiveFeeCard: View {
 
                         Spacer()
 
-                        Text("\(amountSatsFromReceiveAmount(preparedReceive.amount) - preparedReceive.feesSat) sats")
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.green)
+                        SatsAmountView(
+                            amount: amountSatsFromReceiveAmount(preparedReceive.amount) - preparedReceive.feesSat,
+                            displayMode: .satsOnly,
+                            size: .compact,
+                            style: .success
+                        )
                     }
                 } else {
                     HStack {
