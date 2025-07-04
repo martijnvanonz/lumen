@@ -205,6 +205,13 @@ class AppLifecycleManager: ObservableObject {
             name: UIApplication.willTerminateNotification,
             object: nil
         )
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleAuthenticationStateResetNotification),
+            name: .authenticationStateReset,
+            object: nil
+        )
     }
     
     @objc private func appDidBecomeActive() {
@@ -229,6 +236,10 @@ class AppLifecycleManager: ObservableObject {
         }
 
         print("🛑 App terminating - wallet disconnected, cache preserved for next launch")
+    }
+
+    @objc private func handleAuthenticationStateResetNotification() {
+        resetAuthenticationState()
     }
 }
 

@@ -26,7 +26,6 @@ class WalletManager: ObservableObject {
     private let networkMonitor = NetworkMonitor.shared
     private let configManager = ConfigurationManager.shared
     private let userDefaults = UserDefaults.standard
-    private let lifecycleManager = AppLifecycleManager.shared
 
     // MARK: - UserDefaults Keys
 
@@ -527,8 +526,8 @@ class WalletManager: ObservableObject {
         // Update UserDefaults state (preserve hasWallet, clear isLoggedIn)
         isLoggedIn = false
 
-        // Reset authentication state in lifecycle manager
-        lifecycleManager.resetAuthenticationState()
+        // Notify that authentication state should be reset
+        NotificationCenter.default.post(name: .authenticationStateReset, object: nil)
 
         print("✅ User logged out - wallet remains in keychain, secure cache cleared")
     }

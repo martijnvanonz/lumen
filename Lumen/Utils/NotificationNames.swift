@@ -12,4 +12,7 @@ extension Notification.Name {
 
     /// Posted when authentication is required
     static let authenticationRequired = Notification.Name("authenticationRequired")
+
+    /// Posted when authentication state should be reset
+    static let authenticationStateReset = Notification.Name("authenticationStateReset")
 }
