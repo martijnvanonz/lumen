@@ -3,6 +3,8 @@ import SwiftUI
 import BreezSDKLiquid
 import Web3Core
 
+
+
 /// Manages the Breez SDK Liquid wallet integration
 class WalletManager: ObservableObject {
     
@@ -102,7 +104,16 @@ class WalletManager: ObservableObject {
 
     /// Quick initialization using cached seed (no biometric auth required)
     func initializeWalletFromCache() async -> Bool {
-        // Prevent concurrent initialization
+        print("🔄 initializeWalletFromCache called from async context")
+        print("🔄 Current state - isInitializing: \(isInitializing), isConnected: \(isConnected), isLoggedIn: \(isLoggedIn)")
+
+        // If already connected, no need to initialize again
+        if isConnected {
+            print("✅ Already connected - skipping initialization")
+            return true
+        }
+
+        // Prevent concurrent initialization with a simple check
         guard !isInitializing else {
             print("⚠️ Wallet initialization already in progress - skipping cache attempt")
             return false
@@ -110,11 +121,27 @@ class WalletManager: ObservableObject {
 
         // Check if we have a valid cached seed
         guard SecureSeedCache.shared.isCacheValid() else {
+            print("❌ Cache invalid - cannot initialize from cache")
             return false
         }
 
-        isInitializing = true
-        defer { isInitializing = false }
+        print("🔄 Starting wallet initialization from cache...")
+        await MainActor.run {
+            isInitializing = true
+        }
+
+        defer {
+            Task { @MainActor in
+                isInitializing = false
+                print("🔄 Wallet initialization from cache completed")
+            }
+        }
+
+        return await performCacheInitialization()
+    }
+
+    /// Perform the actual cache initialization
+    private func performCacheInitialization() async -> Bool {
 
         do {
             let cachedSeed = try SecureSeedCache.shared.retrieveSeed()
@@ -179,8 +206,12 @@ class WalletManager: ObservableObject {
     
     /// Connects to the Breez SDK with the provided mnemonic
     private func connectToBreezSDK(mnemonic: String) async throws {
+        print("🔗 connectToBreezSDK called from async context")
+        print("🔗 Current SDK state: \(sdk != nil ? "EXISTS" : "NIL")")
+
         // Check network connectivity first
         guard networkMonitor.isNetworkAvailableForLightning() else {
+            print("❌ Network not available for Lightning operations")
             throw WalletError.networkError
         }
 

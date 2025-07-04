@@ -46,13 +46,23 @@ struct ContentView: View {
     }
 
     private func checkWalletStatus() {
+        print("🔍 checkWalletStatus called from thread: \(Thread.isMainThread ? "MAIN" : "BACKGROUND")")
+        print("🔍 Current state - isCheckingWalletStatus: \(isCheckingWalletStatus), showOnboarding: \(showOnboarding)")
+
         // Prevent multiple concurrent checks
-        guard !isCheckingWalletStatus else { return }
+        guard !isCheckingWalletStatus else {
+            print("⚠️ Wallet status check already in progress - skipping")
+            return
+        }
         isCheckingWalletStatus = true
-        defer { isCheckingWalletStatus = false }
+        defer {
+            isCheckingWalletStatus = false
+            print("🔍 Wallet status check completed")
+        }
 
         // Check if user has completed onboarding (has wallet in keychain or UserDefaults)
         let hasExistingWallet = walletManager.hasWallet || KeychainManager.shared.mnemonicExists()
+        print("🔍 hasExistingWallet: \(hasExistingWallet) (hasWallet: \(walletManager.hasWallet), mnemonicExists: \(KeychainManager.shared.mnemonicExists()))")
 
         if hasExistingWallet {
             // User has completed onboarding - never show onboarding again
