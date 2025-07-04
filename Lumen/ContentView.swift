@@ -5,6 +5,7 @@ struct ContentView: View {
     @StateObject private var networkMonitor = NetworkMonitor.shared
     @StateObject private var lifecycleManager = AppLifecycleManager.shared
     @State private var showOnboarding = true
+    @State private var isCheckingWalletStatus = false
 
     var body: some View {
         ZStack {
@@ -45,6 +46,11 @@ struct ContentView: View {
     }
 
     private func checkWalletStatus() {
+        // Prevent multiple concurrent checks
+        guard !isCheckingWalletStatus else { return }
+        isCheckingWalletStatus = true
+        defer { isCheckingWalletStatus = false }
+
         // Check if user has completed onboarding (has wallet in keychain or UserDefaults)
         let hasExistingWallet = walletManager.hasWallet || KeychainManager.shared.mnemonicExists()
 
