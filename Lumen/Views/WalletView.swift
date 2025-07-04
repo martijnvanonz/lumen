@@ -858,7 +858,7 @@ struct ReceiveFeeCard: View {
 
                         SatsAmountView(
                             amount: amountSatsFromReceiveAmount(preparedReceive.amount) - preparedReceive.feesSat,
-                            displayMode: .satsOnly,
+                            displayMode: .both,
                             size: .compact,
                             style: .success
                         )
