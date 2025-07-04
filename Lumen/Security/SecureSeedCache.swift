@@ -102,7 +102,17 @@ class SecureSeedCache {
     /// - Returns: true if cache is valid and not expired
     func isCacheValid() -> Bool {
         return accessQueue.sync {
-            return cachedSeed != nil && isCacheValidInternal()
+            let hasSeed = cachedSeed != nil
+            let isValidInternal = isCacheValidInternal()
+            let result = hasSeed && isValidInternal
+
+            print("🔍 isCacheValid() - hasSeed: \(hasSeed), isValidInternal: \(isValidInternal), result: \(result)")
+            if let cacheTime = cacheCreationTime {
+                let age = Date().timeIntervalSince(cacheTime)
+                print("🔍 Cache age: \(age)s, timeout: \(cacheTimeout)s")
+            }
+
+            return result
         }
     }
     

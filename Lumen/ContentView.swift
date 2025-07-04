@@ -30,6 +30,7 @@ struct ContentView: View {
             }
         }
         .onAppear {
+            print("📱 ContentView.onAppear triggered")
             checkWalletStatus()
         }
         .onReceive(NotificationCenter.default.publisher(for: .walletLoggedOut)) { _ in
@@ -39,6 +40,7 @@ struct ContentView: View {
             handleOnboardingCompleted()
         }
         .onChange(of: lifecycleManager.requiresAuthentication) { _, requiresAuth in
+            print("📱 ContentView.onChange(requiresAuthentication): \(requiresAuth)")
             if !requiresAuth && walletManager.isConnected {
                 showOnboarding = false
             }

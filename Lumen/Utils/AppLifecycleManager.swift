@@ -54,14 +54,18 @@ class AppLifecycleManager: ObservableObject {
                 print("🔒 App was backgrounded for \(timeInBackground)s - requiring authentication")
             } else {
                 // Quick return, try to initialize from cache
+                print("🔄 AppLifecycleManager: Quick return - trying cache initialization")
                 let cacheSuccess = await walletManager.initializeWalletFromCache()
+                print("🔄 AppLifecycleManager: Cache initialization result: \(cacheSuccess)")
                 if !cacheSuccess {
                     requiresAuthentication = true
                 }
             }
         } else {
             // First launch or no background time recorded
+            print("🔄 AppLifecycleManager: First launch - trying cache initialization")
             let cacheSuccess = await walletManager.initializeWalletFromCache()
+            print("🔄 AppLifecycleManager: Cache initialization result: \(cacheSuccess)")
             if !cacheSuccess {
                 requiresAuthentication = true
             }
@@ -251,11 +255,21 @@ struct AuthenticationRequiredView: View {
                     lifecycleManager.handleAuthenticationSuccess()
                 case .failure(let error):
                     authError = biometricManager.userFriendlyErrorMessage(for: error)
+                    print("🔒 Authentication failed: \(error)")
 
-                    // If user cancels or fails multiple times, handle appropriately
-                    if let biometricError = error as? BiometricManager.BiometricError,
-                       case .userCancel = biometricError {
-                        lifecycleManager.handleAuthenticationFailure()
+                    // Only handle failure for serious errors, not user cancellation
+                    if let biometricError = error as? BiometricManager.BiometricError {
+                        switch biometricError {
+                        case .notAvailable, .notEnrolled, .biometryNotAvailable, .biometryNotEnrolled, .biometryLockout:
+                            // Serious biometric issues - handle as failure
+                            lifecycleManager.handleAuthenticationFailure()
+                        case .userCancel, .authenticationFailed, .systemCancel, .userFallback, .passcodeNotSet, .invalidContext, .notInteractive:
+                            // User cancelled or failed - don't logout, just show error
+                            print("🔒 User cancelled or failed authentication - not logging out")
+                        case .unknown(_):
+                            // Unknown error - don't logout, just show error
+                            print("🔒 Unknown authentication error - not logging out")
+                        }
                     }
                 }
             }

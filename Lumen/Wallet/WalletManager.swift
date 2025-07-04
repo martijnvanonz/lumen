@@ -102,6 +102,9 @@ class WalletManager: ObservableObject {
         }
     }
 
+    /// Shared initialization task to prevent concurrent initialization
+    private var initializationTask: Task<Bool, Never>?
+
     /// Quick initialization using cached seed (no biometric auth required)
     func initializeWalletFromCache() async -> Bool {
         print("🔄 initializeWalletFromCache called from async context")
@@ -113,9 +116,36 @@ class WalletManager: ObservableObject {
             return true
         }
 
-        // Prevent concurrent initialization with a simple check
+        // If there's already an initialization task running, wait for it
+        if let existingTask = initializationTask {
+            print("⚠️ Wallet initialization already in progress - waiting for completion...")
+            return await existingTask.value
+        }
+
+        // Create new initialization task
+        let task = Task<Bool, Never> { @MainActor in
+            await self.performSingleInitialization()
+        }
+
+        initializationTask = task
+        let result = await task.value
+        initializationTask = nil
+
+        return result
+    }
+
+    /// Perform single initialization to prevent race conditions
+    @MainActor
+    private func performSingleInitialization() async -> Bool {
+        // Double-check if already connected
+        if isConnected {
+            print("✅ Already connected during single initialization - skipping")
+            return true
+        }
+
+        // Prevent concurrent initialization
         guard !isInitializing else {
-            print("⚠️ Wallet initialization already in progress - skipping cache attempt")
+            print("⚠️ Wallet initialization already in progress during single init - skipping")
             return false
         }
 
@@ -125,16 +155,12 @@ class WalletManager: ObservableObject {
             return false
         }
 
-        print("🔄 Starting wallet initialization from cache...")
-        await MainActor.run {
-            isInitializing = true
-        }
+        print("🔄 Starting single wallet initialization from cache...")
+        isInitializing = true
 
         defer {
-            Task { @MainActor in
-                isInitializing = false
-                print("🔄 Wallet initialization from cache completed")
-            }
+            isInitializing = false
+            print("🔄 Single wallet initialization from cache completed")
         }
 
         return await performCacheInitialization()
