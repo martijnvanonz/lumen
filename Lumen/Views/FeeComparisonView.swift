@@ -298,10 +298,12 @@ struct FeeBreakdownRow: View {
                 
                 Spacer()
                 
-                Text("\(amount) sats")
-                    .font(isTotal ? .subheadline : .caption)
-                    .fontWeight(isTotal ? .semibold : .medium)
-                    .foregroundColor(isTotal ? .primary : .secondary)
+                SatsAmountView(
+                    amount: amount,
+                    displayMode: .satsOnly,
+                    size: isTotal ? .regular : .compact,
+                    style: isTotal ? .primary : .secondary
+                )
             }
             
             if !description.isEmpty {
