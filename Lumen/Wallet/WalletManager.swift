@@ -76,15 +76,17 @@ class WalletManager: ObservableObject {
                 isLoading = false
             }
 
-            // Update state flags
-            hasWallet = true
-            isLoggedIn = true
+            // Update state flags on main thread
+            await MainActor.run {
+                hasWallet = true
+                isLoggedIn = true
+            }
 
             // Load currencies but don't auto-select default during onboarding
             Task {
                 await CurrencyManager.shared.reloadCurrenciesFromSDK(setDefaultIfNone: false)
                 await CurrencyManager.shared.fetchCurrentRates()
-                CurrencyManager.shared.startRateUpdates()
+                await CurrencyManager.shared.startRateUpdates()
             }
             
         } catch {
@@ -130,15 +132,17 @@ class WalletManager: ObservableObject {
                 isLoading = false
             }
 
-            // Update state flags
-            hasWallet = true
-            isLoggedIn = true
+            // Update state flags on main thread
+            await MainActor.run {
+                hasWallet = true
+                isLoggedIn = true
+            }
 
             // Load currencies
             Task {
                 await CurrencyManager.shared.reloadCurrenciesFromSDK(setDefaultIfNone: false)
                 await CurrencyManager.shared.fetchCurrentRates()
-                CurrencyManager.shared.startRateUpdates()
+                await CurrencyManager.shared.startRateUpdates()
             }
 
             print("✅ Wallet initialized from secure cache")

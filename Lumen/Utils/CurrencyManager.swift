@@ -271,18 +271,20 @@ class CurrencyManager: ObservableObject {
     
     /// Start periodic rate updates
     func startRateUpdates() {
-        stopRateUpdates() // Stop any existing timer
-        
-        // Update rates every 5 minutes
-        rateUpdateTimer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { _ in
-            Task {
-                await self.fetchCurrentRates()
+        Task { @MainActor in
+            stopRateUpdates() // Stop any existing timer
+
+            // Update rates every 5 minutes
+            rateUpdateTimer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { _ in
+                Task {
+                    await self.fetchCurrentRates()
+                }
             }
-        }
-        
-        // Initial fetch
-        Task {
-            await fetchCurrentRates()
+
+            // Initial fetch
+            Task {
+                await fetchCurrentRates()
+            }
         }
     }
     
