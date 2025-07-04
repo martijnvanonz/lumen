@@ -116,9 +116,21 @@ class AppLifecycleManager: ObservableObject {
         // Update biometric data after successful authentication
         BiometricManager.shared.updateBiometricData()
 
-        // Initialize wallet after successful authentication
+        // Pre-cache the mnemonic to avoid second Face ID prompt
         Task {
-            await walletManager.initializeWallet()
+            do {
+                print("🔐 AppLifecycleManager: Pre-caching mnemonic to avoid second Face ID")
+                let mnemonic = try await KeychainManager.shared.retrieveMnemonicWithBiometrics(reason: "Unlock your Lumen wallet")
+                SecureSeedCache.shared.storeSeed(mnemonic)
+                print("✅ AppLifecycleManager: Mnemonic pre-cached successfully")
+
+                // Now initialize wallet with cached mnemonic
+                await walletManager.initializeWallet()
+            } catch {
+                print("❌ AppLifecycleManager: Failed to pre-cache mnemonic: \(error)")
+                // Fallback to normal initialization
+                await walletManager.initializeWallet()
+            }
         }
     }
 
