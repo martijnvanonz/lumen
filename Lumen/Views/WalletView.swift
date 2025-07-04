@@ -355,9 +355,28 @@ struct SendPaymentView: View {
             } message: {
                 if let preparedPayment = preparedPayment {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Amount: \(amountSatsFromPayAmount(preparedPayment.amount)) sats")
-                        Text("Fee: \(preparedPayment.feesSat ?? 0) sats")
-                        Text("Total: \(amountSatsFromPayAmount(preparedPayment.amount) + (preparedPayment.feesSat ?? 0)) sats")
+                        HStack {
+                            Text("Amount:")
+                            SatsAmountView(
+                                amount: amountSatsFromPayAmount(preparedPayment.amount),
+                                displayMode: .satsOnly,
+                                size: .compact,
+                                style: .primary
+                            )
+                        }
+                        HStack {
+                            Text("Fee:")
+                            SatsAmountView.fee(preparedPayment.feesSat ?? 0)
+                        }
+                        HStack {
+                            Text("Total:")
+                            SatsAmountView(
+                                amount: amountSatsFromPayAmount(preparedPayment.amount) + (preparedPayment.feesSat ?? 0),
+                                displayMode: .satsOnly,
+                                size: .compact,
+                                style: .primary
+                            )
+                        }
                     }
                 }
             }
@@ -487,9 +506,12 @@ struct PaymentInfoCard: View {
 
                     Spacer()
 
-                    Text("\(amount) sats")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
+                    SatsAmountView(
+                        amount: amount,
+                        displayMode: .satsOnly,
+                        size: .compact,
+                        style: .primary
+                    )
                 }
             } else if let minAmount = paymentInfo.minAmount, let maxAmount = paymentInfo.maxAmount {
                 HStack {
@@ -499,9 +521,23 @@ struct PaymentInfoCard: View {
 
                     Spacer()
 
-                    Text("\(minAmount) - \(maxAmount) sats")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
+                    HStack(spacing: 4) {
+                        SatsAmountView(
+                            amount: minAmount,
+                            displayMode: .satsOnly,
+                            size: .compact,
+                            style: .primary
+                        )
+                        Text("-")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                        SatsAmountView(
+                            amount: maxAmount,
+                            displayMode: .satsOnly,
+                            size: .compact,
+                            style: .primary
+                        )
+                    }
                 }
             }
 
@@ -666,10 +702,12 @@ struct FeeRowView: View {
 
             Spacer()
 
-            Text("\(amount) sats")
-                .font(isTotal ? .headline : .subheadline)
-                .fontWeight(isTotal ? .semibold : .regular)
-                .foregroundColor(color)
+            SatsAmountView(
+                amount: amount,
+                displayMode: .satsOnly,
+                size: isTotal ? .regular : .compact,
+                style: color == .primary ? .primary : .secondary
+            )
         }
     }
 }

@@ -57,11 +57,25 @@ struct FeeComparisonView: View {
                 HStack {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundColor(.green)
-                    
-                    Text("Save \(savings) sats (\(String(format: "%.1f", savingsPercentage))%) vs credit cards")
-                        .font(.caption)
-                        .foregroundColor(.green)
-                        .fontWeight(.medium)
+
+                    HStack(spacing: 4) {
+                        Text("Save")
+                            .font(.caption)
+                            .foregroundColor(.green)
+                            .fontWeight(.medium)
+
+                        SatsAmountView(
+                            amount: savings,
+                            displayMode: .satsOnly,
+                            size: .compact,
+                            style: .success
+                        )
+
+                        Text("(\(String(format: "%.1f", savingsPercentage))%) vs credit cards")
+                            .font(.caption)
+                            .foregroundColor(.green)
+                            .fontWeight(.medium)
+                    }
                 }
                 .padding(.top, 8)
             }
