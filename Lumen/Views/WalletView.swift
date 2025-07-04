@@ -736,30 +736,59 @@ struct ReceivePaymentView: View {
                     .padding(.top)
 
                 if let invoice = invoice {
-                    // Show generated invoice
-                    VStack(spacing: 16) {
-                        Text("Payment Request Created")
-                            .font(.headline)
-                            .foregroundColor(.green)
+                    // Show generated invoice with new layout
+                    VStack(spacing: 24) {
+                        // QR Code
+                        QRCodeView(data: invoice, size: 250)
+                            .padding(.horizontal)
 
-                        // Fee information for receive
-                        if let preparedReceive = preparedReceive {
-                            ReceiveFeeCard(preparedReceive: preparedReceive)
-                        }
-
-                        Text(invoice)
-                            .font(.caption)
-                            .padding()
-                            .background(Color(.systemGray6))
-                            .cornerRadius(8)
-                            .textSelection(.enabled)
-
-                        Button("Copy Invoice") {
+                        // Copy Invoice Button
+                        Button("Copy invoice") {
                             UIPasteboard.general.string = invoice
                         }
-                        .buttonStyle(.bordered)
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue)
+                        .cornerRadius(12)
+                        .padding(.horizontal)
+
+                        // Amount and Fee Information
+                        if let preparedReceive = preparedReceive {
+                            VStack(spacing: 12) {
+                                // You receive amount
+                                HStack {
+                                    Text("You receive")
+                                        .font(.body)
+                                        .foregroundColor(.primary)
+
+                                    Spacer()
+
+                                    SatsAmountView(
+                                        amount: getReceiveAmount(preparedReceive),
+                                        displayMode: .both,
+                                        size: .regular,
+                                        style: .success
+                                    )
+                                }
+
+                                // Service fee
+                                if preparedReceive.feesSat > 0 {
+                                    HStack {
+                                        Text("Service fee")
+                                            .font(.body)
+                                            .foregroundColor(.primary)
+
+                                        Spacer()
+
+                                        SatsAmountView.fee(preparedReceive.feesSat)
+                                    }
+                                }
+                            }
+                            .padding(.horizontal)
+                        }
                     }
-                    .padding(.horizontal)
                 } else {
                     // Invoice creation form with new layout
                     VStack(spacing: 20) {
@@ -990,6 +1019,11 @@ struct ReceivePaymentView: View {
 
         let btcAmount = Double(satsValue) / 100_000_000.0
         return btcAmount * rate
+    }
+
+    private func getReceiveAmount(_ preparedReceive: PrepareReceiveResponse) -> UInt64 {
+        let totalAmount = amountSatsFromReceiveAmount(preparedReceive.amount)
+        return totalAmount - preparedReceive.feesSat
     }
 
     private func createInvoice() {
