@@ -160,14 +160,13 @@ class AppLifecycleManager: ObservableObject {
     }
     
     @objc private func appWillTerminate() {
-        // Clear cache on app termination
-        SecureSeedCache.shared.clearCache()
-        
+        // Disconnect wallet but preserve cache for next app launch
+        // Cache will only be cleared on explicit logout or security violations
         Task {
             await walletManager.disconnect()
         }
-        
-        print("🛑 App terminating - cache cleared, wallet disconnected")
+
+        print("🛑 App terminating - wallet disconnected, cache preserved for next launch")
     }
 }
 

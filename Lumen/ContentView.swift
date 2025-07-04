@@ -45,32 +45,35 @@ struct ContentView: View {
     }
 
     private func checkWalletStatus() {
-        // If user is logged in, try to connect automatically
-        if walletManager.isLoggedIn {
+        // Check if user has completed onboarding (has wallet in keychain or UserDefaults)
+        let hasExistingWallet = walletManager.hasWallet || KeychainManager.shared.mnemonicExists()
+
+        if hasExistingWallet {
+            // User has completed onboarding - never show onboarding again
+            showOnboarding = false
+
             if walletManager.isConnected {
-                // Already connected, go to main wallet view
-                showOnboarding = false
-            } else {
+                // Already connected, stay in main wallet view
+                return
+            } else if walletManager.isLoggedIn {
                 // User is logged in but not connected, try cache first then full initialization
                 Task {
                     // First try quick initialization from cache
                     let cacheSuccess = await walletManager.initializeWalletFromCache()
 
-                    if cacheSuccess {
-                        // Cache initialization successful
-                        await MainActor.run {
-                            showOnboarding = false
-                        }
-                    } else {
-                        // Cache failed, let authentication flow handle it
+                    if !cacheSuccess {
+                        // Cache failed, require authentication but stay in wallet view
                         await MainActor.run {
                             lifecycleManager.requiresAuthentication = true
                         }
                     }
                 }
+            } else {
+                // User has wallet but not logged in, require authentication
+                lifecycleManager.requiresAuthentication = true
             }
         } else {
-            // User not logged in, show onboarding
+            // No existing wallet found, show onboarding for new users
             showOnboarding = true
         }
     }
