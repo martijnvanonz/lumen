@@ -105,10 +105,10 @@ class WalletManager: ObservableObject {
         return mnemonic
     }
     
-    /// Retrieves existing mnemonic from iCloud Keychain
+    /// Retrieves existing mnemonic with secure authentication and caching
     private func retrieveExistingMnemonic() async throws -> String {
-        // Retrieve mnemonic directly from iCloud Keychain (no biometric auth needed)
-        return try keychainManager.retrieveMnemonic()
+        // Use secure mnemonic retrieval with biometric authentication and caching
+        return try await keychainManager.getSecureMnemonic(reason: "Unlock your Lumen wallet")
     }
     
     /// Connects to the Breez SDK with the provided mnemonic
@@ -381,6 +381,9 @@ class WalletManager: ObservableObject {
 
     /// Logs out the user (clears in-memory state but preserves keychain)
     func logout() async {
+        // Clear secure seed cache first
+        SecureSeedCache.shared.clearCache()
+
         // Disconnect from SDK
         await disconnect()
 
@@ -397,11 +400,14 @@ class WalletManager: ObservableObject {
         // Update UserDefaults state (preserve hasWallet, clear isLoggedIn)
         isLoggedIn = false
 
-        print("✅ User logged out - wallet remains in keychain")
+        print("✅ User logged out - wallet remains in keychain, secure cache cleared")
     }
 
     /// Permanently deletes wallet from keychain and clears all state
     func deleteWalletFromKeychain() async throws {
+        // Clear secure seed cache immediately
+        SecureSeedCache.shared.clearCache()
+
         // First logout to clear all state
         await logout()
 
@@ -415,7 +421,7 @@ class WalletManager: ObservableObject {
         // Clear selected currency
         CurrencyManager.shared.clearSelectedCurrency()
 
-        print("✅ Wallet permanently deleted from keychain")
+        print("✅ Wallet permanently deleted from keychain and secure cache cleared")
     }
 
 
