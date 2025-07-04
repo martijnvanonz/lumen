@@ -212,6 +212,76 @@ class BiometricManager {
             }
         }
     }
+
+    /// Checks if biometric authentication has changed (e.g., new fingerprint added)
+    /// - Returns: true if biometric data has changed since last evaluation
+    func hasBiometricDataChanged() -> Bool {
+        let context = LAContext()
+        var error: NSError?
+
+        // Check if biometrics are available
+        guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) else {
+            return false
+        }
+
+        // Get current biometric data
+        let currentData = context.evaluatedPolicyDomainState
+
+        // Compare with stored data (if any)
+        let storedDataKey = "BiometricDomainState"
+        let storedData = UserDefaults.standard.data(forKey: storedDataKey)
+
+        if let storedData = storedData, let currentData = currentData {
+            return !storedData.elementsEqual(currentData)
+        }
+
+        // If no stored data, save current and return false (first time)
+        if let currentData = currentData {
+            UserDefaults.standard.set(currentData, forKey: storedDataKey)
+        }
+
+        return false
+    }
+
+    /// Updates stored biometric data after successful authentication
+    func updateBiometricData() {
+        let context = LAContext()
+        if let currentData = context.evaluatedPolicyDomainState {
+            UserDefaults.standard.set(currentData, forKey: "BiometricDomainState")
+        }
+    }
+
+    /// Provides user-friendly error messages for authentication failures
+    /// - Parameter error: The error to convert
+    /// - Returns: User-friendly error message
+    func userFriendlyErrorMessage(for error: Error) -> String {
+        if let biometricError = error as? BiometricError {
+            switch biometricError {
+            case .notAvailable:
+                return "Biometric authentication is not available on this device."
+            case .notEnrolled:
+                return "No biometric data is enrolled. Please set up Face ID or Touch ID in Settings."
+            case .userCancel:
+                return "Authentication was cancelled."
+            case .userFallback:
+                return "Please use your device passcode to authenticate."
+            case .systemCancel:
+                return "Authentication was cancelled by the system."
+            case .authenticationFailed:
+                return "Authentication failed. Please try again."
+            case .invalidContext:
+                return "Authentication context is invalid."
+            case .biometryNotAvailable:
+                return "Biometric authentication is temporarily unavailable."
+            case .biometryLockout:
+                return "Biometric authentication is locked. Please use your device passcode."
+            case .unknown(let message):
+                return message
+            }
+        }
+
+        return error.localizedDescription
+    }
     
     // MARK: - Private Methods
     

@@ -33,11 +33,21 @@ class AppLifecycleManager: ObservableObject {
     /// Handles app returning to foreground
     func handleAppDidBecomeActive() async {
         isAppActive = true
-        
-        // Check if we need to re-authenticate
+
+        // Check if biometric data has changed
+        if BiometricManager.shared.hasBiometricDataChanged() {
+            // Biometric enrollment changed, require re-authentication
+            requiresAuthentication = true
+            SecureSeedCache.shared.clearCache()
+            print("🔒 Biometric data changed - requiring re-authentication")
+            backgroundTime = nil
+            return
+        }
+
+        // Check if we need to re-authenticate based on background time
         if let backgroundTime = backgroundTime {
             let timeInBackground = Date().timeIntervalSince(backgroundTime)
-            
+
             if timeInBackground > backgroundTimeout {
                 // App was in background too long, require authentication
                 requiresAuthentication = true
@@ -49,8 +59,14 @@ class AppLifecycleManager: ObservableObject {
                     requiresAuthentication = true
                 }
             }
+        } else {
+            // First launch or no background time recorded
+            let cacheSuccess = await walletManager.initializeWalletFromCache()
+            if !cacheSuccess {
+                requiresAuthentication = true
+            }
         }
-        
+
         backgroundTime = nil
     }
     
@@ -77,7 +93,10 @@ class AppLifecycleManager: ObservableObject {
     /// Handles successful authentication
     func handleAuthenticationSuccess() {
         requiresAuthentication = false
-        
+
+        // Update biometric data after successful authentication
+        BiometricManager.shared.updateBiometricData()
+
         // Initialize wallet after successful authentication
         Task {
             await walletManager.initializeWallet()
@@ -232,10 +251,11 @@ struct AuthenticationRequiredView: View {
                 case .success:
                     lifecycleManager.handleAuthenticationSuccess()
                 case .failure(let error):
-                    authError = error.localizedDescription
-                    
+                    authError = biometricManager.userFriendlyErrorMessage(for: error)
+
                     // If user cancels or fails multiple times, handle appropriately
-                    if case .userCancel = error {
+                    if let biometricError = error as? BiometricManager.BiometricError,
+                       case .userCancel = biometricError {
                         lifecycleManager.handleAuthenticationFailure()
                     }
                 }
