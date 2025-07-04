@@ -119,10 +119,11 @@ class AppLifecycleManager: ObservableObject {
         // Pre-cache the mnemonic to avoid second Face ID prompt
         Task {
             do {
-                print("🔐 AppLifecycleManager: Pre-caching mnemonic to avoid second Face ID")
-                let mnemonic = try await KeychainManager.shared.retrieveMnemonicWithBiometrics(reason: "Unlock your Lumen wallet")
+                print("🔐 AppLifecycleManager: Pre-caching mnemonic from keychain (no additional Face ID)")
+                // Use direct keychain access since user already authenticated
+                let mnemonic = try KeychainManager.shared.retrieveMnemonic()
                 SecureSeedCache.shared.storeSeed(mnemonic)
-                print("✅ AppLifecycleManager: Mnemonic pre-cached successfully")
+                print("✅ AppLifecycleManager: Mnemonic pre-cached successfully from keychain")
 
                 // Now initialize wallet with cached mnemonic
                 await walletManager.initializeWallet()
