@@ -224,31 +224,50 @@ class BiometricManager {
             return false
         }
 
-        // Get current biometric data
-        let currentData = context.evaluatedPolicyDomainState
+        // For iOS 18+, we'll use a simpler approach since evaluatedPolicyDomainState is deprecated
+        // We'll track biometric availability and type changes instead
+        let currentBiometricType = context.biometryType
+        let storedBiometricTypeKey = "StoredBiometricType"
+        let storedBiometricType = UserDefaults.standard.string(forKey: storedBiometricTypeKey)
 
-        // Compare with stored data (if any)
-        let storedDataKey = "BiometricDomainState"
-        let storedData = UserDefaults.standard.data(forKey: storedDataKey)
+        let currentTypeString = biometricTypeToString(currentBiometricType)
 
-        if let storedData = storedData, let currentData = currentData {
-            return !storedData.elementsEqual(currentData)
+        // If stored type is different from current, biometrics have changed
+        if let storedType = storedBiometricType, storedType != currentTypeString {
+            UserDefaults.standard.set(currentTypeString, forKey: storedBiometricTypeKey)
+            return true
         }
 
-        // If no stored data, save current and return false (first time)
-        if let currentData = currentData {
-            UserDefaults.standard.set(currentData, forKey: storedDataKey)
+        // If no stored type, save current and return false (first time)
+        if storedBiometricType == nil {
+            UserDefaults.standard.set(currentTypeString, forKey: storedBiometricTypeKey)
         }
 
         return false
     }
 
+    /// Converts biometric type to string for storage
+    private func biometricTypeToString(_ type: LABiometryType) -> String {
+        switch type {
+        case .faceID:
+            return "faceID"
+        case .touchID:
+            return "touchID"
+        case .opticID:
+            return "opticID"
+        case .none:
+            return "none"
+        @unknown default:
+            return "unknown"
+        }
+    }
+
     /// Updates stored biometric data after successful authentication
     func updateBiometricData() {
         let context = LAContext()
-        if let currentData = context.evaluatedPolicyDomainState {
-            UserDefaults.standard.set(currentData, forKey: "BiometricDomainState")
-        }
+        let currentBiometricType = context.biometryType
+        let currentTypeString = biometricTypeToString(currentBiometricType)
+        UserDefaults.standard.set(currentTypeString, forKey: "StoredBiometricType")
     }
 
     /// Provides user-friendly error messages for authentication failures
@@ -275,8 +294,14 @@ class BiometricManager {
                 return "Biometric authentication is temporarily unavailable."
             case .biometryLockout:
                 return "Biometric authentication is locked. Please use your device passcode."
-            case .unknown(let message):
-                return message
+            case .passcodeNotSet:
+                return "Device passcode is not set. Please set up a passcode in Settings."
+            case .biometryNotEnrolled:
+                return "No biometric data is enrolled. Please set up Face ID or Touch ID in Settings."
+            case .notInteractive:
+                return "Authentication cannot be performed in the current context."
+            case .unknown(let error):
+                return error.localizedDescription
             }
         }
 

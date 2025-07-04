@@ -62,12 +62,9 @@ struct ContentView: View {
                             showOnboarding = false
                         }
                     } else {
-                        // Cache failed, do full initialization with biometric auth
-                        await walletManager.initializeWallet()
+                        // Cache failed, let authentication flow handle it
                         await MainActor.run {
-                            if walletManager.isConnected {
-                                showOnboarding = false
-                            }
+                            lifecycleManager.requiresAuthentication = true
                         }
                     }
                 }

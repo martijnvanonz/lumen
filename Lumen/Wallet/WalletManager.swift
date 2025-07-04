@@ -38,9 +38,19 @@ class WalletManager: ObservableObject {
     private init() {}
     
     // MARK: - Wallet Lifecycle
-    
+
+    private var isInitializing = false
+
     /// Initializes the wallet - checks for existing mnemonic or creates new one
     func initializeWallet() async {
+        // Prevent concurrent initialization
+        guard !isInitializing else {
+            print("⚠️ Wallet initialization already in progress - skipping duplicate call")
+            return
+        }
+
+        isInitializing = true
+        defer { isInitializing = false }
         await MainActor.run {
             isLoading = true
             errorMessage = nil
@@ -90,10 +100,19 @@ class WalletManager: ObservableObject {
 
     /// Quick initialization using cached seed (no biometric auth required)
     func initializeWalletFromCache() async -> Bool {
+        // Prevent concurrent initialization
+        guard !isInitializing else {
+            print("⚠️ Wallet initialization already in progress - skipping cache attempt")
+            return false
+        }
+
         // Check if we have a valid cached seed
         guard SecureSeedCache.shared.isCacheValid() else {
             return false
         }
+
+        isInitializing = true
+        defer { isInitializing = false }
 
         do {
             let cachedSeed = try SecureSeedCache.shared.retrieveSeed()
