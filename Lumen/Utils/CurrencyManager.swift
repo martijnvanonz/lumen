@@ -114,42 +114,17 @@ class CurrencyManager: ObservableObject {
         print("✅ Loaded \(fallbackCurrencies.count) fallback currencies")
     }
 
-    /// Create a list of common fallback currencies
+    /// Create a minimal list of essential fallback currencies (EUR & USD only)
+    /// Used when Breez SDK is unavailable - keeps the app functional with core currencies
     private func createFallbackCurrencies() -> [FiatCurrency] {
-        let commonCurrencies = [
-            ("usd", "US Dollar", 2),
+        // Only essential currencies for fallback - EUR and USD
+        // This reduces complexity and loading time when SDK is unavailable
+        let essentialCurrencies = [
             ("eur", "Euro", 2),
-            ("gbp", "British Pound", 2),
-            ("jpy", "Japanese Yen", 0),
-            ("cad", "Canadian Dollar", 2),
-            ("aud", "Australian Dollar", 2),
-            ("chf", "Swiss Franc", 2),
-            ("cny", "Chinese Yuan", 2),
-            ("sek", "Swedish Krona", 2),
-            ("nok", "Norwegian Krone", 2),
-            ("dkk", "Danish Krone", 2),
-            ("pln", "Polish Zloty", 2),
-            ("czk", "Czech Koruna", 2),
-            ("huf", "Hungarian Forint", 0),
-            ("rub", "Russian Ruble", 2),
-            ("brl", "Brazilian Real", 2),
-            ("mxn", "Mexican Peso", 2),
-            ("inr", "Indian Rupee", 2),
-            ("krw", "South Korean Won", 0),
-            ("sgd", "Singapore Dollar", 2),
-            ("hkd", "Hong Kong Dollar", 2),
-            ("nzd", "New Zealand Dollar", 2),
-            ("zar", "South African Rand", 2),
-            ("try", "Turkish Lira", 2),
-            ("ils", "Israeli Shekel", 2),
-            ("aed", "UAE Dirham", 2),
-            ("sar", "Saudi Riyal", 2),
-            ("thb", "Thai Baht", 2),
-            ("myr", "Malaysian Ringgit", 2),
-            ("php", "Philippine Peso", 2)
+            ("usd", "US Dollar", 2)
         ]
 
-        return commonCurrencies.map { (id, name, fractionSize) in
+        return essentialCurrencies.map { (id, name, fractionSize) in
             FiatCurrency(
                 id: id,
                 info: CurrencyInfo(
@@ -371,10 +346,10 @@ class CurrencyManager: ObservableObject {
             defaultCurrency = availableCurrencies.first { $0.id.uppercased() == currencyCode }
         }
         
-        // Fallback to common currencies
+        // Fallback to essential currencies (EUR first, then USD)
         if defaultCurrency == nil {
-            let fallbackCurrencies = ["USD", "EUR", "GBP", "JPY"]
-            for currencyCode in fallbackCurrencies {
+            let essentialCurrencies = ["EUR", "USD"]
+            for currencyCode in essentialCurrencies {
                 if let currency = availableCurrencies.first(where: { $0.id.uppercased() == currencyCode }) {
                     defaultCurrency = currency
                     break
