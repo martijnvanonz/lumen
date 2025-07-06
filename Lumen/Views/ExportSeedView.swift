@@ -199,7 +199,7 @@ struct SecurityWarningView: View {
 struct SeedPhraseDisplayView: View {
     let seedWords: [String]
     
-    private let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 4)
+    private let columns = Array(repeating: GridItem(.flexible(), spacing: 12), count: 3)
     
     var body: some View {
         ScrollView {
@@ -214,25 +214,27 @@ struct SeedPhraseDisplayView: View {
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
                 
-                LazyVGrid(columns: columns, spacing: 12) {
+                LazyVGrid(columns: columns, spacing: 16) {
                     ForEach(Array(seedWords.enumerated()), id: \.offset) { index, word in
-                        VStack(spacing: 4) {
+                        VStack(spacing: 6) {
                             Text("\(index + 1)")
                                 .font(.caption2)
                                 .foregroundColor(.secondary)
-                            
+
                             Text(word)
-                                .font(.body)
-                                .fontWeight(.medium)
+                                .font(.system(size: 14, weight: .medium))
                                 .foregroundColor(.primary)
+                                .multilineTextAlignment(.center)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8) // Allow text to scale down if needed
                         }
-                        .frame(maxWidth: .infinity)
+                        .frame(maxWidth: .infinity, minHeight: 50)
                         .padding(.vertical, 12)
-                        .padding(.horizontal, 8)
+                        .padding(.horizontal, 10)
                         .background(Color(.secondarySystemGroupedBackground))
-                        .cornerRadius(8)
+                        .cornerRadius(10)
                         .overlay(
-                            RoundedRectangle(cornerRadius: 8)
+                            RoundedRectangle(cornerRadius: 10)
                                 .stroke(Color(.separator), lineWidth: 0.5)
                         )
                     }
