@@ -52,9 +52,18 @@ struct BTCPlace: Codable, Identifiable {
 
         // Required fields
         id = try container.decode(Int.self, forKey: .id)
-        lat = try container.decode(Double.self, forKey: .lat)
-        lon = try container.decode(Double.self, forKey: .lon)
-        icon = try container.decode(String.self, forKey: .icon)
+
+        // Coordinates are required for snapshot but optional for details API
+        if container.contains(.lat) && container.contains(.lon) {
+            lat = try container.decode(Double.self, forKey: .lat)
+            lon = try container.decode(Double.self, forKey: .lon)
+        } else {
+            // Default coordinates (will be overridden when merging with snapshot data)
+            lat = 0.0
+            lon = 0.0
+        }
+
+        icon = try container.decodeIfPresent(String.self, forKey: .icon) ?? "shop"
 
         // Optional fields
         name = try container.decodeIfPresent(String.self, forKey: .name)
