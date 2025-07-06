@@ -14,25 +14,25 @@ struct FeeComparisonView: View {
             VStack(spacing: 12) {
                 // Lightning Network fee
                 FeeComparisonRow(
-                    title: "Lightning Network",
+                    title: L("lightning_network"),
                     fee: lightningFeeSats,
                     amount: paymentAmountSats,
                     color: .yellow,
                     icon: "bolt.fill",
                     isRecommended: true
                 )
-                
+
                 // Traditional payment comparisons
                 FeeComparisonRow(
-                    title: "Credit Card (3%)",
+                    title: L("credit_card_fee"),
                     fee: UInt64(Double(paymentAmountSats) * 0.03),
                     amount: paymentAmountSats,
                     color: .blue,
                     icon: "creditcard.fill"
                 )
-                
+
                 FeeComparisonRow(
-                    title: "Bank Wire ($25)",
+                    title: L("bank_wire_fee"),
                     fee: UInt64(25 * 100_000_000 / 45000), // ~$25 in sats at $45k BTC
                     amount: paymentAmountSats,
                     color: .gray,
@@ -121,7 +121,7 @@ struct FeeComparisonRow: View {
                         .fontWeight(.medium)
                     
                     if isRecommended {
-                        Text("RECOMMENDED")
+                        Text(L("recommended"))
                             .font(.caption2)
                             .fontWeight(.bold)
                             .foregroundColor(.white)
