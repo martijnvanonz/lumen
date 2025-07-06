@@ -236,7 +236,7 @@ struct SmartNearbyPlacesCard: View {
         NearbyPlacesCard()
         NearbyPlacesLoadingCard()
         NearbyPlacesErrorCard(errorMessage: "Network error") {
-            print("Retry tapped")
+            // Retry tapped
         }
     }
     .padding()

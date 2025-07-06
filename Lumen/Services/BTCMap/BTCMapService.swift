@@ -53,16 +53,12 @@ class BTCMapService: ObservableObject {
                 self.isLoading = false
                 self.cache.cacheSnapshot(places)
             }
-            
-            print("✅ BTCMapService: Fetched \(places.count) places from snapshot")
-            
+
         } catch {
             await MainActor.run {
                 self.errorMessage = "Failed to fetch Bitcoin places: \(error.localizedDescription)"
                 self.isLoading = false
             }
-            
-            print("❌ BTCMapService: Failed to fetch snapshot: \(error)")
         }
     }
     
@@ -92,7 +88,6 @@ class BTCMapService: ObservableObject {
 
         // Find the base place from snapshot (contains coordinates)
         guard let basePlaceIndex = allPlaces.firstIndex(where: { $0.id == id }) else {
-            print("❌ BTCMapService: Place \(id) not found in snapshot")
             throw BTCMapError.invalidResponse
         }
 
@@ -111,7 +106,6 @@ class BTCMapService: ObservableObject {
 
             guard let httpResponse = response as? HTTPURLResponse,
                   httpResponse.statusCode == 200 else {
-                print("❌ BTCMapService: API returned status \((response as? HTTPURLResponse)?.statusCode ?? 0) for place \(id)")
                 throw BTCMapError.invalidResponse
             }
 
@@ -147,11 +141,9 @@ class BTCMapService: ObservableObject {
             // Cache the detailed place
             cache.cacheDetails(basePlace)
 
-            print("✅ BTCMapService: Fetched details for place \(id): \(basePlace.name ?? "Unknown")")
             return basePlace
 
         } catch {
-            print("❌ Failed to load details for place \(id): \(error)")
             // Return base place without details if API fails
             return basePlace
         }
@@ -174,7 +166,6 @@ class BTCMapService: ObservableObject {
         // Load snapshot cache
         if let places = cache.loadSnapshot() {
             allPlaces = places
-            print("✅ BTCMapService: Loaded \(places.count) places from cache")
         }
 
         // Set last updated based on cache age
