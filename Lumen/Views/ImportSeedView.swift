@@ -1,0 +1,289 @@
+import SwiftUI
+
+struct ImportSeedView: View {
+    @ObservedObject var onboardingState: OnboardingState
+    @StateObject private var walletManager = WalletManager.shared
+    
+    @State private var seedWords: [String] = Array(repeating: "", count: 24)
+    @State private var isImporting = false
+    @State private var errorMessage: String?
+    @State private var validationErrors: [Int: String] = [:]
+    @State private var showingPasteAlert = false
+    @State private var pasteboardContent = ""
+    @State private var expectedWordCount = 24
+    @State private var showingWordCountPicker = false
+    
+    private let validWordCounts = [12, 24]
+    
+    var body: some View {
+        VStack(spacing: 24) {
+            // Header
+            VStack(spacing: 16) {
+                Image(systemName: "square.and.arrow.down.fill")
+                    .font(.system(size: 60))
+                    .foregroundColor(.green)
+                
+                VStack(spacing: 8) {
+                    Text("Import Wallet")
+                        .font(.title)
+                        .fontWeight(.bold)
+                    
+                    Text("Enter your \(expectedWordCount)-word recovery phrase")
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+            }
+            
+            // Word Count Selector
+            HStack {
+                Text("Word Count:")
+                    .font(.headline)
+                
+                Spacer()
+                
+                Button(action: {
+                    showingWordCountPicker = true
+                }) {
+                    HStack {
+                        Text("\(expectedWordCount) words")
+                            .foregroundColor(.blue)
+                        Image(systemName: "chevron.down")
+                            .font(.caption)
+                            .foregroundColor(.blue)
+                    }
+                }
+            }
+            .padding(.horizontal)
+            
+            ScrollView {
+                VStack(spacing: 16) {
+                    // Paste Button
+                    Button(action: {
+                        checkPasteboard()
+                    }) {
+                        HStack {
+                            Image(systemName: "doc.on.clipboard")
+                            Text("Paste Seed Phrase")
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue.opacity(0.1))
+                        .foregroundColor(.blue)
+                        .cornerRadius(12)
+                    }
+                    .padding(.horizontal)
+                    
+                    // Seed Words Grid
+                    LazyVGrid(columns: gridColumns, spacing: 12) {
+                        ForEach(0..<expectedWordCount, id: \.self) { index in
+                            SeedWordInputField(
+                                index: index,
+                                word: $seedWords[index],
+                                hasError: validationErrors[index] != nil,
+                                onWordChanged: { validateWord(at: index) }
+                            )
+                        }
+                    }
+                    .padding(.horizontal)
+                    
+                    // Error Message
+                    if let errorMessage = errorMessage {
+                        Text(errorMessage)
+                            .font(.caption)
+                            .foregroundColor(.red)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                    }
+                    
+                    // Import Button
+                    Button(action: {
+                        importWallet()
+                    }) {
+                        HStack {
+                            if isImporting {
+                                ProgressView()
+                                    .scaleEffect(0.8)
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            }
+                            
+                            Text(isImporting ? "Importing..." : "Import Wallet")
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(canImport ? Color.green : Color.gray)
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                    }
+                    .disabled(!canImport || isImporting)
+                    .padding(.horizontal)
+                    .padding(.bottom, 32)
+                }
+            }
+        }
+        .onAppear {
+            adjustSeedWordsArray()
+        }
+        .alert("Paste Seed Phrase", isPresented: $showingPasteAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Paste") {
+                pasteSeedPhrase()
+            }
+        } message: {
+            Text("Found \(pasteboardContent.components(separatedBy: " ").count) words in clipboard. Paste them into the form?")
+        }
+        .actionSheet(isPresented: $showingWordCountPicker) {
+            ActionSheet(
+                title: Text("Select Word Count"),
+                message: Text("How many words does your seed phrase have?"),
+                buttons: validWordCounts.map { count in
+                    .default(Text("\(count) words")) {
+                        expectedWordCount = count
+                        adjustSeedWordsArray()
+                        clearValidationErrors()
+                    }
+                } + [.cancel()]
+            )
+        }
+    }
+    
+    private var gridColumns: [GridItem] {
+        let columnCount = expectedWordCount == 12 ? 3 : 4
+        return Array(repeating: GridItem(.flexible(), spacing: 8), count: columnCount)
+    }
+    
+    private var canImport: Bool {
+        let filledWords = seedWords.prefix(expectedWordCount).filter { !$0.isEmpty }
+        return filledWords.count == expectedWordCount && validationErrors.isEmpty && !isImporting
+    }
+    
+    private func adjustSeedWordsArray() {
+        if seedWords.count != expectedWordCount {
+            seedWords = Array(repeating: "", count: expectedWordCount)
+        }
+    }
+    
+    private func validateWord(at index: Int) {
+        let word = seedWords[index].trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        if word.isEmpty {
+            validationErrors.removeValue(forKey: index)
+        } else if !SeedPhraseValidator.isValidBIP39Word(word) {
+            validationErrors[index] = "Invalid word"
+        } else {
+            validationErrors.removeValue(forKey: index)
+        }
+        
+        // Clear general error message when user starts typing
+        if errorMessage != nil {
+            errorMessage = nil
+        }
+    }
+    
+    private func clearValidationErrors() {
+        validationErrors.removeAll()
+        errorMessage = nil
+    }
+    
+    private func checkPasteboard() {
+        if let clipboardContent = UIPasteboard.general.string {
+            let words = SeedPhraseValidator.extractWords(from: clipboardContent)
+            if validWordCounts.contains(words.count) {
+                pasteboardContent = clipboardContent
+                showingPasteAlert = true
+            }
+        }
+    }
+    
+    private func pasteSeedPhrase() {
+        let words = SeedPhraseValidator.extractWords(from: pasteboardContent)
+        
+        if validWordCounts.contains(words.count) {
+            expectedWordCount = words.count
+            adjustSeedWordsArray()
+            
+            for (index, word) in words.enumerated() {
+                if index < seedWords.count {
+                    seedWords[index] = word
+                }
+            }
+            
+            // Validate all pasted words
+            for index in 0..<min(words.count, seedWords.count) {
+                validateWord(at: index)
+            }
+        }
+    }
+    
+    private func importWallet() {
+        isImporting = true
+        errorMessage = nil
+        
+        let currentWords = Array(seedWords.prefix(expectedWordCount))
+        let seedPhrase = currentWords.joined(separator: " ")
+        
+        // Final validation
+        let validation = SeedPhraseValidator.validateSeedPhrase(seedPhrase)
+        guard validation.isValid else {
+            errorMessage = validation.errorMessage
+            isImporting = false
+            return
+        }
+        
+        Task {
+            do {
+                try await walletManager.importWallet(mnemonic: seedPhrase)
+                
+                await MainActor.run {
+                    isImporting = false
+                    // Continue to biometric setup
+                    onboardingState.currentStep = .biometricSetup
+                }
+            } catch {
+                await MainActor.run {
+                    errorMessage = "Failed to import wallet: \(error.localizedDescription)"
+                    isImporting = false
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Seed Word Input Field
+
+struct SeedWordInputField: View {
+    let index: Int
+    @Binding var word: String
+    let hasError: Bool
+    let onWordChanged: () -> Void
+    
+    @FocusState private var isFocused: Bool
+    
+    var body: some View {
+        VStack(spacing: 4) {
+            Text("\(index + 1)")
+                .font(.caption2)
+                .foregroundColor(.secondary)
+            
+            TextField("", text: $word)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .textContentType(.none)
+                .autocorrectionDisabled()
+                .textInputAutocapitalization(.never)
+                .focused($isFocused)
+                .onChange(of: word) { _, newValue in
+                    // Clean the input
+                    word = newValue.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+                    onWordChanged()
+                }
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(hasError ? Color.red : Color.clear, lineWidth: 1)
+                )
+        }
+    }
+}
+
+#Preview {
+    ImportSeedView(onboardingState: OnboardingState())
+}

@@ -20,6 +20,8 @@ struct OnboardingView: View {
                     switch onboardingState.currentStep {
                     case .welcome:
                         WelcomeStepView(onboardingState: onboardingState)
+                    case .walletChoice:
+                        WalletChoiceView(onboardingState: onboardingState)
                     case .biometricSetup:
                         BiometricSetupView(onboardingState: onboardingState)
                     case .walletInitialization:
@@ -118,7 +120,7 @@ struct NewWalletWelcomeView: View {
 
             // Continue Button
             Button(action: {
-                onboardingState.currentStep = .biometricSetup
+                onboardingState.currentStep = .walletChoice
             }) {
                 Text("Get Started")
                     .font(.headline)
@@ -225,7 +227,25 @@ struct WalletInitializationView: View {
     @ObservedObject var onboardingState: OnboardingState
     @StateObject private var walletManager = WalletManager.shared
     @State private var initializationStarted = false
-    
+
+    var body: some View {
+        // Show import view if this is an import flow
+        if onboardingState.isImportFlow {
+            ImportSeedView(onboardingState: onboardingState)
+        } else {
+            // Show normal wallet creation view
+            WalletCreationView(onboardingState: onboardingState, walletManager: walletManager, initializationStarted: $initializationStarted)
+        }
+    }
+}
+
+// MARK: - Wallet Creation View
+
+struct WalletCreationView: View {
+    @ObservedObject var onboardingState: OnboardingState
+    @ObservedObject var walletManager: WalletManager
+    @Binding var initializationStarted: Bool
+
     var body: some View {
         VStack(spacing: 40) {
             Spacer()
@@ -449,9 +469,11 @@ struct BenefitRow: View {
 
 class OnboardingState: ObservableObject {
     @Published var currentStep: OnboardingStep = .welcome
+    @Published var isImportFlow: Bool = false
     
     enum OnboardingStep {
         case welcome
+        case walletChoice
         case biometricSetup
         case walletInitialization
         case currencySelection
@@ -566,6 +588,118 @@ struct CurrencySelectionView: View {
 }
 
 
+
+// MARK: - Wallet Choice Step
+
+struct WalletChoiceView: View {
+    @ObservedObject var onboardingState: OnboardingState
+
+    var body: some View {
+        VStack(spacing: 40) {
+            Spacer()
+
+            // Header
+            VStack(spacing: 20) {
+                Image(systemName: "wallet.pass.fill")
+                    .font(.system(size: 80))
+                    .foregroundColor(.blue)
+
+                VStack(spacing: 8) {
+                    Text("Set Up Your Wallet")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+
+                    Text("Choose how you'd like to get started")
+                        .font(.title3)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+            }
+
+            Spacer()
+
+            // Choice Buttons
+            VStack(spacing: 16) {
+                // Create New Wallet Button
+                Button(action: {
+                    onboardingState.currentStep = .biometricSetup
+                }) {
+                    VStack(spacing: 12) {
+                        HStack {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.title2)
+                                .foregroundColor(.blue)
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Create New Wallet")
+                                    .font(.headline)
+                                    .foregroundColor(.primary)
+
+                                Text("Generate a new 24-word recovery phrase")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+
+                            Spacer()
+
+                            Image(systemName: "chevron.right")
+                                .foregroundColor(.secondary)
+                        }
+                        .padding()
+                    }
+                    .background(Color(.secondarySystemGroupedBackground))
+                    .cornerRadius(12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.blue.opacity(0.3), lineWidth: 1)
+                    )
+                }
+                .buttonStyle(PlainButtonStyle())
+
+                // Import Existing Wallet Button
+                Button(action: {
+                    onboardingState.currentStep = .walletInitialization
+                    // Set a flag to indicate this is an import flow
+                    onboardingState.isImportFlow = true
+                }) {
+                    VStack(spacing: 12) {
+                        HStack {
+                            Image(systemName: "square.and.arrow.down.fill")
+                                .font(.title2)
+                                .foregroundColor(.green)
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Import Existing Wallet")
+                                    .font(.headline)
+                                    .foregroundColor(.primary)
+
+                                Text("Use your existing 12 or 24-word recovery phrase")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+
+                            Spacer()
+
+                            Image(systemName: "chevron.right")
+                                .foregroundColor(.secondary)
+                        }
+                        .padding()
+                    }
+                    .background(Color(.secondarySystemGroupedBackground))
+                    .cornerRadius(12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.green.opacity(0.3), lineWidth: 1)
+                    )
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+            .padding(.horizontal)
+
+            Spacer()
+        }
+    }
+}
 
 #Preview {
     OnboardingView()

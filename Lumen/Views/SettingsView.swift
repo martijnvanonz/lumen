@@ -10,6 +10,7 @@ struct SettingsView: View {
     @State private var showingDeleteWalletConfirmation = false
     @State private var showingRefundView = false
     @State private var showingWalletInfo = false
+    @State private var showingExportSeed = false
     @State private var isLoggingOut = false
     @State private var isDeletingWallet = false
     
@@ -152,6 +153,32 @@ struct SettingsView: View {
                 // Wallet Management Section
                 Section("Wallet Management") {
                     Button(action: {
+                        showingExportSeed = true
+                    }) {
+                        HStack {
+                            Image(systemName: "key.fill")
+                                .foregroundColor(.orange)
+                                .frame(width: 24)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Export Seed Phrase")
+                                    .foregroundColor(.primary)
+
+                                Text("View your 24-word recovery phrase")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+
+                            Spacer()
+
+                            Image(systemName: "chevron.right")
+                                .foregroundColor(.secondary)
+                                .font(.caption)
+                        }
+                    }
+                    .buttonStyle(PlainButtonStyle())
+
+                    Button(action: {
                         showingLogoutConfirmation = true
                     }) {
                         HStack {
@@ -226,6 +253,9 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showingWalletInfo) {
             WalletInfoView()
+        }
+        .sheet(isPresented: $showingExportSeed) {
+            ExportSeedView()
         }
         .alert("Logout Wallet", isPresented: $showingLogoutConfirmation) {
             Button("Cancel", role: .cancel) { }

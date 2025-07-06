@@ -43,6 +43,62 @@ class WalletManager: ObservableObject {
 
     private var isInitializing = false
 
+    /// Imports a wallet from an existing mnemonic phrase
+    /// - Parameter mnemonic: The BIP39 mnemonic phrase to import
+    /// - Throws: WalletError if import fails
+    func importWallet(mnemonic: String) async throws {
+        // Prevent concurrent initialization
+        guard !isInitializing else {
+            print("⚠️ Wallet initialization already in progress - skipping import")
+            throw WalletError.initializationInProgress
+        }
+
+        isInitializing = true
+        defer { isInitializing = false }
+
+        await MainActor.run {
+            isLoading = true
+            errorMessage = nil
+        }
+
+        do {
+            // Validate the mnemonic first
+            let normalizedMnemonic = SeedPhraseValidator.normalizeSeedPhrase(mnemonic)
+            let validation = SeedPhraseValidator.validateSeedPhrase(normalizedMnemonic)
+
+            guard validation.isValid else {
+                throw WalletError.invalidMnemonic(validation.errorMessage)
+            }
+
+            // Store the imported mnemonic in keychain
+            try keychainManager.storeOrUpdateMnemonic(normalizedMnemonic)
+
+            // Clear any previously selected currency for imported wallet
+            await MainActor.run {
+                CurrencyManager.shared.clearSelectedCurrency()
+            }
+
+            // Connect to Breez SDK with the imported mnemonic
+            try await connectToBreezSDK(mnemonic: normalizedMnemonic)
+
+            await MainActor.run {
+                isConnected = true
+                isLoading = false
+                hasWallet = true
+                isLoggedIn = true
+            }
+
+            print("✅ Successfully imported wallet with \(normalizedMnemonic.components(separatedBy: " ").count) words")
+
+        } catch {
+            await MainActor.run {
+                isLoading = false
+                errorMessage = error.localizedDescription
+            }
+            throw error
+        }
+    }
+
     /// Initializes the wallet - checks for existing mnemonic or creates new one
     func initializeWallet() async {
         // Prevent concurrent initialization
@@ -1033,6 +1089,8 @@ enum WalletError: Error, LocalizedError {
     case paymentExpired
     case amountOutOfRange
     case mnemonicGenerationFailed
+    case invalidMnemonic(String)
+    case initializationInProgress
 
     var errorDescription: String? {
         switch self {
@@ -1052,6 +1110,10 @@ enum WalletError: Error, LocalizedError {
             return "Payment amount is out of allowed range"
         case .mnemonicGenerationFailed:
             return "Failed to generate secure wallet seed phrase"
+        case .invalidMnemonic(let message):
+            return "Invalid seed phrase: \(message)"
+        case .initializationInProgress:
+            return "Wallet initialization already in progress"
         }
     }
 }
