@@ -45,6 +45,16 @@ struct BTCPlace: Codable, Identifiable {
         case paymentLightningContactless = "payment:lightning_contactless"
     }
     
+    // MARK: - Initializers
+
+    /// Simple initializer for creating BTCPlace instances (useful for previews and testing)
+    init(id: Int, lat: Double, lon: Double, icon: String) {
+        self.id = id
+        self.lat = lat
+        self.lon = lon
+        self.icon = icon
+    }
+
     // MARK: - Custom Decoding
 
     init(from decoder: Decoder) throws {

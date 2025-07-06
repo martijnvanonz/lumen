@@ -9,12 +9,27 @@ struct PlacesListView: View {
     @StateObject private var locationManager = LocationManager.shared
     @State private var showingLocationPermission = false
     @State private var searchRadius: Double = 5.0
+    @State private var viewMode: ViewMode = .list
+
+    enum ViewMode: String, CaseIterable {
+        case list = "List"
+        case map = "Map"
+
+        var icon: String {
+            switch self {
+            case .list:
+                return "list.bullet"
+            case .map:
+                return "map"
+            }
+        }
+    }
     
     var nearbyPlaces: [BTCPlace] {
         guard let userLocation = locationManager.userLocation else { return [] }
         return btcMapService.getNearbyPlaces(userLocation: userLocation, radius: searchRadius)
     }
-    
+
     var body: some View {
         NavigationView {
             Group {
@@ -25,7 +40,14 @@ struct PlacesListView: View {
                 } else if nearbyPlaces.isEmpty {
                     NoPlacesView(searchRadius: searchRadius)
                 } else {
-                    PlacesList(places: nearbyPlaces, userLocation: locationManager.userLocation!)
+                    Group {
+                        switch viewMode {
+                        case .list:
+                            PlacesList(places: nearbyPlaces, userLocation: locationManager.userLocation!)
+                        case .map:
+                            BitcoinPlacesMapViewWithControls(places: nearbyPlaces, userLocation: locationManager.userLocation!, searchRadius: searchRadius)
+                        }
+                    }
                 }
             }
             .navigationTitle("Bitcoin Places")
@@ -36,7 +58,18 @@ struct PlacesListView: View {
                         dismiss()
                     }
                 }
-                
+
+                ToolbarItem(placement: .principal) {
+                    Picker("View Mode", selection: $viewMode) {
+                        ForEach(ViewMode.allCases, id: \.self) { mode in
+                            Label(mode.rawValue, systemImage: mode.icon)
+                                .tag(mode)
+                        }
+                    }
+                    .pickerStyle(SegmentedPickerStyle())
+                    .frame(width: 120)
+                }
+
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Menu {
                         Section("Search Radius") {
@@ -46,7 +79,7 @@ struct PlacesListView: View {
                                 }
                             }
                         }
-                        
+
                         Button("Refresh", systemImage: "arrow.clockwise") {
                             Task {
                                 await btcMapService.forceRefresh()
