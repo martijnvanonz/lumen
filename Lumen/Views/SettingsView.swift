@@ -7,7 +7,9 @@ struct SettingsView: View {
     @StateObject private var walletManager = WalletManager.shared
     @StateObject private var locationManager = LocationManager.shared
     @StateObject private var btcMapService = BTCMapService.shared
+    @StateObject private var localizationManager = LocalizationManager.shared
     @State private var showingCurrencySelection = false
+    @State private var showingLanguageSelection = false
     @State private var showingLogoutConfirmation = false
     @State private var showingDeleteWalletConfirmation = false
     @State private var showingRefundView = false
@@ -21,7 +23,7 @@ struct SettingsView: View {
         NavigationView {
             List {
                 // Currency Section
-                Section("Display Currency") {
+                Section(L("currency")) {
                     Button(action: {
                         showingCurrencySelection = true
                     }) {
@@ -29,11 +31,11 @@ struct SettingsView: View {
                             Image(systemName: "globe")
                                 .foregroundColor(.yellow)
                                 .frame(width: 24)
-                            
+
                             VStack(alignment: .leading, spacing: 2) {
-                                Text("Currency")
+                                Text(L("currency"))
                                     .foregroundColor(.primary)
-                                
+
                                 if let selectedCurrency = currencyManager.selectedCurrency {
                                     Text("\(selectedCurrency.id.uppercased()) - \(selectedCurrency.info.name)")
                                         .font(.caption)
@@ -44,9 +46,38 @@ struct SettingsView: View {
                                         .foregroundColor(.secondary)
                                 }
                             }
-                            
+
                             Spacer()
-                            
+
+                            Image(systemName: "chevron.right")
+                                .foregroundColor(.secondary)
+                                .font(.caption)
+                        }
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+
+                // Language Section
+                Section(L("language")) {
+                    Button(action: {
+                        showingLanguageSelection = true
+                    }) {
+                        HStack {
+                            Image(systemName: "textformat")
+                                .foregroundColor(.blue)
+                                .frame(width: 24)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(L("language"))
+                                    .foregroundColor(.primary)
+
+                                Text(localizationManager.currentLanguage.displayName)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+
+                            Spacer()
+
                             Image(systemName: "chevron.right")
                                 .foregroundColor(.secondary)
                                 .font(.caption)
@@ -323,11 +354,11 @@ struct SettingsView: View {
                     .buttonStyle(PlainButtonStyle())
                 }
             }
-            .navigationTitle("Settings")
+            .navigationTitle(L("settings"))
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
+                    Button(L("done")) {
                         dismiss()
                     }
                 }
@@ -335,6 +366,9 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showingCurrencySelection) {
             CurrencySelectionSettingsView()
+        }
+        .sheet(isPresented: $showingLanguageSelection) {
+            LanguageSelectionView()
         }
         .sheet(isPresented: $showingRefundView) {
             RefundView()
@@ -492,10 +526,68 @@ struct CurrencySelectionSettingsView: View {
 
 // MARK: - Preview
 
+// MARK: - Language Selection View
+
+struct LanguageSelectionView: View {
+    @Environment(\.dismiss) private var dismiss
+    @StateObject private var localizationManager = LocalizationManager.shared
+
+    var body: some View {
+        NavigationView {
+            List {
+                ForEach(LocalizationManager.Language.allCases) { language in
+                    Button(action: {
+                        localizationManager.setLanguage(language)
+                        dismiss()
+                    }) {
+                        HStack {
+                            Text(language.flag)
+                                .font(.title2)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(language.displayName)
+                                    .foregroundColor(.primary)
+                                    .font(.body)
+
+                                Text(language.nativeName)
+                                    .foregroundColor(.secondary)
+                                    .font(.caption)
+                            }
+
+                            Spacer()
+
+                            if localizationManager.currentLanguage == language {
+                                Image(systemName: "checkmark")
+                                    .foregroundColor(.blue)
+                                    .font(.headline)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+            }
+            .navigationTitle(L("language"))
+            .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(L("done")) {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
 #Preview {
     SettingsView()
 }
 
 #Preview("Currency Selection") {
     CurrencySelectionSettingsView()
+}
+
+#Preview("Language Selection") {
+    LanguageSelectionView()
 }
