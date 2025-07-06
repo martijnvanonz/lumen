@@ -99,23 +99,18 @@ struct ExportSeedView: View {
         
         Task {
             do {
-                print("🔍 Requesting mnemonic from keychain...")
                 let mnemonic = try await KeychainManager.shared.getSecureMnemonic(
                     reason: "Access your wallet recovery phrase"
                 )
-                print("🔍 Successfully retrieved mnemonic with \(mnemonic.components(separatedBy: " ").count) words")
-                
+
                 await MainActor.run {
                     seedWords = mnemonic.components(separatedBy: " ")
                     isLoading = false
-                    print("🔍 Updated UI with seed words: \(seedWords.count) words")
                 }
             } catch {
-                print("🔍 Failed to retrieve mnemonic: \(error)")
                 await MainActor.run {
                     errorMessage = "Failed to retrieve seed phrase: \(error.localizedDescription)"
                     isLoading = false
-                    print("🔍 Updated UI with error: \(errorMessage ?? "unknown")")
                 }
             }
         }
@@ -188,9 +183,6 @@ struct SecurityWarningView: View {
             }
         }
         .padding()
-        .onAppear {
-            print("🔍 SecurityWarningView appeared and rendered")
-        }
     }
 }
 

@@ -42,7 +42,6 @@ class CurrencyManager: ObservableObject {
         if !forceReload && !availableCurrencies.isEmpty {
             if let lastLoad = lastCurrencyLoadTime,
                Date().timeIntervalSince(lastLoad) < currencyCacheTimeout {
-                print("💾 Using cached currencies (loaded \(Int(Date().timeIntervalSince(lastLoad)))s ago)")
                 return
             }
         }
@@ -66,7 +65,6 @@ class CurrencyManager: ObservableObject {
 
         // Try to get SDK, but don't fail if it's not available yet
         guard let sdk = WalletManager.shared.sdk else {
-            print("⚠️ SDK not available for loading currencies, will load fallback currencies")
             await loadFallbackCurrencies(setDefaultIfNone: setDefaultIfNone)
             return
         }
@@ -88,12 +86,10 @@ class CurrencyManager: ObservableObject {
                 }
             }
 
-            print("✅ Loaded \(currencies.count) fiat currencies from SDK")
         } catch {
             await MainActor.run {
                 self.isLoadingCurrencies = false
             }
-            print("❌ Failed to load fiat currencies from SDK: \(error)")
             // Load fallback currencies as backup
             await loadFallbackCurrencies(setDefaultIfNone: setDefaultIfNone)
         }
@@ -116,8 +112,6 @@ class CurrencyManager: ObservableObject {
                 self.setDefaultCurrency()
             }
         }
-
-        print("✅ Loaded \(fallbackCurrencies.count) fallback currencies")
     }
 
     /// Create a minimal list of essential fallback currencies (EUR & USD only)
@@ -149,7 +143,6 @@ class CurrencyManager: ObservableObject {
     /// Fetch current BTC rates from Breez SDK
     func fetchCurrentRates() async {
         guard let sdk = WalletManager.shared.sdk else {
-            print("❌ SDK not available for fetching rates")
             return
         }
         
@@ -165,17 +158,10 @@ class CurrencyManager: ObservableObject {
                 self.isLoadingRates = false
             }
 
-            print("✅ Fetched \(rates.count) BTC rates")
-
-            // Debug: Print first few rates to check for invalid values
-            for (index, rate) in rates.prefix(5).enumerated() {
-                print("Rate \(index): \(rate.coin) = \(rate.value) (isFinite: \(rate.value.isFinite), isNaN: \(rate.value.isNaN))")
-            }
         } catch {
             await MainActor.run {
                 self.isLoadingRates = false
             }
-            print("❌ Failed to fetch BTC rates: \(error)")
         }
     }
     
@@ -185,7 +171,6 @@ class CurrencyManager: ObservableObject {
         DispatchQueue.main.async {
             self.selectedCurrency = currency
             self.saveCurrencyToUserDefaults(currency)
-            print("✅ Selected currency: \(currency.id)")
         }
     }
 
@@ -193,18 +178,14 @@ class CurrencyManager: ObservableObject {
     func clearSelectedCurrency() {
         selectedCurrency = nil
         userDefaults.removeObject(forKey: selectedCurrencyKey)
-        print("🗑️ Cleared selected currency")
     }
 
     /// Reload currencies from SDK when it becomes available
     /// This replaces fallback currencies with real SDK currencies
     func reloadCurrenciesFromSDK(setDefaultIfNone: Bool = false) async {
         guard let sdk = WalletManager.shared.sdk else {
-            print("⚠️ SDK still not available for reloading currencies")
             return
         }
-
-        print("🔄 Reloading currencies from SDK...")
 
         // Cancel any existing loading task
         currencyLoadingTask?.cancel()
@@ -230,9 +211,8 @@ class CurrencyManager: ObservableObject {
                 }
             }
 
-            print("✅ Reloaded \(currencies.count) currencies from SDK")
         } catch {
-            print("❌ Failed to reload currencies from SDK: \(error)")
+            // Silently fail - fallback currencies will remain
         }
     }
 
@@ -322,11 +302,8 @@ class CurrencyManager: ObservableObject {
     
     private func loadSelectedCurrency() {
         guard let currencyId = userDefaults.string(forKey: selectedCurrencyKey) else {
-            print("💾 No saved currency found")
             return
         }
-
-        print("💾 Loading saved currency: \(currencyId)")
 
         // Create a temporary currency object to show immediately in UI
         // This will be replaced with the full currency object once SDK loads
@@ -345,7 +322,6 @@ class CurrencyManager: ObservableObject {
 
         // Set immediately for UI
         selectedCurrency = tempCurrency
-        print("✅ Restored currency from storage: \(currencyId)")
 
         // Load full currencies in background and update if needed
         Task {
@@ -354,7 +330,6 @@ class CurrencyManager: ObservableObject {
                 // Replace with full currency object if available
                 if let fullCurrency = self.availableCurrencies.first(where: { $0.id == currencyId }) {
                     self.selectedCurrency = fullCurrency
-                    print("🔄 Updated to full currency object: \(currencyId)")
                 }
             }
         }
@@ -409,9 +384,6 @@ class CurrencyManager: ObservableObject {
         // Try to find the same currency in the new list
         if let matchingCurrency = availableCurrencies.first(where: { $0.id == currentSelected.id }) {
             selectedCurrency = matchingCurrency
-            print("🔄 Preserved selected currency: \(currentSelected.id)")
-        } else {
-            print("⚠️ Selected currency \(currentSelected.id) not found in new list")
         }
     }
     

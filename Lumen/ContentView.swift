@@ -30,7 +30,6 @@ struct ContentView: View {
             }
         }
         .onAppear {
-            print("📱 ContentView.onAppear triggered")
             checkWalletStatus()
         }
         .onReceive(NotificationCenter.default.publisher(for: .walletLoggedOut)) { _ in

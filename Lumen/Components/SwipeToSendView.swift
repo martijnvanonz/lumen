@@ -129,12 +129,12 @@ struct SwipeToSendView_Previews: PreviewProvider {
     static var previews: some View {
         VStack(spacing: 20) {
             SwipeToSendView(totalAmount: 10063) {
-                print("Payment sent!")
+                // Payment sent
             }
             .padding()
-            
+
             SwipeToSendView(totalAmount: 50000) {
-                print("Large payment sent!")
+                // Large payment sent
             }
             .padding()
         }

@@ -202,12 +202,9 @@ extension KeychainManager {
         // First try to get from secure cache
         do {
             let cachedSeed = try SecureSeedCache.shared.retrieveSeed()
-            print("✅ Retrieved seed from secure cache")
             return cachedSeed
         } catch SecureSeedCache.CacheError.cacheEmpty, SecureSeedCache.CacheError.cacheExpired {
             // Cache miss or expired - authenticate and retrieve from keychain
-            print("🔐 Cache miss - authenticating for keychain access")
-
             let mnemonic = try await retrieveMnemonicWithBiometrics(reason: reason)
 
             // Cache the retrieved seed for future use
@@ -216,7 +213,6 @@ extension KeychainManager {
             return mnemonic
         } catch {
             // Security violation or other cache error - clear cache and re-authenticate
-            print("⚠️ Cache security error - clearing and re-authenticating")
             SecureSeedCache.shared.clearCache()
 
             let mnemonic = try await retrieveMnemonicWithBiometrics(reason: reason)
