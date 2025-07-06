@@ -110,11 +110,19 @@ struct NearbyPlacesCard: View {
     }
     
     private func handleTap() {
+        print("🔍 NearbyPlacesCard: handleTap() called")
+        print("🔍 NearbyPlacesCard: hasLocationPermission = \(locationManager.hasLocationPermission)")
+        print("🔍 NearbyPlacesCard: userLocation = \(locationManager.userLocation?.description ?? "nil")")
+        print("🔍 NearbyPlacesCard: authorizationStatus = \(locationManager.authorizationStatus)")
+
         if !locationManager.hasLocationPermission {
+            print("🔍 NearbyPlacesCard: No permission, showing location permission view")
             showingLocationPermission = true
         } else if locationManager.userLocation != nil {
+            print("🔍 NearbyPlacesCard: Have location, showing places")
             showingPlaces = true
         } else {
+            print("🔍 NearbyPlacesCard: Have permission but no location, starting updates")
             // Location permission granted but no location yet
             locationManager.startLocationUpdates()
         }

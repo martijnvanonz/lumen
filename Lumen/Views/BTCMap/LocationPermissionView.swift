@@ -101,14 +101,21 @@ struct LocationPermissionView: View {
     }
     
     private func handlePrimaryAction() {
+        print("🔍 LocationPermissionView: handlePrimaryAction() called")
+        print("🔍 LocationPermissionView: Current authorization status: \(locationManager.authorizationStatus)")
+
         switch locationManager.authorizationStatus {
         case .notDetermined:
+            print("🔍 LocationPermissionView: Calling requestLocationPermission()")
             locationManager.requestLocationPermission()
         case .denied, .restricted:
+            print("🔍 LocationPermissionView: Opening settings")
             locationManager.openSettings()
         case .authorizedWhenInUse, .authorizedAlways:
+            print("🔍 LocationPermissionView: Toggling location services")
             locationManager.toggleLocationServices()
         @unknown default:
+            print("🔍 LocationPermissionView: Unknown status, calling requestLocationPermission()")
             locationManager.requestLocationPermission()
         }
     }

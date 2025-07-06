@@ -27,42 +27,61 @@ class LocationManager: NSObject, ObservableObject {
     
     override init() {
         super.init()
+        print("🔍 LocationManager: Initializing...")
         setupLocationManager()
         loadSettings()
+        print("🔍 LocationManager: Initialization complete")
+        print("🔍 LocationManager: Initial authorization status: \(authorizationStatus)")
+        print("🔍 LocationManager: Location services enabled: \(CLLocationManager.locationServicesEnabled())")
     }
     
     // MARK: - Public Methods
     
     /// Request location permission from user
     func requestLocationPermission() {
+        print("🔍 LocationManager: requestLocationPermission() called")
+        print("🔍 LocationManager: Current authorization status: \(authorizationStatus)")
+
         switch authorizationStatus {
         case .notDetermined:
+            print("🔍 LocationManager: Status is notDetermined, requesting authorization...")
             locationManager.requestWhenInUseAuthorization()
         case .denied, .restricted:
+            print("🔍 LocationManager: Status is denied/restricted, showing error message")
             // Guide user to settings
             errorMessage = "Location access is required to show nearby Bitcoin places. Please enable location access in Settings."
         case .authorizedWhenInUse, .authorizedAlways:
+            print("🔍 LocationManager: Status is already authorized, starting location updates")
             startLocationUpdates()
         @unknown default:
+            print("🔍 LocationManager: Unknown authorization status")
             break
         }
     }
     
     /// Start location updates
     func startLocationUpdates() {
+        print("🔍 LocationManager: startLocationUpdates() called")
+        print("🔍 LocationManager: Authorization status: \(authorizationStatus)")
+        print("🔍 LocationManager: Location services enabled: \(CLLocationManager.locationServicesEnabled())")
+
         guard authorizationStatus == .authorizedWhenInUse || authorizationStatus == .authorizedAlways else {
+            print("🔍 LocationManager: Authorization not granted, cannot start updates")
             return
         }
-        
+
         guard CLLocationManager.locationServicesEnabled() else {
+            print("🔍 LocationManager: Location services disabled system-wide")
             errorMessage = "Location services are disabled. Please enable them in Settings."
             return
         }
-        
+
+        print("🔍 LocationManager: Starting location updates...")
         locationManager.startUpdatingLocation()
         isLocationEnabled = true
         saveSettings()
         errorMessage = nil
+        print("🔍 LocationManager: Location updates started successfully")
     }
     
     /// Stop location updates
@@ -144,7 +163,7 @@ class LocationManager: NSObject, ObservableObject {
 
 // MARK: - CLLocationManagerDelegate
 
-extension LocationManager: CLLocationManagerDelegate {
+extension LocationManager: @preconcurrency CLLocationManagerDelegate {
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
@@ -166,29 +185,42 @@ extension LocationManager: CLLocationManagerDelegate {
     }
     
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        print("🔍 LocationManager: didChangeAuthorization called with status: \(status)")
+        print("🔍 LocationManager: Previous status was: \(authorizationStatus)")
+
         authorizationStatus = status
-        
+
         switch status {
         case .notDetermined:
             print("📍 LocationManager: Authorization not determined")
-            
+
         case .denied, .restricted:
             print("📍 LocationManager: Authorization denied/restricted")
             stopLocationUpdates()
             errorMessage = "Location access is required to show nearby Bitcoin places."
-            
+
         case .authorizedWhenInUse:
             print("📍 LocationManager: Authorization granted (when in use)")
-            if isLocationEnabled {
-                startLocationUpdates()
+            print("📍 LocationManager: isLocationEnabled = \(isLocationEnabled)")
+            // Auto-enable location services when permission is granted
+            if !isLocationEnabled {
+                print("📍 LocationManager: Auto-enabling location services")
+                isLocationEnabled = true
+                saveSettings()
             }
-            
+            startLocationUpdates()
+
         case .authorizedAlways:
             print("📍 LocationManager: Authorization granted (always)")
-            if isLocationEnabled {
-                startLocationUpdates()
+            print("📍 LocationManager: isLocationEnabled = \(isLocationEnabled)")
+            // Auto-enable location services when permission is granted
+            if !isLocationEnabled {
+                print("📍 LocationManager: Auto-enabling location services")
+                isLocationEnabled = true
+                saveSettings()
             }
-            
+            startLocationUpdates()
+
         @unknown default:
             print("📍 LocationManager: Unknown authorization status")
         }
