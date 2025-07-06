@@ -13,10 +13,13 @@ class CurrencyManager: ObservableObject {
     @Published var isLoadingCurrencies = false
     
     // MARK: - Private Properties
-    
+
     private let userDefaults = UserDefaults.standard
     private let selectedCurrencyKey = "selectedFiatCurrency"
     private var rateUpdateTimer: Timer?
+    private var currencyLoadingTask: Task<Void, Never>?
+    private var lastCurrencyLoadTime: Date?
+    private let currencyCacheTimeout: TimeInterval = 300 // 5 minutes
     
     // MARK: - Singleton
     
@@ -25,16 +28,38 @@ class CurrencyManager: ObservableObject {
     private init() {
         loadSelectedCurrency()
     }
+
+    deinit {
+        currencyLoadingTask?.cancel()
+        stopRateUpdates()
+    }
     
     // MARK: - Public Methods
     
-    /// Load available currencies from Breez SDK
-    func loadAvailableCurrencies(setDefaultIfNone: Bool = false) async {
-        // Check if we already have currencies loaded
-        if !availableCurrencies.isEmpty {
-            return
+    /// Load available currencies from Breez SDK with improved caching
+    func loadAvailableCurrencies(setDefaultIfNone: Bool = false, forceReload: Bool = false) async {
+        // Check if we already have currencies loaded and they're still fresh
+        if !forceReload && !availableCurrencies.isEmpty {
+            if let lastLoad = lastCurrencyLoadTime,
+               Date().timeIntervalSince(lastLoad) < currencyCacheTimeout {
+                print("💾 Using cached currencies (loaded \(Int(Date().timeIntervalSince(lastLoad)))s ago)")
+                return
+            }
         }
 
+        // Cancel any existing loading task
+        currencyLoadingTask?.cancel()
+
+        // Create new loading task
+        currencyLoadingTask = Task {
+            await performCurrencyLoad(setDefaultIfNone: setDefaultIfNone)
+        }
+
+        await currencyLoadingTask?.value
+    }
+
+    /// Perform the actual currency loading
+    private func performCurrencyLoad(setDefaultIfNone: Bool) async {
         await MainActor.run {
             isLoadingCurrencies = true
         }
@@ -52,8 +77,12 @@ class CurrencyManager: ObservableObject {
             await MainActor.run {
                 self.availableCurrencies = currencies.sorted { $0.id < $1.id }
                 self.isLoadingCurrencies = false
+                self.lastCurrencyLoadTime = Date()
 
-                // Only set default currency if explicitly requested
+                // Preserve selected currency if it exists in new list
+                self.preserveSelectedCurrency()
+
+                // Only set default currency if explicitly requested and none selected
                 if setDefaultIfNone && self.selectedCurrency == nil {
                     self.setDefaultCurrency()
                 }
@@ -77,8 +106,12 @@ class CurrencyManager: ObservableObject {
         await MainActor.run {
             self.availableCurrencies = fallbackCurrencies
             self.isLoadingCurrencies = false
+            self.lastCurrencyLoadTime = Date()
 
-            // Only set default currency if explicitly requested
+            // Preserve selected currency if it exists in fallback list
+            self.preserveSelectedCurrency()
+
+            // Only set default currency if explicitly requested and none selected
             if setDefaultIfNone && self.selectedCurrency == nil {
                 self.setDefaultCurrency()
             }
@@ -87,42 +120,17 @@ class CurrencyManager: ObservableObject {
         print("✅ Loaded \(fallbackCurrencies.count) fallback currencies")
     }
 
-    /// Create a list of common fallback currencies
+    /// Create a minimal list of essential fallback currencies (EUR & USD only)
+    /// Used when Breez SDK is unavailable - keeps the app functional with core currencies
     private func createFallbackCurrencies() -> [FiatCurrency] {
-        let commonCurrencies = [
-            ("usd", "US Dollar", 2),
+        // Only essential currencies for fallback - EUR and USD
+        // This reduces complexity and loading time when SDK is unavailable
+        let essentialCurrencies = [
             ("eur", "Euro", 2),
-            ("gbp", "British Pound", 2),
-            ("jpy", "Japanese Yen", 0),
-            ("cad", "Canadian Dollar", 2),
-            ("aud", "Australian Dollar", 2),
-            ("chf", "Swiss Franc", 2),
-            ("cny", "Chinese Yuan", 2),
-            ("sek", "Swedish Krona", 2),
-            ("nok", "Norwegian Krone", 2),
-            ("dkk", "Danish Krone", 2),
-            ("pln", "Polish Zloty", 2),
-            ("czk", "Czech Koruna", 2),
-            ("huf", "Hungarian Forint", 0),
-            ("rub", "Russian Ruble", 2),
-            ("brl", "Brazilian Real", 2),
-            ("mxn", "Mexican Peso", 2),
-            ("inr", "Indian Rupee", 2),
-            ("krw", "South Korean Won", 0),
-            ("sgd", "Singapore Dollar", 2),
-            ("hkd", "Hong Kong Dollar", 2),
-            ("nzd", "New Zealand Dollar", 2),
-            ("zar", "South African Rand", 2),
-            ("try", "Turkish Lira", 2),
-            ("ils", "Israeli Shekel", 2),
-            ("aed", "UAE Dirham", 2),
-            ("sar", "Saudi Riyal", 2),
-            ("thb", "Thai Baht", 2),
-            ("myr", "Malaysian Ringgit", 2),
-            ("php", "Philippine Peso", 2)
+            ("usd", "US Dollar", 2)
         ]
 
-        return commonCurrencies.map { (id, name, fractionSize) in
+        return essentialCurrencies.map { (id, name, fractionSize) in
             FiatCurrency(
                 id: id,
                 info: CurrencyInfo(
@@ -198,6 +206,9 @@ class CurrencyManager: ObservableObject {
 
         print("🔄 Reloading currencies from SDK...")
 
+        // Cancel any existing loading task
+        currencyLoadingTask?.cancel()
+
         do {
             let currencies = try sdk.listFiatCurrencies()
 
@@ -207,6 +218,7 @@ class CurrencyManager: ObservableObject {
 
                 // Update available currencies
                 self.availableCurrencies = currencies.sorted { $0.id < $1.id }
+                self.lastCurrencyLoadTime = Date()
 
                 // Restore selected currency if it exists in the new list
                 if let selectedId = selectedCurrencyId,
@@ -222,6 +234,18 @@ class CurrencyManager: ObservableObject {
         } catch {
             print("❌ Failed to reload currencies from SDK: \(error)")
         }
+    }
+
+    /// Force refresh currencies (ignores cache)
+    func refreshCurrencies() async {
+        await loadAvailableCurrencies(setDefaultIfNone: false, forceReload: true)
+    }
+
+    /// Clear currency cache
+    func clearCurrencyCache() {
+        lastCurrencyLoadTime = nil
+        currencyLoadingTask?.cancel()
+        currencyLoadingTask = nil
     }
     
     /// Get the current BTC rate for the selected currency
@@ -271,18 +295,20 @@ class CurrencyManager: ObservableObject {
     
     /// Start periodic rate updates
     func startRateUpdates() {
-        stopRateUpdates() // Stop any existing timer
-        
-        // Update rates every 5 minutes
-        rateUpdateTimer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { _ in
-            Task {
-                await self.fetchCurrentRates()
+        Task { @MainActor in
+            stopRateUpdates() // Stop any existing timer
+
+            // Update rates every 5 minutes
+            rateUpdateTimer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { _ in
+                Task {
+                    await self.fetchCurrentRates()
+                }
             }
-        }
-        
-        // Initial fetch
-        Task {
-            await fetchCurrentRates()
+
+            // Initial fetch
+            Task {
+                await fetchCurrentRates()
+            }
         }
     }
     
@@ -296,16 +322,39 @@ class CurrencyManager: ObservableObject {
     
     private func loadSelectedCurrency() {
         guard let currencyId = userDefaults.string(forKey: selectedCurrencyKey) else {
+            print("💾 No saved currency found")
             return
         }
 
-        // We'll set the selected currency after loading available currencies
-        // by matching the stored currency ID
+        print("💾 Loading saved currency: \(currencyId)")
+
+        // Create a temporary currency object to show immediately in UI
+        // This will be replaced with the full currency object once SDK loads
+        let tempCurrency = FiatCurrency(
+            id: currencyId,
+            info: CurrencyInfo(
+                name: getCurrencyDisplayName(for: currencyId),
+                fractionSize: 2,
+                spacing: nil,
+                symbol: nil,
+                uniqSymbol: nil,
+                localizedName: [],
+                localeOverrides: []
+            )
+        )
+
+        // Set immediately for UI
+        selectedCurrency = tempCurrency
+        print("✅ Restored currency from storage: \(currencyId)")
+
+        // Load full currencies in background and update if needed
         Task {
             await loadAvailableCurrencies()
             await MainActor.run {
-                if let currency = self.availableCurrencies.first(where: { $0.id == currencyId }) {
-                    self.selectedCurrency = currency
+                // Replace with full currency object if available
+                if let fullCurrency = self.availableCurrencies.first(where: { $0.id == currencyId }) {
+                    self.selectedCurrency = fullCurrency
+                    print("🔄 Updated to full currency object: \(currencyId)")
                 }
             }
         }
@@ -313,6 +362,57 @@ class CurrencyManager: ObservableObject {
 
     private func saveCurrencyToUserDefaults(_ currency: FiatCurrency) {
         userDefaults.set(currency.id, forKey: selectedCurrencyKey)
+    }
+
+    /// Get display name for currency ID (used for temporary currency objects)
+    private func getCurrencyDisplayName(for currencyId: String) -> String {
+        let commonNames: [String: String] = [
+            "usd": "US Dollar",
+            "eur": "Euro",
+            "gbp": "British Pound",
+            "jpy": "Japanese Yen",
+            "cad": "Canadian Dollar",
+            "aud": "Australian Dollar",
+            "chf": "Swiss Franc",
+            "cny": "Chinese Yuan",
+            "sek": "Swedish Krona",
+            "nok": "Norwegian Krone",
+            "dkk": "Danish Krone",
+            "pln": "Polish Zloty",
+            "czk": "Czech Koruna",
+            "huf": "Hungarian Forint",
+            "rub": "Russian Ruble",
+            "brl": "Brazilian Real",
+            "mxn": "Mexican Peso",
+            "inr": "Indian Rupee",
+            "krw": "South Korean Won",
+            "sgd": "Singapore Dollar",
+            "hkd": "Hong Kong Dollar",
+            "nzd": "New Zealand Dollar",
+            "zar": "South African Rand",
+            "try": "Turkish Lira",
+            "ils": "Israeli Shekel",
+            "aed": "UAE Dirham",
+            "sar": "Saudi Riyal",
+            "thb": "Thai Baht",
+            "myr": "Malaysian Ringgit",
+            "php": "Philippine Peso"
+        ]
+
+        return commonNames[currencyId.lowercased()] ?? currencyId.uppercased()
+    }
+
+    /// Preserve the selected currency when loading new currency lists
+    private func preserveSelectedCurrency() {
+        guard let currentSelected = selectedCurrency else { return }
+
+        // Try to find the same currency in the new list
+        if let matchingCurrency = availableCurrencies.first(where: { $0.id == currentSelected.id }) {
+            selectedCurrency = matchingCurrency
+            print("🔄 Preserved selected currency: \(currentSelected.id)")
+        } else {
+            print("⚠️ Selected currency \(currentSelected.id) not found in new list")
+        }
     }
     
     private func setDefaultCurrency() {
@@ -326,10 +426,10 @@ class CurrencyManager: ObservableObject {
             defaultCurrency = availableCurrencies.first { $0.id.uppercased() == currencyCode }
         }
         
-        // Fallback to common currencies
+        // Fallback to essential currencies (EUR first, then USD)
         if defaultCurrency == nil {
-            let fallbackCurrencies = ["USD", "EUR", "GBP", "JPY"]
-            for currencyCode in fallbackCurrencies {
+            let essentialCurrencies = ["EUR", "USD"]
+            for currencyCode in essentialCurrencies {
                 if let currency = availableCurrencies.first(where: { $0.id.uppercased() == currencyCode }) {
                     defaultCurrency = currency
                     break

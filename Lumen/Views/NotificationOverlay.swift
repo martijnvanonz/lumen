@@ -214,9 +214,10 @@ struct EnhancedTransactionRow: View {
                     
                     Spacer()
                     
-                    Text("\(payment.direction == .incoming ? "+" : "-")\(payment.amountSat) sats")
-                        .font(.headline)
-                        .foregroundColor(payment.direction.color)
+                    SatsAmountView.transaction(
+                        payment.amountSat,
+                        isReceive: payment.direction == .incoming
+                    )
                 }
                 
                 HStack {

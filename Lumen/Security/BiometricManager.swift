@@ -212,6 +212,101 @@ class BiometricManager {
             }
         }
     }
+
+    /// Checks if biometric authentication has changed (e.g., new fingerprint added)
+    /// - Returns: true if biometric data has changed since last evaluation
+    func hasBiometricDataChanged() -> Bool {
+        let context = LAContext()
+        var error: NSError?
+
+        // Check if biometrics are available
+        guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) else {
+            return false
+        }
+
+        // For iOS 18+, we'll use a simpler approach since evaluatedPolicyDomainState is deprecated
+        // We'll track biometric availability and type changes instead
+        let currentBiometricType = context.biometryType
+        let storedBiometricTypeKey = "StoredBiometricType"
+        let storedBiometricType = UserDefaults.standard.string(forKey: storedBiometricTypeKey)
+
+        let currentTypeString = biometricTypeToString(currentBiometricType)
+
+        // If stored type is different from current, biometrics have changed
+        if let storedType = storedBiometricType, storedType != currentTypeString {
+            UserDefaults.standard.set(currentTypeString, forKey: storedBiometricTypeKey)
+            return true
+        }
+
+        // If no stored type, save current and return false (first time)
+        if storedBiometricType == nil {
+            UserDefaults.standard.set(currentTypeString, forKey: storedBiometricTypeKey)
+        }
+
+        return false
+    }
+
+    /// Converts biometric type to string for storage
+    private func biometricTypeToString(_ type: LABiometryType) -> String {
+        switch type {
+        case .faceID:
+            return "faceID"
+        case .touchID:
+            return "touchID"
+        case .opticID:
+            return "opticID"
+        case .none:
+            return "none"
+        @unknown default:
+            return "unknown"
+        }
+    }
+
+    /// Updates stored biometric data after successful authentication
+    func updateBiometricData() {
+        let context = LAContext()
+        let currentBiometricType = context.biometryType
+        let currentTypeString = biometricTypeToString(currentBiometricType)
+        UserDefaults.standard.set(currentTypeString, forKey: "StoredBiometricType")
+    }
+
+    /// Provides user-friendly error messages for authentication failures
+    /// - Parameter error: The error to convert
+    /// - Returns: User-friendly error message
+    func userFriendlyErrorMessage(for error: Error) -> String {
+        if let biometricError = error as? BiometricError {
+            switch biometricError {
+            case .notAvailable:
+                return "Biometric authentication is not available on this device."
+            case .notEnrolled:
+                return "No biometric data is enrolled. Please set up Face ID or Touch ID in Settings."
+            case .userCancel:
+                return "Authentication was cancelled."
+            case .userFallback:
+                return "Please use your device passcode to authenticate."
+            case .systemCancel:
+                return "Authentication was cancelled by the system."
+            case .authenticationFailed:
+                return "Authentication failed. Please try again."
+            case .invalidContext:
+                return "Authentication context is invalid."
+            case .biometryNotAvailable:
+                return "Biometric authentication is temporarily unavailable."
+            case .biometryLockout:
+                return "Biometric authentication is locked. Please use your device passcode."
+            case .passcodeNotSet:
+                return "Device passcode is not set. Please set up a passcode in Settings."
+            case .biometryNotEnrolled:
+                return "No biometric data is enrolled. Please set up Face ID or Touch ID in Settings."
+            case .notInteractive:
+                return "Authentication cannot be performed in the current context."
+            case .unknown(let error):
+                return error.localizedDescription
+            }
+        }
+
+        return error.localizedDescription
+    }
     
     // MARK: - Private Methods
     

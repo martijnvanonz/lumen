@@ -321,38 +321,26 @@ struct CurrencySelectionSettingsView: View {
                 }
                 .padding()
                 
-                // Currency List
+                // Currency Grid
                 if currencyManager.isLoadingCurrencies {
                     Spacer()
                     ProgressView("Loading currencies...")
                     Spacer()
                 } else {
-                    List(filteredCurrencies, id: \.id) { currency in
-                        Button(action: {
-                            currencyManager.setSelectedCurrency(currency)
-                            dismiss()
-                        }) {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(currency.id.uppercased())
-                                        .font(.headline)
-                                        .foregroundColor(.primary)
-                                    
-                                    Text(currency.info.name)
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-                                
-                                Spacer()
-                                
-                                if currencyManager.selectedCurrency?.id == currency.id {
-                                    Image(systemName: "checkmark")
-                                        .foregroundColor(.yellow)
-                                        .font(.headline)
-                                }
+                    ScrollView {
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 3), spacing: 12) {
+                            ForEach(filteredCurrencies, id: \.id) { currency in
+                                CurrencyGridItem(
+                                    currency: currency,
+                                    isSelected: currencyManager.selectedCurrency?.id == currency.id,
+                                    onTap: {
+                                        currencyManager.setSelectedCurrency(currency)
+                                        dismiss()
+                                    }
+                                )
                             }
                         }
-                        .buttonStyle(PlainButtonStyle())
+                        .padding(.horizontal)
                     }
                 }
             }
@@ -367,8 +355,11 @@ struct CurrencySelectionSettingsView: View {
             }
         }
         .onAppear {
-            Task {
-                await currencyManager.loadAvailableCurrencies(setDefaultIfNone: true)
+            // Only load if we don't have currencies yet
+            if currencyManager.availableCurrencies.isEmpty {
+                Task {
+                    await currencyManager.loadAvailableCurrencies(setDefaultIfNone: true)
+                }
             }
         }
     }

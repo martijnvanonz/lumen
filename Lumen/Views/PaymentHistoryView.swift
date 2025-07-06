@@ -186,9 +186,7 @@ struct PaymentRowView: View {
                     
                     Spacer()
                     
-                    Text(amountText)
-                        .font(.headline)
-                        .foregroundColor(amountColor)
+                    SatsAmountView.transaction(payment.amountSat, isReceive: payment.paymentType == .receive)
                 }
                 
                 HStack {
@@ -271,18 +269,7 @@ struct PaymentRowView: View {
         case .waitingFeeAcceptance: return .blue
         }
     }
-    
-    private var amountText: String {
-        let prefix = payment.paymentType == .send ? "-" : "+"
-        return "\(prefix)\(payment.amountSat) sats"
-    }
-    
-    private var amountColor: Color {
-        switch payment.paymentType {
-        case .send: return .orange
-        case .receive: return .green
-        }
-    }
+
     
     private var timestampText: String {
         let date = Date(timeIntervalSince1970: TimeInterval(payment.timestamp))

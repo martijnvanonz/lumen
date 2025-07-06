@@ -1,6 +1,34 @@
 import SwiftUI
 import BreezSDKLiquid
 
+// MARK: - Helper Functions
+
+/// Format sats amount as string for InfoRow usage
+private func formatSatsString(_ sats: UInt64, formatLarge: Bool = false) -> String {
+    if formatLarge {
+        let formatted = formatLargeAmount(sats)
+        return sats >= 1_000 ? formatted : "\(sats) sats"
+    } else {
+        return "\(sats) sats"
+    }
+}
+
+/// Format large amounts with K/M/BTC suffixes
+private func formatLargeAmount(_ sats: UInt64) -> String {
+    if sats >= 100_000_000 {
+        let btc = Double(sats) / 100_000_000
+        return String(format: "%.2f BTC", btc)
+    } else if sats >= 1_000_000 {
+        let millions = Double(sats) / 1_000_000
+        return String(format: "%.1fM", millions)
+    } else if sats >= 1_000 {
+        let thousands = Double(sats) / 1_000
+        return String(format: "%.1fK", thousands)
+    } else {
+        return "\(sats)"
+    }
+}
+
 struct WalletInfoView: View {
     @StateObject private var walletManager = WalletManager.shared
     @Environment(\.dismiss) private var dismiss
@@ -120,7 +148,7 @@ struct ConnectionStatusCard: View {
                 if walletInfo.walletInfo.pendingReceiveSat > 0 {
                     InfoRow(
                         label: "Pending Receive",
-                        value: "\(walletInfo.walletInfo.pendingReceiveSat) sats",
+                        value: formatSatsString(walletInfo.walletInfo.pendingReceiveSat),
                         valueColor: .orange
                     )
                 }
@@ -128,7 +156,7 @@ struct ConnectionStatusCard: View {
                 if walletInfo.walletInfo.pendingSendSat > 0 {
                     InfoRow(
                         label: "Pending Send",
-                        value: "\(walletInfo.walletInfo.pendingSendSat) sats",
+                        value: formatSatsString(walletInfo.walletInfo.pendingSendSat),
                         valueColor: .orange
                     )
                 }
@@ -174,7 +202,7 @@ struct BalanceInfoCard: View {
             VStack(alignment: .leading, spacing: 8) {
                 InfoRow(
                     label: "Total Balance",
-                    value: "\(walletInfo.walletInfo.balanceSat) sats",
+                    value: formatSatsString(walletInfo.walletInfo.balanceSat, formatLarge: true),
                     valueColor: .primary,
                     isHighlighted: true
                 )
@@ -182,7 +210,7 @@ struct BalanceInfoCard: View {
                 if walletInfo.walletInfo.pendingReceiveSat > 0 {
                     InfoRow(
                         label: "Pending Receive",
-                        value: "\(walletInfo.walletInfo.pendingReceiveSat) sats",
+                        value: formatSatsString(walletInfo.walletInfo.pendingReceiveSat),
                         valueColor: .green
                     )
                 }
@@ -190,7 +218,7 @@ struct BalanceInfoCard: View {
                 if walletInfo.walletInfo.pendingSendSat > 0 {
                     InfoRow(
                         label: "Pending Send",
-                        value: "\(walletInfo.walletInfo.pendingSendSat) sats",
+                        value: formatSatsString(walletInfo.walletInfo.pendingSendSat),
                         valueColor: .orange
                     )
                 }
@@ -279,12 +307,12 @@ struct LimitsInfoCard: View {
 
                             InfoRow(
                                 label: "Send Range",
-                                value: "\(lightningLimits.send.minSat) - \(formatSats(lightningLimits.send.maxSat)) sats"
+                                value: "\(lightningLimits.send.minSat) - \(formatLargeAmount(lightningLimits.send.maxSat)) sats"
                             )
 
                             InfoRow(
                                 label: "Receive Range",
-                                value: "\(lightningLimits.receive.minSat) - \(formatSats(lightningLimits.receive.maxSat)) sats"
+                                value: "\(lightningLimits.receive.minSat) - \(formatLargeAmount(lightningLimits.receive.maxSat)) sats"
                             )
                         }
                     }
@@ -299,12 +327,12 @@ struct LimitsInfoCard: View {
 
                             InfoRow(
                                 label: "Send Range",
-                                value: "\(onchainLimits.send.minSat) - \(formatSats(onchainLimits.send.maxSat)) sats"
+                                value: "\(onchainLimits.send.minSat) - \(formatLargeAmount(onchainLimits.send.maxSat)) sats"
                             )
 
                             InfoRow(
                                 label: "Receive Range",
-                                value: "\(onchainLimits.receive.minSat) - \(formatSats(onchainLimits.receive.maxSat)) sats"
+                                value: "\(onchainLimits.receive.minSat) - \(formatLargeAmount(onchainLimits.receive.maxSat)) sats"
                             )
                         }
                     }
@@ -361,20 +389,7 @@ struct LimitsInfoCard: View {
         }
     }
 
-    private func formatSats(_ sats: UInt64) -> String {
-        if sats >= 100_000_000 {
-            let btc = Double(sats) / 100_000_000
-            return String(format: "%.2f BTC", btc)
-        } else if sats >= 1_000_000 {
-            let millions = Double(sats) / 1_000_000
-            return String(format: "%.1fM", millions)
-        } else if sats >= 1_000 {
-            let thousands = Double(sats) / 1_000
-            return String(format: "%.1fK", thousands)
-        } else {
-            return "\(sats)"
-        }
-    }
+
 }
 
 // MARK: - Reusable Components

@@ -81,10 +81,10 @@ class KeychainManager {
             kSecMatchLimit as String: kSecMatchLimitOne,
             kSecAttrSynchronizable as String: true
         ]
-        
+
         var result: AnyObject?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
-        
+
         switch status {
         case errSecSuccess:
             guard let data = result as? Data,
@@ -96,6 +96,23 @@ class KeychainManager {
             throw KeychainError.itemNotFound
         default:
             throw KeychainError.unexpectedError(status)
+        }
+    }
+
+    /// Retrieves the wallet mnemonic with biometric authentication
+    /// - Parameter reason: The reason for authentication to display to the user
+    /// - Returns: The stored mnemonic phrase
+    /// - Throws: KeychainError or BiometricError if retrieval fails
+    func retrieveMnemonicWithBiometrics(reason: String) async throws -> String {
+        return try await withCheckedThrowingContinuation { continuation in
+            BiometricManager.shared.authenticateAndRetrieveMnemonic(reason: reason) { result in
+                switch result {
+                case .success(let mnemonic):
+                    continuation.resume(returning: mnemonic)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
         }
     }
     
@@ -174,6 +191,38 @@ extension KeychainManager {
             try updateMnemonic(mnemonic)
         } else {
             try storeMnemonic(mnemonic)
+        }
+    }
+
+    /// Retrieves mnemonic with secure caching and biometric authentication
+    /// - Parameter reason: The reason for authentication to display to the user
+    /// - Returns: The mnemonic from cache or keychain
+    /// - Throws: Error if retrieval fails
+    func getSecureMnemonic(reason: String) async throws -> String {
+        // First try to get from secure cache
+        do {
+            let cachedSeed = try SecureSeedCache.shared.retrieveSeed()
+            print("✅ Retrieved seed from secure cache")
+            return cachedSeed
+        } catch SecureSeedCache.CacheError.cacheEmpty, SecureSeedCache.CacheError.cacheExpired {
+            // Cache miss or expired - authenticate and retrieve from keychain
+            print("🔐 Cache miss - authenticating for keychain access")
+
+            let mnemonic = try await retrieveMnemonicWithBiometrics(reason: reason)
+
+            // Cache the retrieved seed for future use
+            SecureSeedCache.shared.storeSeed(mnemonic)
+
+            return mnemonic
+        } catch {
+            // Security violation or other cache error - clear cache and re-authenticate
+            print("⚠️ Cache security error - clearing and re-authenticating")
+            SecureSeedCache.shared.clearCache()
+
+            let mnemonic = try await retrieveMnemonicWithBiometrics(reason: reason)
+            SecureSeedCache.shared.storeSeed(mnemonic)
+
+            return mnemonic
         }
     }
 }

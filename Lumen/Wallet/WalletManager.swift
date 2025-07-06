@@ -3,6 +3,8 @@ import SwiftUI
 import BreezSDKLiquid
 import Web3Core
 
+
+
 /// Manages the Breez SDK Liquid wallet integration
 class WalletManager: ObservableObject {
     
@@ -38,9 +40,19 @@ class WalletManager: ObservableObject {
     private init() {}
     
     // MARK: - Wallet Lifecycle
-    
+
+    private var isInitializing = false
+
     /// Initializes the wallet - checks for existing mnemonic or creates new one
     func initializeWallet() async {
+        // Prevent concurrent initialization
+        guard !isInitializing else {
+            print("⚠️ Wallet initialization already in progress - skipping duplicate call")
+            return
+        }
+
+        isInitializing = true
+        defer { isInitializing = false }
         await MainActor.run {
             isLoading = true
             errorMessage = nil
@@ -66,15 +78,17 @@ class WalletManager: ObservableObject {
                 isLoading = false
             }
 
-            // Update state flags
-            hasWallet = true
-            isLoggedIn = true
+            // Update state flags on main thread
+            await MainActor.run {
+                hasWallet = true
+                isLoggedIn = true
+            }
 
             // Load currencies but don't auto-select default during onboarding
             Task {
                 await CurrencyManager.shared.reloadCurrenciesFromSDK(setDefaultIfNone: false)
                 await CurrencyManager.shared.fetchCurrentRates()
-                CurrencyManager.shared.startRateUpdates()
+                await CurrencyManager.shared.startRateUpdates()
             }
             
         } catch {
@@ -85,6 +99,111 @@ class WalletManager: ObservableObject {
 
             // Handle error through error handler
             errorHandler.handle(error, context: "Wallet initialization")
+        }
+    }
+
+    /// Shared initialization task to prevent concurrent initialization
+    private var initializationTask: Task<Bool, Never>?
+
+    /// Quick initialization using cached seed (no biometric auth required)
+    func initializeWalletFromCache() async -> Bool {
+        print("🔄 initializeWalletFromCache called from async context")
+        print("🔄 Current state - isInitializing: \(isInitializing), isConnected: \(isConnected), isLoggedIn: \(isLoggedIn)")
+
+        // If already connected, no need to initialize again
+        if isConnected {
+            print("✅ Already connected - skipping initialization")
+            return true
+        }
+
+        // If there's already an initialization task running, wait for it
+        if let existingTask = initializationTask {
+            print("⚠️ Wallet initialization already in progress - waiting for completion...")
+            return await existingTask.value
+        }
+
+        // Create new initialization task
+        let task = Task<Bool, Never> { @MainActor in
+            await self.performSingleInitialization()
+        }
+
+        initializationTask = task
+        let result = await task.value
+        initializationTask = nil
+
+        return result
+    }
+
+    /// Perform single initialization to prevent race conditions
+    @MainActor
+    private func performSingleInitialization() async -> Bool {
+        // Double-check if already connected
+        if isConnected {
+            print("✅ Already connected during single initialization - skipping")
+            return true
+        }
+
+        // Prevent concurrent initialization
+        guard !isInitializing else {
+            print("⚠️ Wallet initialization already in progress during single init - skipping")
+            return false
+        }
+
+        // Check if we have a valid cached seed
+        guard SecureSeedCache.shared.isCacheValid() else {
+            print("❌ Cache invalid - cannot initialize from cache")
+            return false
+        }
+
+        print("🔄 Starting single wallet initialization from cache...")
+        isInitializing = true
+
+        defer {
+            isInitializing = false
+            print("🔄 Single wallet initialization from cache completed")
+        }
+
+        return await performCacheInitialization()
+    }
+
+    /// Perform the actual cache initialization
+    private func performCacheInitialization() async -> Bool {
+
+        do {
+            let cachedSeed = try SecureSeedCache.shared.retrieveSeed()
+
+            await MainActor.run {
+                isLoading = true
+                errorMessage = nil
+            }
+
+            // Connect to Breez SDK with cached mnemonic
+            try await connectToBreezSDK(mnemonic: cachedSeed)
+
+            await MainActor.run {
+                isConnected = true
+                isLoading = false
+            }
+
+            // Update state flags on main thread
+            await MainActor.run {
+                hasWallet = true
+                isLoggedIn = true
+            }
+
+            // Load currencies
+            Task {
+                await CurrencyManager.shared.reloadCurrenciesFromSDK(setDefaultIfNone: false)
+                await CurrencyManager.shared.fetchCurrentRates()
+                await CurrencyManager.shared.startRateUpdates()
+            }
+
+            print("✅ Wallet initialized from secure cache")
+            return true
+
+        } catch {
+            print("❌ Failed to initialize from cache: \(error)")
+            return false
         }
     }
     
@@ -105,16 +224,23 @@ class WalletManager: ObservableObject {
         return mnemonic
     }
     
-    /// Retrieves existing mnemonic from iCloud Keychain
+    /// Retrieves existing mnemonic with secure authentication and caching
     private func retrieveExistingMnemonic() async throws -> String {
-        // Retrieve mnemonic directly from iCloud Keychain (no biometric auth needed)
-        return try keychainManager.retrieveMnemonic()
+        print("🔐 WalletManager: Retrieving existing mnemonic with biometric auth")
+        // Use secure mnemonic retrieval with biometric authentication and caching
+        let mnemonic = try await keychainManager.getSecureMnemonic(reason: "Unlock your Lumen wallet")
+        print("✅ WalletManager: Successfully retrieved and cached mnemonic")
+        return mnemonic
     }
     
     /// Connects to the Breez SDK with the provided mnemonic
     private func connectToBreezSDK(mnemonic: String) async throws {
+        print("🔗 connectToBreezSDK called from async context")
+        print("🔗 Current SDK state: \(sdk != nil ? "EXISTS" : "NIL")")
+
         // Check network connectivity first
         guard networkMonitor.isNetworkAvailableForLightning() else {
+            print("❌ Network not available for Lightning operations")
             throw WalletError.networkError
         }
 
@@ -381,6 +507,9 @@ class WalletManager: ObservableObject {
 
     /// Logs out the user (clears in-memory state but preserves keychain)
     func logout() async {
+        // Clear secure seed cache first
+        SecureSeedCache.shared.clearCache()
+
         // Disconnect from SDK
         await disconnect()
 
@@ -397,11 +526,17 @@ class WalletManager: ObservableObject {
         // Update UserDefaults state (preserve hasWallet, clear isLoggedIn)
         isLoggedIn = false
 
-        print("✅ User logged out - wallet remains in keychain")
+        // Notify that authentication state should be reset
+        NotificationCenter.default.post(name: .authenticationStateReset, object: nil)
+
+        print("✅ User logged out - wallet remains in keychain, secure cache cleared")
     }
 
     /// Permanently deletes wallet from keychain and clears all state
     func deleteWalletFromKeychain() async throws {
+        // Clear secure seed cache immediately
+        SecureSeedCache.shared.clearCache()
+
         // First logout to clear all state
         await logout()
 
@@ -415,7 +550,7 @@ class WalletManager: ObservableObject {
         // Clear selected currency
         CurrencyManager.shared.clearSelectedCurrency()
 
-        print("✅ Wallet permanently deleted from keychain")
+        print("✅ Wallet permanently deleted from keychain and secure cache cleared")
     }
 
 
