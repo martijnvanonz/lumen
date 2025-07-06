@@ -75,7 +75,7 @@ struct ImportSeedView: View {
                     .padding(.horizontal)
                     
                     // Seed Words Grid
-                    LazyVGrid(columns: gridColumns, spacing: 12) {
+                    LazyVGrid(columns: gridColumns, spacing: 16) {
                         ForEach(0..<expectedWordCount, id: \.self) { index in
                             SeedWordInputField(
                                 index: index,
@@ -148,8 +148,8 @@ struct ImportSeedView: View {
     }
     
     private var gridColumns: [GridItem] {
-        let columnCount = expectedWordCount == 12 ? 3 : 4
-        return Array(repeating: GridItem(.flexible(), spacing: 8), count: columnCount)
+        let columnCount = expectedWordCount == 12 ? 3 : 3 // Use 3 columns for both 12 and 24 words for better spacing
+        return Array(repeating: GridItem(.flexible(), spacing: 12), count: columnCount)
     }
     
     private var canImport: Bool {
@@ -236,8 +236,9 @@ struct ImportSeedView: View {
                 
                 await MainActor.run {
                     isImporting = false
-                    // Continue to biometric setup
-                    onboardingState.currentStep = .biometricSetup
+                    // Mark import as completed and continue to currency selection
+                    onboardingState.isImportFlow = false
+                    onboardingState.currentStep = .currencySelection
                 }
             } catch {
                 await MainActor.run {
@@ -264,13 +265,16 @@ struct SeedWordInputField: View {
             Text("\(index + 1)")
                 .font(.caption2)
                 .foregroundColor(.secondary)
-            
+
             TextField("", text: $word)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .textContentType(.none)
                 .autocorrectionDisabled()
                 .textInputAutocapitalization(.never)
                 .focused($isFocused)
+                .font(.system(size: 14, weight: .medium))
+                .frame(minHeight: 44) // Larger touch target
+                .multilineTextAlignment(.center)
                 .onChange(of: word) { _, newValue in
                     // Clean the input
                     word = newValue.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
@@ -278,9 +282,10 @@ struct SeedWordInputField: View {
                 }
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
-                        .stroke(hasError ? Color.red : Color.clear, lineWidth: 1)
+                        .stroke(hasError ? Color.red : Color.clear, lineWidth: 2)
                 )
         }
+        .frame(minWidth: 80) // Ensure minimum width for longer words
     }
 }
 
