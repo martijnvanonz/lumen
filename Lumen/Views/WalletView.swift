@@ -89,6 +89,10 @@ struct WalletView: View {
                         }
                         .padding(.horizontal)
 
+                        // Bitcoin Places Card
+                        SmartNearbyPlacesCard()
+                            .padding(.horizontal)
+
                         // Enhanced Transaction History with real-time updates
                         EnhancedTransactionHistoryView()
                     }
