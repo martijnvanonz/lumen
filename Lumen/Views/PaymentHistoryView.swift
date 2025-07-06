@@ -22,11 +22,11 @@ struct PaymentHistoryView: View {
                     PaymentListView(payments: filteredPayments)
                 }
             }
-            .navigationTitle("Payment History")
+            .navigationTitle(L("payment_history"))
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Filter") {
+                    Button(L("filter")) {
                         showingFilterSheet = true
                     }
                 }
@@ -63,12 +63,23 @@ struct PaymentHistoryView: View {
 // MARK: - Filter Types
 
 enum PaymentFilter: String, CaseIterable {
-    case all = "All"
-    case sent = "Sent"
-    case received = "Received"
-    case pending = "Pending"
-    case completed = "Completed"
-    case failed = "Failed"
+    case all = "all"
+    case sent = "sent"
+    case received = "received"
+    case pending = "pending"
+    case completed = "completed"
+    case failed = "failed"
+
+    var displayName: String {
+        switch self {
+        case .all: return L("all_payments")
+        case .sent: return L("sent_payments")
+        case .received: return L("received_payments")
+        case .pending: return L("pending_payments")
+        case .completed: return L("completed_payments")
+        case .failed: return L("failed_payments")
+        }
+    }
     
     var icon: String {
         switch self {
@@ -129,7 +140,7 @@ struct FilterChip: View {
                 Image(systemName: filter.icon)
                     .font(.caption)
                 
-                Text(filter.rawValue)
+                Text(filter.displayName)
                     .font(.caption)
                     .fontWeight(.medium)
             }
@@ -226,21 +237,21 @@ struct PaymentRowView: View {
     
     private var paymentTypeText: String {
         switch payment.paymentType {
-        case .send: return "Sent"
-        case .receive: return "Received"
+        case .send: return L("sent")
+        case .receive: return L("received")
         }
     }
-    
+
     private var statusText: String {
         switch payment.status {
-        case .created: return "Created"
-        case .pending: return "Pending"
-        case .complete: return "Completed"
-        case .failed: return "Failed"
-        case .timedOut: return "Timed Out"
-        case .refundable: return "Refundable"
-        case .refundPending: return "Refund Pending"
-        case .waitingFeeAcceptance: return "Waiting Fee Acceptance"
+        case .created: return L("created")
+        case .pending: return L("pending")
+        case .complete: return L("completed")
+        case .failed: return L("failed")
+        case .timedOut: return L("timed_out")
+        case .refundable: return L("refundable")
+        case .refundPending: return L("refund_pending")
+        case .waitingFeeAcceptance: return L("waiting_fee_acceptance")
         }
     }
     
@@ -330,23 +341,23 @@ struct EmptyStateView: View {
     
     private var emptyStateTitle: String {
         switch filter {
-        case .all: return "No Payments Yet"
-        case .sent: return "No Sent Payments"
-        case .received: return "No Received Payments"
-        case .pending: return "No Pending Payments"
-        case .completed: return "No Completed Payments"
-        case .failed: return "No Failed Payments"
+        case .all: return L("no_payments_yet")
+        case .sent: return L("no_sent_payments")
+        case .received: return L("no_received_payments")
+        case .pending: return L("no_pending_payments")
+        case .completed: return L("no_completed_payments")
+        case .failed: return L("no_failed_payments")
         }
     }
-    
+
     private var emptyStateMessage: String {
         switch filter {
-        case .all: return "Your payment history will appear here once you start sending and receiving Lightning payments."
-        case .sent: return "Payments you send will appear here."
-        case .received: return "Payments you receive will appear here."
-        case .pending: return "Payments waiting for confirmation will appear here."
-        case .completed: return "Successfully completed payments will appear here."
-        case .failed: return "Failed payments will appear here."
+        case .all: return L("no_payments_message")
+        case .sent: return L("no_sent_message")
+        case .received: return L("no_received_message")
+        case .pending: return L("no_pending_message")
+        case .completed: return L("no_completed_message")
+        case .failed: return L("no_failed_message")
         }
     }
 }
@@ -366,7 +377,7 @@ struct FilterSheetView: View {
                             .foregroundColor(filter.color)
                             .frame(width: 24)
                         
-                        Text(filter.rawValue)
+                        Text(filter.displayName)
                             .font(.body)
                         
                         Spacer()
