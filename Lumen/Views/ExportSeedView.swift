@@ -28,7 +28,7 @@ struct ExportSeedView: View {
                         }
                     )
                 } else if isLoading {
-                    LoadingView()
+                    SeedLoadingView()
                 } else if let errorMessage = errorMessage {
                     ErrorView(message: errorMessage) {
                         dismiss()
@@ -318,9 +318,9 @@ struct SeedWordCard: View {
     }
 }
 
-// MARK: - Loading View
+// MARK: - Seed Loading View
 
-struct LoadingView: View {
+struct SeedLoadingView: View {
     var body: some View {
         VStack(spacing: 20) {
             ProgressView()

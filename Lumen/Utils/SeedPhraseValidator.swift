@@ -1,5 +1,5 @@
 import Foundation
-import web3swift
+import Web3Core
 
 /// Utility class for validating BIP39 seed phrases
 class SeedPhraseValidator {
