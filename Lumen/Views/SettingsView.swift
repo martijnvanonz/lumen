@@ -5,6 +5,8 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var currencyManager = CurrencyManager.shared
     @StateObject private var walletManager = WalletManager.shared
+    @StateObject private var locationManager = LocationManager.shared
+    @StateObject private var btcMapService = BTCMapService.shared
     @State private var showingCurrencySelection = false
     @State private var showingLogoutConfirmation = false
     @State private var showingDeleteWalletConfirmation = false
@@ -13,6 +15,7 @@ struct SettingsView: View {
     @State private var showingExportSeed = false
     @State private var isLoggingOut = false
     @State private var isDeletingWallet = false
+    @State private var searchRadius: Double = 5.0
     
     var body: some View {
         NavigationView {
@@ -50,6 +53,91 @@ struct SettingsView: View {
                         }
                     }
                     .buttonStyle(PlainButtonStyle())
+                }
+
+                // Bitcoin Places Section
+                Section("Bitcoin Places") {
+                    // Location toggle
+                    HStack {
+                        Image(systemName: "location.circle")
+                            .foregroundColor(.blue)
+                            .frame(width: 24)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Show Nearby Places")
+                                .foregroundColor(.primary)
+
+                            Text(locationManager.locationStatusDescription)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+
+                        Spacer()
+
+                        Toggle("", isOn: Binding(
+                            get: { locationManager.isLocationEnabled },
+                            set: { _ in locationManager.toggleLocationServices() }
+                        ))
+                        .disabled(!locationManager.hasLocationPermission && !locationManager.canRequestPermission)
+                    }
+
+                    // Search radius (only show if location is enabled)
+                    if locationManager.isLocationEnabled {
+                        HStack {
+                            Image(systemName: "circle.dashed")
+                                .foregroundColor(.green)
+                                .frame(width: 24)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Search Radius")
+                                    .foregroundColor(.primary)
+
+                                Text("\(Int(searchRadius)) km")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+
+                            Spacer()
+
+                            Picker("Radius", selection: $searchRadius) {
+                                Text("1 km").tag(1.0)
+                                Text("2.5 km").tag(2.5)
+                                Text("5 km").tag(5.0)
+                                Text("10 km").tag(10.0)
+                                Text("20 km").tag(20.0)
+                            }
+                            .pickerStyle(MenuPickerStyle())
+                        }
+                    }
+
+                    // Cache info and management
+                    if let cacheStats = getCacheStats() {
+                        HStack {
+                            Image(systemName: "externaldrive")
+                                .foregroundColor(.orange)
+                                .frame(width: 24)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Cache Status")
+                                    .foregroundColor(.primary)
+
+                                Text(cacheStats)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+
+                            Spacer()
+
+                            Button("Clear") {
+                                BTCMapCache.shared.clearAllCache()
+                                Task {
+                                    await btcMapService.forceRefresh()
+                                }
+                            }
+                            .font(.caption)
+                            .foregroundColor(.orange)
+                        }
+                    }
                 }
 
                 // Refund Section (always available as backup)
@@ -276,6 +364,13 @@ struct SettingsView: View {
     }
 
     // MARK: - Private Methods
+
+    private func getCacheStats() -> String? {
+        let stats = BTCMapCache.shared.getCacheStats()
+        guard stats.snapshotSizeBytes > 0 || stats.detailsCount > 0 else { return nil }
+
+        return "\(stats.detailsCount) places cached, \(String(format: "%.1f", stats.snapshotSizeMB)) MB"
+    }
 
     private func performLogout() {
         isLoggingOut = true
