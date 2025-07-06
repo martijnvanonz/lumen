@@ -334,6 +334,14 @@ class WalletManager: ObservableObject {
             await MainActor.run {
                 eventHandler.updateConnectionStatus(.connected)
             }
+
+            // Register webhook for background notifications
+            do {
+                try await registerWebhook()
+            } catch {
+                print("⚠️ Failed to register webhook (non-critical): \(error)")
+                // Don't throw - webhook registration failure shouldn't prevent wallet connection
+            }
         } catch {
             await MainActor.run {
                 eventHandler.updateConnectionStatus(.disconnected)
@@ -609,7 +617,61 @@ class WalletManager: ObservableObject {
         print("✅ Wallet permanently deleted from keychain and secure cache cleared")
     }
 
+    // MARK: - Webhook Management
 
+    /// Registers webhook for background payment notifications
+    func registerWebhook() async throws {
+        guard let sdk = sdk else {
+            throw WalletError.notConnected
+        }
+
+        // Generate webhook URL (in production, this would be your server endpoint)
+        let webhookUrl = generateWebhookUrl()
+
+        do {
+            // Register webhook with Breez SDK
+            try sdk.registerWebhook(webhookUrl: webhookUrl)
+
+            // Store webhook configuration in shared container
+            try SharedContainerManager.shared.storeWebhookConfig(webhookUrl)
+
+            // Store Breez SDK configuration for notification extension
+            let config = try configManager.getBreezSDKConfig()
+            try SharedContainerManager.shared.storeBreezConfig(config)
+
+            print("✅ Webhook registered successfully: \(webhookUrl)")
+
+        } catch {
+            print("❌ Failed to register webhook: \(error)")
+            throw error
+        }
+    }
+
+    /// Unregisters webhook
+    func unregisterWebhook() async throws {
+        guard let sdk = sdk else {
+            throw WalletError.notConnected
+        }
+
+        do {
+            // Unregister webhook with Breez SDK
+            try sdk.unregisterWebhook()
+
+            print("✅ Webhook unregistered successfully")
+
+        } catch {
+            print("❌ Failed to unregister webhook: \(error)")
+            throw error
+        }
+    }
+
+    /// Generates webhook URL for this device
+    private func generateWebhookUrl() -> String {
+        // In production, this would be your server endpoint that forwards to APNS
+        // For now, we'll use a placeholder that includes device identifier
+        let deviceId = UIDevice.current.identifierForVendor?.uuidString ?? "unknown"
+        return "https://your-webhook-server.com/webhook/\(deviceId)"
+    }
 
     // MARK: - Payment Management
 
