@@ -2,12 +2,14 @@ import Foundation
 import MapKit
 import SwiftUI
 import CoreLocation
+import Combine
 
 /// Custom annotation for Bitcoin places on the map
 class BitcoinPlaceAnnotation: NSObject, MKAnnotation {
-    let place: BTCPlace
+    private(set) var place: BTCPlace
     let userLocation: CLLocation?
-    
+    @Published var isLoadingDetails = false
+
     var coordinate: CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: place.lat, longitude: place.lon)
     }
@@ -35,6 +37,35 @@ class BitcoinPlaceAnnotation: NSObject, MKAnnotation {
         self.place = place
         self.userLocation = userLocation
         super.init()
+
+        // Start loading details if we don't have a name yet
+        if place.name == nil {
+            loadPlaceDetails()
+        }
+    }
+
+    /// Load detailed information for this place
+    func loadPlaceDetails() {
+        // Skip if we already have details or are loading
+        guard place.name == nil && !isLoadingDetails else { return }
+
+        isLoadingDetails = true
+
+        Task {
+            do {
+                let details = try await BTCMapService.shared.fetchPlaceDetails(id: place.id)
+                await MainActor.run {
+                    self.place = details
+                    self.isLoadingDetails = false
+                }
+            } catch {
+                await MainActor.run {
+                    // Keep the original place data on error
+                    self.isLoadingDetails = false
+                }
+                print("❌ Failed to load details for place \(place.id): \(error)")
+            }
+        }
     }
 
     /// Get a human-readable business type from the OSM icon
@@ -115,15 +146,57 @@ class BitcoinPlaceAnnotation: NSObject, MKAnnotation {
 /// Custom annotation view for Bitcoin places
 class BitcoinPlaceAnnotationView: MKAnnotationView {
     static let reuseIdentifier = "BitcoinPlaceAnnotationView"
-    
+    private var cancellables = Set<AnyCancellable>()
+    private var loadingIndicator: UIActivityIndicatorView?
+
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
         setupView()
+        setupLoadingObserver()
     }
     
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         setupView()
+        setupLoadingObserver()
+    }
+
+    private func setupLoadingObserver() {
+        guard let bitcoinAnnotation = annotation as? BitcoinPlaceAnnotation else { return }
+
+        bitcoinAnnotation.$isLoadingDetails
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isLoading in
+                self?.updateLoadingState(isLoading)
+            }
+            .store(in: &cancellables)
+    }
+
+    private func updateLoadingState(_ isLoading: Bool) {
+        if isLoading {
+            showLoadingIndicator()
+        } else {
+            hideLoadingIndicator()
+            // Refresh the pin view with updated data
+            setupView()
+        }
+    }
+
+    private func showLoadingIndicator() {
+        guard loadingIndicator == nil else { return }
+
+        let indicator = UIActivityIndicatorView(style: .medium)
+        indicator.frame = CGRect(x: 32, y: 8, width: 16, height: 16)
+        indicator.startAnimating()
+        indicator.color = UIColor.systemBlue
+
+        addSubview(indicator)
+        loadingIndicator = indicator
+    }
+
+    private func hideLoadingIndicator() {
+        loadingIndicator?.removeFromSuperview()
+        loadingIndicator = nil
     }
     
     private func setupView() {
@@ -180,7 +253,21 @@ class BitcoinPlaceAnnotationView: MKAnnotationView {
             indicatorContainer.frame = CGRect(x: 0, y: 35, width: 40, height: 15)
             containerView.addSubview(indicatorContainer)
         }
-        
+
+        // Verification status indicator
+        if place.isRecentlyVerified {
+            let verificationBadge = createVerificationBadge()
+            verificationBadge.frame = CGRect(x: 25, y: 5, width: 12, height: 12)
+            containerView.addSubview(verificationBadge)
+        }
+
+        // Promoted status indicator
+        if place.isBoosted {
+            let promotedBadge = createPromotedBadge()
+            promotedBadge.frame = CGRect(x: 25, y: place.isRecentlyVerified ? 18 : 5, width: 12, height: 12)
+            containerView.addSubview(promotedBadge)
+        }
+
         return containerView
     }
     
@@ -273,11 +360,44 @@ class BitcoinPlaceAnnotationView: MKAnnotationView {
             return .systemBlue
         }
     }
+
+    private func createVerificationBadge() -> UIView {
+        let badgeView = UIView()
+        badgeView.backgroundColor = .systemGreen
+        badgeView.layer.cornerRadius = 6
+
+        // Add checkmark icon
+        let checkmarkImageView = UIImageView(frame: CGRect(x: 2, y: 2, width: 8, height: 8))
+        checkmarkImageView.image = UIImage(systemName: "checkmark")
+        checkmarkImageView.tintColor = .white
+        checkmarkImageView.contentMode = .scaleAspectFit
+
+        badgeView.addSubview(checkmarkImageView)
+        return badgeView
+    }
+
+    private func createPromotedBadge() -> UIView {
+        let badgeView = UIView()
+        badgeView.backgroundColor = .systemOrange
+        badgeView.layer.cornerRadius = 6
+
+        // Add star icon
+        let starImageView = UIImageView(frame: CGRect(x: 2, y: 2, width: 8, height: 8))
+        starImageView.image = UIImage(systemName: "star.fill")
+        starImageView.tintColor = .white
+        starImageView.contentMode = .scaleAspectFit
+
+        badgeView.addSubview(starImageView)
+        return badgeView
+    }
     
     override func prepareForReuse() {
         super.prepareForReuse()
         subviews.forEach { $0.removeFromSuperview() }
+        cancellables.removeAll()
+        loadingIndicator = nil
         setupView()
+        setupLoadingObserver()
     }
 }
 
@@ -289,7 +409,7 @@ class BitcoinPlaceCalloutView: UIView {
     init(place: BTCPlace, userLocation: CLLocation?) {
         self.place = place
         self.userLocation = userLocation
-        super.init(frame: CGRect(x: 0, y: 0, width: 250, height: 100))
+        super.init(frame: CGRect(x: 0, y: 0, width: 250, height: 120))
         setupView()
     }
     
@@ -322,27 +442,57 @@ class BitcoinPlaceCalloutView: UIView {
             addSubview(addressLabel)
         }
         
-        // Distance
+        // Distance and status indicators
+        var yOffset = 50
         if let userLocation = userLocation {
             let distance = place.distance(from: userLocation)
-            let distanceLabel = UILabel(frame: CGRect(x: 12, y: 50, width: 100, height: 16))
+            let distanceLabel = UILabel(frame: CGRect(x: 12, y: yOffset, width: 100, height: 16))
             distanceLabel.text = String(format: "%.1f km away", distance)
             distanceLabel.font = .systemFont(ofSize: 12)
             distanceLabel.textColor = .systemBlue
             addSubview(distanceLabel)
+
+            // Add status indicators next to distance
+            var statusX = 120
+
+            if place.isRecentlyVerified {
+                let verificationIcon = UIImageView(frame: CGRect(x: statusX, y: yOffset + 2, width: 12, height: 12))
+                verificationIcon.image = UIImage(systemName: "checkmark.seal.fill")
+                verificationIcon.tintColor = .systemGreen
+                verificationIcon.contentMode = .scaleAspectFit
+                addSubview(verificationIcon)
+                statusX += 18
+            }
+
+            if place.isBoosted {
+                let promotedLabel = UILabel(frame: CGRect(x: statusX, y: yOffset, width: 60, height: 16))
+                promotedLabel.text = "PROMOTED"
+                promotedLabel.font = .systemFont(ofSize: 8, weight: .bold)
+                promotedLabel.textColor = .white
+                promotedLabel.backgroundColor = .systemOrange
+                promotedLabel.textAlignment = .center
+                promotedLabel.layer.cornerRadius = 3
+                promotedLabel.layer.masksToBounds = true
+                addSubview(promotedLabel)
+            }
+
+            yOffset += 20
         }
         
         // Payment methods
         if !place.paymentMethods.isEmpty {
             let methodsContainer = createPaymentMethodsView()
-            methodsContainer.frame = CGRect(x: 12, y: 70, width: 226, height: 20)
+            methodsContainer.frame = CGRect(x: 12, y: yOffset, width: 226, height: 20)
             addSubview(methodsContainer)
+            yOffset += 25
         }
+
+        // Update frame height based on content
+        frame = CGRect(x: 0, y: 0, width: 250, height: max(100, yOffset + 10))
     }
     
     private func createPaymentMethodsView() -> UIView {
         let container = UIView()
-        let badgeHeight: CGFloat = 20
         var currentX: CGFloat = 0
         
         for method in place.paymentMethods {
