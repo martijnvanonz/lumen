@@ -1,6 +1,39 @@
 import SwiftUI
 import BreezSDKLiquid
 
+// MARK: - Error Handling Helper
+private func getUserFriendlyErrorMessage(_ error: Error) -> String {
+    let errorString = error.localizedDescription.lowercased()
+
+    // Check for common error patterns and provide user-friendly messages
+    if errorString.contains("insufficient") || errorString.contains("not enough") || errorString.contains("balance") {
+        return "Insufficient funds. You don't have enough sats for this payment."
+    } else if errorString.contains("expired") || errorString.contains("timeout") {
+        return "This payment request has expired. Please request a new invoice."
+    } else if errorString.contains("invalid") || errorString.contains("malformed") {
+        return "Invalid payment request. Please check the QR code or invoice."
+    } else if errorString.contains("network") || errorString.contains("connection") {
+        return "Network error. Please check your internet connection and try again."
+    } else if errorString.contains("route") || errorString.contains("path") {
+        return "Unable to find a payment route. The recipient may be offline."
+    } else if errorString.contains("fee") {
+        return "Payment fees are too high. Try again later when network fees are lower."
+    } else if errorString.contains("amount") && errorString.contains("too") {
+        if errorString.contains("small") || errorString.contains("low") {
+            return "Payment amount is too small. Minimum amount required."
+        } else if errorString.contains("large") || errorString.contains("high") {
+            return "Payment amount is too large. Please try a smaller amount."
+        }
+    } else if errorString.contains("channel") {
+        return "Lightning channel issue. Please try again in a moment."
+    } else if errorString.contains("invoice") {
+        return "Invalid Lightning invoice. Please check the payment request."
+    }
+
+    // Fallback to original error message if no pattern matches
+    return error.localizedDescription
+}
+
 struct WalletView: View {
     @StateObject private var walletManager = WalletManager.shared
     @State private var showingSendView = false
@@ -291,6 +324,28 @@ struct SendPaymentView: View {
                     .padding(.top, 20)
                 }
 
+                // Loading state for payment preparation
+                if isLoading && preparedPayment == nil && paymentInfo != nil {
+                    VStack(spacing: 16) {
+                        HStack {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                            Text("Preparing payment...")
+                                .font(.headline)
+                            Spacer()
+                        }
+
+                        Text("Calculating fees and validating payment request...")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(12)
+                    .padding(.horizontal)
+                }
+
                 // Payment details card (when payment is prepared)
                 if let preparedPayment = preparedPayment {
                     VStack(spacing: 20) {
@@ -368,10 +423,19 @@ struct SendPaymentView: View {
 
                 // Error message
                 if let errorMessage = errorMessage {
-                    Text(errorMessage)
-                        .foregroundColor(.red)
-                        .padding(.horizontal)
-                        .padding(.top)
+                    HStack {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.orange)
+                        Text(errorMessage)
+                            .foregroundColor(.primary)
+                            .multilineTextAlignment(.leading)
+                        Spacer()
+                    }
+                    .padding()
+                    .background(Color.orange.opacity(0.1))
+                    .cornerRadius(12)
+                    .padding(.horizontal)
+                    .padding(.top)
                 }
 
                 // Loading indicator
@@ -444,6 +508,8 @@ struct SendPaymentView: View {
         }
     }
 
+
+
     private func parseAndPreparePayment() {
         guard !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             return
@@ -472,7 +538,7 @@ struct SendPaymentView: View {
                 }
             } catch {
                 await MainActor.run {
-                    errorMessage = error.localizedDescription
+                    errorMessage = getUserFriendlyErrorMessage(error)
                     isLoading = false
                 }
             }
@@ -503,14 +569,14 @@ struct SendPaymentView: View {
                 await MainActor.run {
                     paymentInfo = nil
                     preparedPayment = nil
-                    errorMessage = error.localizedDescription
+                    errorMessage = getUserFriendlyErrorMessage(error)
                 }
             }
         }
     }
 
     private func preparePayment() {
-        guard let paymentInfo = paymentInfo else { return }
+        guard paymentInfo != nil else { return }
 
         isLoading = true
         errorMessage = nil
@@ -527,7 +593,7 @@ struct SendPaymentView: View {
                 }
             } catch {
                 await MainActor.run {
-                    errorMessage = error.localizedDescription
+                    errorMessage = getUserFriendlyErrorMessage(error)
                     isLoading = false
                 }
             }
@@ -545,12 +611,20 @@ struct SendPaymentView: View {
                 let walletManager = WalletManager.shared
                 let _ = try await walletManager.sendPayment(prepareResponse: preparedPayment)
 
+                // Add haptic feedback for success
+                let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                impactFeedback.impactOccurred()
+
                 await MainActor.run {
                     dismiss()
                 }
             } catch {
+                // Add haptic feedback for error
+                let notificationFeedback = UINotificationFeedbackGenerator()
+                notificationFeedback.notificationOccurred(.error)
+
                 await MainActor.run {
-                    errorMessage = error.localizedDescription
+                    errorMessage = getUserFriendlyErrorMessage(error)
                     isLoading = false
                 }
             }
@@ -1005,9 +1079,18 @@ struct ReceivePaymentView: View {
                 }
 
                 if let errorMessage = errorMessage {
-                    Text(errorMessage)
-                        .foregroundColor(.red)
-                        .padding(.horizontal)
+                    HStack {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.orange)
+                        Text(errorMessage)
+                            .foregroundColor(.primary)
+                            .multilineTextAlignment(.leading)
+                        Spacer()
+                    }
+                    .padding()
+                    .background(Color.orange.opacity(0.1))
+                    .cornerRadius(12)
+                    .padding(.horizontal)
                 }
 
                 Spacer()
@@ -1148,7 +1231,7 @@ struct ReceivePaymentView: View {
                 }
             } catch {
                 await MainActor.run {
-                    errorMessage = error.localizedDescription
+                    errorMessage = getUserFriendlyErrorMessage(error)
                     isLoading = false
                 }
             }
