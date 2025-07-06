@@ -13,7 +13,14 @@ class BitcoinPlaceAnnotation: NSObject, MKAnnotation {
     }
     
     var title: String? {
-        place.name ?? "Bitcoin Place"
+        // Use actual name if available
+        if let name = place.name {
+            return name
+        }
+
+        // Fallback to business type based on icon
+        let businessType = BitcoinPlaceAnnotation.getBusinessTypeFromIcon(place.icon)
+        return businessType
     }
     
     var subtitle: String? {
@@ -28,6 +35,80 @@ class BitcoinPlaceAnnotation: NSObject, MKAnnotation {
         self.place = place
         self.userLocation = userLocation
         super.init()
+    }
+
+    /// Get a human-readable business type from the OSM icon
+    static func getBusinessTypeFromIcon(_ icon: String) -> String {
+        switch icon.lowercased() {
+        case "restaurant", "fast_food":
+            return "Restaurant"
+        case "cafe":
+            return "Café"
+        case "bar", "pub":
+            return "Bar"
+        case "hotel", "guest_house":
+            return "Hotel"
+        case "shop", "convenience":
+            return "Shop"
+        case "fuel":
+            return "Gas Station"
+        case "bank", "atm":
+            return "Bank/ATM"
+        case "pharmacy":
+            return "Pharmacy"
+        case "hospital", "clinic":
+            return "Healthcare"
+        case "school", "university":
+            return "Education"
+        case "theatre", "cinema":
+            return "Entertainment"
+        case "gym", "fitness":
+            return "Fitness"
+        case "beauty", "hairdresser":
+            return "Beauty"
+        case "car_repair":
+            return "Auto Repair"
+        case "supermarket":
+            return "Supermarket"
+        case "bakery":
+            return "Bakery"
+        case "butcher":
+            return "Butcher"
+        case "electronics":
+            return "Electronics"
+        case "clothing":
+            return "Clothing"
+        case "books":
+            return "Bookstore"
+        case "jewelry":
+            return "Jewelry"
+        case "florist":
+            return "Florist"
+        case "hardware":
+            return "Hardware Store"
+        case "laundry":
+            return "Laundry"
+        case "dentist":
+            return "Dentist"
+        case "veterinary":
+            return "Veterinary"
+        case "taxi":
+            return "Taxi"
+        case "parking":
+            return "Parking"
+        case "post_office":
+            return "Post Office"
+        case "library":
+            return "Library"
+        case "museum":
+            return "Museum"
+        case "place_of_worship":
+            return "Place of Worship"
+        case "tourism":
+            return "Tourist Attraction"
+        default:
+            return "Bitcoin Business"
+        }
     }
 }
 
@@ -226,7 +307,7 @@ class BitcoinPlaceCalloutView: UIView {
         
         // Title
         let titleLabel = UILabel(frame: CGRect(x: 12, y: 8, width: 226, height: 20))
-        titleLabel.text = place.name ?? "Bitcoin Place"
+        titleLabel.text = place.name ?? BitcoinPlaceAnnotation.getBusinessTypeFromIcon(place.icon)
         titleLabel.font = .boldSystemFont(ofSize: 16)
         titleLabel.textColor = .label
         addSubview(titleLabel)

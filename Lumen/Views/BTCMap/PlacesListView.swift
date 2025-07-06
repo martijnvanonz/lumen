@@ -249,7 +249,7 @@ struct PlaceRowView: View {
         let coordinate = CLLocationCoordinate2D(latitude: place.lat, longitude: place.lon)
         let placemark = MKPlacemark(coordinate: coordinate)
         let mapItem = MKMapItem(placemark: placemark)
-        mapItem.name = displayPlace.name ?? "Bitcoin Place"
+        mapItem.name = displayPlace.name ?? BitcoinPlaceAnnotation.getBusinessTypeFromIcon(displayPlace.icon)
         
         mapItem.openInMaps(launchOptions: [
             MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving

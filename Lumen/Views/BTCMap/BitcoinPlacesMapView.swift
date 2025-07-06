@@ -82,7 +82,7 @@ struct BitcoinPlacesMapView: UIViewRepresentable {
             let coordinate = CLLocationCoordinate2D(latitude: annotation.place.lat, longitude: annotation.place.lon)
             let placemark = MKPlacemark(coordinate: coordinate)
             let mapItem = MKMapItem(placemark: placemark)
-            mapItem.name = annotation.place.name ?? "Bitcoin Place"
+            mapItem.name = annotation.place.name ?? BitcoinPlaceAnnotation.getBusinessTypeFromIcon(annotation.place.icon)
 
             mapItem.openInMaps(launchOptions: [
                 MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving
