@@ -67,18 +67,19 @@ struct NearbyPlacesCard: View {
     
     private func getMainText() -> String {
         if !locationManager.hasLocationPermission {
-            return "Find Bitcoin places near you"
+            return L("find_bitcoin_places")
         }
-        
+
         if locationManager.userLocation == nil {
-            return "Getting your location..."
+            return L("getting_location")
         }
-        
+
         if nearbyCount == 0 {
-            return "No Bitcoin places found nearby"
+            return L("no_places_nearby")
         }
-        
-        return "\(nearbyCount) place\(nearbyCount == 1 ? "" : "s") to spend bitcoin near you"
+
+        let pluralSuffix = nearbyCount == 1 ? L("place_singular") : L("place_plural")
+        return String(format: L("places_near_you"), nearbyCount, pluralSuffix)
     }
     
     private func getSubText() -> String {

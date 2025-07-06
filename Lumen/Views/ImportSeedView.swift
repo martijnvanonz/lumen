@@ -24,11 +24,11 @@ struct ImportSeedView: View {
                     .foregroundColor(.green)
                 
                 VStack(spacing: 8) {
-                    Text("Import Wallet")
+                    Text(L("import_wallet_title"))
                         .font(.title)
                         .fontWeight(.bold)
-                    
-                    Text("Enter your \(expectedWordCount)-word recovery phrase")
+
+                    Text(String(format: L("enter_recovery_phrase"), expectedWordCount))
                         .font(.body)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
@@ -37,7 +37,7 @@ struct ImportSeedView: View {
             
             // Word Count Selector
             HStack {
-                Text("Word Count:")
+                Text(L("word_count"))
                     .font(.headline)
                 
                 Spacer()
@@ -64,7 +64,7 @@ struct ImportSeedView: View {
                     }) {
                         HStack {
                             Image(systemName: "doc.on.clipboard")
-                            Text("Paste Seed Phrase")
+                            Text(L("paste_seed_phrase"))
                         }
                         .frame(maxWidth: .infinity)
                         .padding()
@@ -107,7 +107,7 @@ struct ImportSeedView: View {
                                     .progressViewStyle(CircularProgressViewStyle(tint: .white))
                             }
                             
-                            Text(isImporting ? "Importing..." : "Import Wallet")
+                            Text(isImporting ? L("importing_wallet") : L("import_wallet_button"))
                         }
                         .frame(maxWidth: .infinity)
                         .padding()
@@ -124,13 +124,13 @@ struct ImportSeedView: View {
         .onAppear {
             adjustSeedWordsArray()
         }
-        .alert("Paste Seed Phrase", isPresented: $showingPasteAlert) {
-            Button("Cancel", role: .cancel) { }
+        .alert(L("paste_seed_phrase"), isPresented: $showingPasteAlert) {
+            Button(L("cancel"), role: .cancel) { }
             Button("Paste") {
                 pasteSeedPhrase()
             }
         } message: {
-            Text("Found \(pasteboardContent.components(separatedBy: " ").count) words in clipboard. Paste them into the form?")
+            Text(String(format: L("paste_confirmation"), pasteboardContent.components(separatedBy: " ").count))
         }
         .actionSheet(isPresented: $showingWordCountPicker) {
             ActionSheet(

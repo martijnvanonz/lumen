@@ -387,11 +387,11 @@ struct CompletedView: View {
                     .foregroundColor(.green)
 
                 VStack(spacing: 8) {
-                    Text("Welcome to Lumen!")
+                    Text(L("welcome_to_lumen"))
                         .font(.largeTitle)
                         .fontWeight(.bold)
 
-                    Text("Your Lightning wallet is ready to use")
+                    Text(L("your_wallet_is_ready"))
                         .font(.title3)
                         .foregroundColor(.secondary)
                 }
@@ -404,7 +404,7 @@ struct CompletedView: View {
                 // Post notification to signal onboarding completion
                 NotificationCenter.default.post(name: .onboardingCompleted, object: nil)
             }) {
-                Text("Start Using Lumen")
+                Text(L("start_using_lumen"))
                     .font(.headline)
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)

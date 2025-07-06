@@ -129,33 +129,33 @@ struct ConnectionStatusCard: View {
     
     var body: some View {
         InfoCard(
-            title: "Connection Status",
+            title: L("connection_status"),
             icon: "wifi",
             iconColor: .green
         ) {
             VStack(alignment: .leading, spacing: 8) {
                 InfoRow(
                     label: "Status",
-                    value: "Connected",
+                    value: L("connected"),
                     valueColor: .green
                 )
-                
+
                 InfoRow(
-                    label: "Liquid Tip",
+                    label: L("liquid_tip"),
                     value: "\(walletInfo.blockchainInfo.liquidTip)"
                 )
-                
+
                 if walletInfo.walletInfo.pendingReceiveSat > 0 {
                     InfoRow(
-                        label: "Pending Receive",
+                        label: L("pending_receive"),
                         value: formatSatsString(walletInfo.walletInfo.pendingReceiveSat),
                         valueColor: .orange
                     )
                 }
-                
+
                 if walletInfo.walletInfo.pendingSendSat > 0 {
                     InfoRow(
-                        label: "Pending Send",
+                        label: L("pending_send"),
                         value: formatSatsString(walletInfo.walletInfo.pendingSendSat),
                         valueColor: .orange
                     )
@@ -195,29 +195,29 @@ struct BalanceInfoCard: View {
     
     var body: some View {
         InfoCard(
-            title: "Balance Details",
+            title: L("balance_details"),
             icon: "bitcoinsign.circle",
             iconColor: .orange
         ) {
             VStack(alignment: .leading, spacing: 8) {
                 InfoRow(
-                    label: "Total Balance",
+                    label: L("total_balance"),
                     value: formatSatsString(walletInfo.walletInfo.balanceSat, formatLarge: true),
                     valueColor: .primary,
                     isHighlighted: true
                 )
-                
+
                 if walletInfo.walletInfo.pendingReceiveSat > 0 {
                     InfoRow(
-                        label: "Pending Receive",
+                        label: L("pending_receive"),
                         value: formatSatsString(walletInfo.walletInfo.pendingReceiveSat),
                         valueColor: .green
                     )
                 }
-                
+
                 if walletInfo.walletInfo.pendingSendSat > 0 {
                     InfoRow(
-                        label: "Pending Send",
+                        label: L("pending_send"),
                         value: formatSatsString(walletInfo.walletInfo.pendingSendSat),
                         valueColor: .orange
                     )
