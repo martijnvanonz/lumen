@@ -1,0 +1,229 @@
+/* 
+  Localizable.strings (Dutch)
+  Lumen
+
+  Created by Augment Agent on 2025-07-06.
+  Copyright © 2025 Lumen. All rights reserved.
+*/
+
+// MARK: - App Name & Navigation
+"app_name" = "Lumen";
+"settings" = "Instellingen";
+"done" = "Klaar";
+"cancel" = "Annuleren";
+"ok" = "OK";
+"retry" = "Opnieuw proberen";
+"continue" = "Doorgaan";
+"back" = "Terug";
+"next" = "Volgende";
+"save" = "Opslaan";
+"delete" = "Verwijderen";
+"edit" = "Bewerken";
+"close" = "Sluiten";
+
+// MARK: - Wallet Main Screen
+"send" = "Versturen";
+"receive" = "Ontvangen";
+"balance" = "Saldo";
+"payment_history" = "Betalingsgeschiedenis";
+"wallet_info" = "Wallet Info";
+
+// MARK: - Payment States
+"pending" = "In behandeling";
+"completed" = "Voltooid";
+"failed" = "Mislukt";
+"sent" = "Verstuurd";
+"received" = "Ontvangen";
+"created" = "Aangemaakt";
+"timed_out" = "Time-out";
+"refundable" = "Terugvorderbaar";
+"refund_pending" = "Terugbetaling in behandeling";
+"waiting_fee_acceptance" = "Wachten op kosten acceptatie";
+
+// MARK: - Send Payment
+"send_payment" = "Betaling versturen";
+"paste_invoice" = "Factuur plakken";
+"scan_qr" = "QR scannen";
+"amount" = "Bedrag";
+"description" = "Beschrijving";
+"prepare_payment" = "Betaling voorbereiden";
+"send_now" = "Nu versturen";
+"payment_details" = "Betalingsdetails";
+"fee_details" = "Kostendetails";
+
+// MARK: - Receive Payment
+"receive_payment" = "Betaling ontvangen";
+"create_invoice" = "Factuur aanmaken";
+"invoice_created" = "Factuur aangemaakt";
+"you_receive" = "Je ontvangt";
+"service_fee" = "Servicekosten";
+"copy_invoice" = "Factuur kopiëren";
+"share_invoice" = "Factuur delen";
+
+// MARK: - Payment History
+"filter" = "Filter";
+"all_payments" = "Alle";
+"sent_payments" = "Verstuurd";
+"received_payments" = "Ontvangen";
+"pending_payments" = "In behandeling";
+"completed_payments" = "Voltooid";
+"failed_payments" = "Mislukt";
+
+// MARK: - Payment History Empty States
+"no_payments_yet" = "Nog geen betalingen";
+"no_sent_payments" = "Geen verstuurde betalingen";
+"no_received_payments" = "Geen ontvangen betalingen";
+"no_pending_payments" = "Geen betalingen in behandeling";
+"no_completed_payments" = "Geen voltooide betalingen";
+"no_failed_payments" = "Geen mislukte betalingen";
+
+"no_payments_message" = "Je betalingsgeschiedenis verschijnt hier zodra je Lightning betalingen begint te versturen en ontvangen.";
+"no_sent_message" = "Betalingen die je verstuurt verschijnen hier.";
+"no_received_message" = "Betalingen die je ontvangt verschijnen hier.";
+"no_pending_message" = "Betalingen die wachten op bevestiging verschijnen hier.";
+"no_completed_message" = "Succesvol voltooide betalingen verschijnen hier.";
+"no_failed_message" = "Mislukte betalingen verschijnen hier.";
+
+// MARK: - Refunds
+"get_money_back" = "Geld terugkrijgen";
+"money_to_get_back" = "Geld om terug te krijgen";
+"payment_failed" = "Betaling mislukt";
+"get_your_money_back" = "Krijg je geld terug";
+"money_sent_successfully" = "Geld succesvol verstuurd! 🎉";
+"great" = "Geweldig!";
+"refund_success_message" = "Je geld is teruggestuurd naar je Bitcoin wallet. Het zou binnen het geselecteerde tijdsbestek moeten aankomen.";
+"refund_explanation" = "Deze betalingen zijn niet doorgegaan. Tik op 'Geld terugkrijgen' om het geld terug te sturen naar je Bitcoin wallet.";
+
+// MARK: - Settings
+"currency" = "Valuta";
+"language" = "Taal";
+"security" = "Beveiliging";
+"about" = "Over";
+"logout" = "Uitloggen";
+"delete_wallet" = "Wallet verwijderen";
+"export_seed" = "Seed phrase exporteren";
+"import_wallet" = "Wallet importeren";
+"search_currencies" = "Valuta's zoeken...";
+"loading_currencies" = "Valuta's laden...";
+
+// MARK: - Onboarding
+"welcome_to_lumen" = "Welkom bij Lumen!";
+"your_wallet_is_ready" = "Je Lightning wallet is klaar voor gebruik";
+"start_using_lumen" = "Begin met Lumen";
+"create_new_wallet" = "Nieuwe wallet aanmaken";
+"import_existing_wallet" = "Bestaande wallet importeren";
+"wallet_choice_title" = "Kies wallet optie";
+"wallet_choice_subtitle" = "Maak een nieuwe wallet aan of importeer een bestaande";
+
+// MARK: - Biometric Setup
+"biometric_setup" = "Biometrische instelling";
+"enable_biometric" = "Biometrische authenticatie inschakelen";
+"biometric_description" = "Gebruik Face ID of Touch ID om je wallet te beveiligen";
+"skip_biometric" = "Nu overslaan";
+
+// MARK: - Wallet Initialization
+"creating_wallet" = "Wallet aanmaken...";
+"initializing_wallet" = "Je Lightning wallet initialiseren";
+"please_wait" = "Wacht even terwijl we je wallet instellen";
+
+// MARK: - Currency Selection
+"select_currency" = "Valuta selecteren";
+"currency_selection_subtitle" = "Kies je gewenste weergavevaluta";
+
+// MARK: - Import Seed
+"import_wallet_title" = "Wallet importeren";
+"enter_recovery_phrase" = "Voer je %d-woord herstelzin in";
+"word_count" = "Aantal woorden:";
+"select_word_count" = "Aantal woorden selecteren";
+"word_count_question" = "Hoeveel woorden heeft je seed phrase?";
+"paste_seed_phrase" = "Seed phrase plakken";
+"paste_confirmation" = "%d woorden gevonden in klembord. Plakken in het formulier?";
+"import_wallet_button" = "Wallet importeren";
+"importing_wallet" = "Wallet importeren...";
+
+// MARK: - Export Seed
+"export_seed_title" = "Seed phrase exporteren";
+"seed_phrase_warning" = "Houd je seed phrase veilig en privé";
+"access_seed_reason" = "Toegang tot je wallet herstelzin";
+
+// MARK: - Connection Status
+"connected" = "Verbonden";
+"disconnected" = "Niet verbonden";
+"connecting" = "Verbinden...";
+"connection_status" = "Verbindingsstatus";
+
+// MARK: - Wallet Info
+"balance_details" = "Saldodetails";
+"total_balance" = "Totaal saldo";
+"pending_receive" = "Ontvangst in behandeling";
+"pending_send" = "Verzending in behandeling";
+"payment_limits" = "Betalingslimieten";
+"loading_limits" = "Limieten laden...";
+"error_loading_limits" = "Fout bij laden limieten";
+"no_limits_loaded" = "Geen limieten geladen";
+"send_range" = "Verzendbereik";
+"receive_range" = "Ontvangstbereik";
+"liquid_tip" = "Liquid Tip";
+
+// MARK: - Bitcoin Places
+"find_bitcoin_places" = "Vind Bitcoin plaatsen bij jou in de buurt";
+"getting_location" = "Je locatie ophalen...";
+"no_places_nearby" = "Geen Bitcoin plaatsen gevonden in de buurt";
+"places_near_you" = "%d plek%@ om bitcoin uit te geven bij jou in de buurt";
+"location_required" = "Locatie vereist";
+"find_bitcoin_places_title" = "Vind Bitcoin plaatsen bij jou in de buurt";
+"location_permission_message" = "We gebruiken je locatie om nabijgelegen bedrijven te tonen die Bitcoin betalingen accepteren. Je locatie blijft privé en wordt nooit gedeeld met derden.";
+"enable_location" = "Locatie inschakelen";
+"open_settings" = "Instellingen openen";
+
+// MARK: - Fee Comparison
+"lightning_network" = "Lightning Network";
+"credit_card_fee" = "Creditcard (3%)";
+"bank_wire_fee" = "Bankoverschrijving (€25)";
+"recommended" = "AANBEVOLEN";
+
+// MARK: - Error Messages
+"insufficient_funds" = "Onvoldoende saldo. Je hebt niet genoeg sats voor deze betaling.";
+"payment_expired" = "Dit betalingsverzoek is verlopen. Vraag een nieuwe factuur aan.";
+"invalid_payment" = "Ongeldig betalingsverzoek. Controleer de QR-code of factuur.";
+"network_error" = "Netwerkfout. Controleer je internetverbinding en probeer opnieuw.";
+"channel_issue" = "Lightning kanaal probleem. Probeer het over een moment opnieuw.";
+"invalid_invoice" = "Ongeldige Lightning factuur. Controleer het betalingsverzoek.";
+"invalid_amount" = "Ongeldig bedrag";
+"payment_request_expired" = "Dit betalingsverzoek is verlopen";
+
+// MARK: - Action Buttons
+"try_again" = "Opnieuw proberen";
+"open_settings_button" = "Instellingen openen";
+"got_it" = "Begrepen";
+
+// MARK: - Loading States
+"loading" = "Laden...";
+"processing" = "Verwerken...";
+"please_wait_processing" = "Even geduld...";
+
+// MARK: - Confirmation Dialogs
+"logout_confirmation" = "Weet je zeker dat je wilt uitloggen?";
+"delete_wallet_confirmation" = "Weet je zeker dat je deze wallet wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.";
+"confirm_logout" = "Uitloggen";
+"confirm_delete" = "Verwijderen";
+
+// MARK: - Default Values
+"lumen_payment" = "Lumen betaling";
+"default_description" = "Lightning betaling";
+
+// MARK: - Units
+"sats" = "sats";
+"bitcoin" = "Bitcoin";
+"words" = "woorden";
+"word" = "woord";
+
+// MARK: - Time
+"now" = "nu";
+"minutes_ago" = "%d minuten geleden";
+"hours_ago" = "%d uur geleden";
+"days_ago" = "%d dagen geleden";
+
+// MARK: - Pluralization
+"place_singular" = "";
+"place_plural" = "ken";
