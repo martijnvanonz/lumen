@@ -250,52 +250,120 @@ struct SendPaymentView: View {
     @State private var preparedPayment: PrepareSendResponse?
     @State private var showingConfirmation = false
     @State private var showingFeeDetails = false
-    
+    @State private var showingQRScanner = true // Always show QR scanner by default
+    @State private var scannedCode: String?
+
     var body: some View {
         NavigationView {
-            VStack(spacing: 24) {
+            VStack(spacing: 0) {
+                // Header
                 Text("Send Payment")
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .padding(.top)
+                    .padding(.bottom, 20)
 
-                // Input field
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Payment Details")
-                        .font(.headline)
+                // QR Scanner (takes most of the space when no payment is prepared)
+                if preparedPayment == nil {
+                    QRScannerView(scannedCode: $scannedCode) { scannedCode in
+                        inputText = scannedCode
+                        parseAndPreparePayment()
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .cornerRadius(12)
+                    .padding(.horizontal)
 
-                    TextField("Paste invoice, Lightning address, or Bitcoin address...", text: $inputText, axis: .vertical)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .lineLimit(3...6)
-                        .onChange(of: inputText) { _, newValue in
-                            if !newValue.isEmpty {
-                                parseInput()
-                            } else {
-                                paymentInfo = nil
-                                preparedPayment = nil
-                            }
+                    // Paste button
+                    Button(action: pasteFromClipboard) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "doc.on.clipboard")
+                                .font(.title2)
+                            Text("Paste Invoice")
+                                .font(.headline)
                         }
-                }
-                .padding(.horizontal)
-
-                // Payment info display
-                if let paymentInfo = paymentInfo {
-                    PaymentInfoCard(paymentInfo: paymentInfo)
-                        .padding(.horizontal)
-                }
-
-                // Fee estimation display
-                if let preparedPayment = preparedPayment {
-                    VStack(spacing: 12) {
-                        FeeEstimationCard(preparedPayment: preparedPayment)
-
-                        Button("View Fee Details") {
-                            showingFeeDetails = true
-                        }
-                        .font(.caption)
                         .foregroundColor(.blue)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue.opacity(0.1))
+                        .cornerRadius(12)
                     }
                     .padding(.horizontal)
+                    .padding(.top, 20)
+                }
+
+                // Payment details card (when payment is prepared)
+                if let preparedPayment = preparedPayment {
+                    VStack(spacing: 20) {
+                        // Payment info card
+                        VStack(spacing: 16) {
+                            HStack {
+                                Image(systemName: getPaymentTypeIcon())
+                                    .font(.title2)
+                                    .foregroundColor(.orange)
+
+                                Text(getPaymentTypeTitle())
+                                    .font(.headline)
+
+                                Spacer()
+                            }
+
+                            VStack(spacing: 8) {
+                                HStack {
+                                    Text("Amount:")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                    Spacer()
+                                    SatsAmountView.transaction(
+                                        amountSatsFromPayAmount(preparedPayment.amount),
+                                        isReceive: false
+                                    )
+                                }
+
+                                HStack {
+                                    Text("Fee:")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                    Spacer()
+                                    SatsAmountView.fee(preparedPayment.feesSat ?? 0)
+                                }
+
+                                Divider()
+
+                                HStack {
+                                    Text("Total:")
+                                        .font(.headline)
+                                    Spacer()
+                                    SatsAmountView.balance(
+                                        amountSatsFromPayAmount(preparedPayment.amount) + (preparedPayment.feesSat ?? 0)
+                                    )
+                                }
+                            }
+
+                            if let description = paymentInfo?.description, !description.isEmpty {
+                                HStack {
+                                    Text("Description:")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                    Spacer()
+                                }
+                                Text(description)
+                                    .font(.subheadline)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                        }
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                        .padding(.horizontal)
+
+                        // Swipe to send
+                        SwipeToSendView(
+                            totalAmount: amountSatsFromPayAmount(preparedPayment.amount) + (preparedPayment.feesSat ?? 0)
+                        ) {
+                            sendPayment()
+                        }
+                        .padding(.horizontal)
+                    }
                 }
 
                 // Error message
@@ -303,44 +371,15 @@ struct SendPaymentView: View {
                     Text(errorMessage)
                         .foregroundColor(.red)
                         .padding(.horizontal)
+                        .padding(.top)
                 }
 
-                Spacer()
-
-                // Action buttons
-                VStack(spacing: 12) {
-                    if paymentInfo != nil && preparedPayment == nil && !isLoading {
-                        Button(action: preparePayment) {
-                            Text("Prepare Payment")
-                        }
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
+                // Loading indicator
+                if isLoading {
+                    ProgressView("Processing...")
                         .padding()
-                        .background(Color.orange)
-                        .cornerRadius(12)
-                        .padding(.horizontal)
-                    }
-
-                    if let preparedPayment = preparedPayment {
-                        Button(action: { showingConfirmation = true }) {
-                            Text("Send Payment")
-                        }
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.green)
-                        .cornerRadius(12)
-                        .padding(.horizontal)
-                    }
-
-                    if isLoading {
-                        ProgressView("Processing...")
-                            .padding()
-                    }
                 }
-                .padding(.bottom)
+
             }
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarBackButtonHidden()
@@ -351,47 +390,95 @@ struct SendPaymentView: View {
                     }
                 }
             }
-            .alert("Confirm Payment", isPresented: $showingConfirmation) {
-                Button("Cancel", role: .cancel) { }
-                Button("Send") {
-                    sendPayment()
+        }
+    }
+
+    // MARK: - Helper Functions
+
+    private func getPaymentTypeIcon() -> String {
+        guard let paymentInfo = paymentInfo else { return "bolt" }
+
+        switch paymentInfo.type {
+        case .bolt11:
+            return "bolt"
+        case .lnUrlPay:
+            return "link"
+        case .bolt12Offer:
+            return "qrcode"
+        case .bitcoinAddress:
+            return "bitcoinsign.circle"
+        case .lnUrlWithdraw:
+            return "arrow.down.circle"
+        case .lnUrlAuth:
+            return "key"
+        case .unsupported:
+            return "questionmark.circle"
+        }
+    }
+
+    private func getPaymentTypeTitle() -> String {
+        guard let paymentInfo = paymentInfo else { return "Lightning Payment" }
+
+        switch paymentInfo.type {
+        case .bolt11:
+            return "Lightning Invoice"
+        case .lnUrlPay:
+            return "Lightning Address"
+        case .bolt12Offer:
+            return "BOLT12 Offer"
+        case .bitcoinAddress:
+            return "Bitcoin Address"
+        case .lnUrlWithdraw:
+            return "LNURL Withdraw"
+        case .lnUrlAuth:
+            return "LNURL Auth"
+        case .unsupported:
+            return "Unsupported"
+        }
+    }
+
+    private func pasteFromClipboard() {
+        if let clipboardString = UIPasteboard.general.string {
+            inputText = clipboardString
+            parseAndPreparePayment()
+        }
+    }
+
+    private func parseAndPreparePayment() {
+        guard !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return
+        }
+
+        isLoading = true
+        errorMessage = nil
+        paymentInfo = nil
+        preparedPayment = nil
+
+        Task {
+            do {
+                let walletManager = WalletManager.shared
+                let inputType = try await walletManager.parseInput(inputText)
+
+                await MainActor.run {
+                    paymentInfo = walletManager.getPaymentInfo(from: inputType)
                 }
-            } message: {
-                if let preparedPayment = preparedPayment {
-                    VStack(alignment: .leading, spacing: 4) {
-                        HStack {
-                            Text("Amount:")
-                            SatsAmountView(
-                                amount: amountSatsFromPayAmount(preparedPayment.amount),
-                                displayMode: .satsOnly,
-                                size: .compact,
-                                style: .primary
-                            )
-                        }
-                        HStack {
-                            Text("Fee:")
-                            SatsAmountView.fee(preparedPayment.feesSat ?? 0)
-                        }
-                        HStack {
-                            Text("Total:")
-                            SatsAmountView(
-                                amount: amountSatsFromPayAmount(preparedPayment.amount) + (preparedPayment.feesSat ?? 0),
-                                displayMode: .satsOnly,
-                                size: .compact,
-                                style: .primary
-                            )
-                        }
-                    }
+
+                // Automatically prepare the payment
+                let prepared = try await walletManager.validateAndPreparePayment(from: inputType)
+
+                await MainActor.run {
+                    preparedPayment = prepared
+                    isLoading = false
                 }
-            }
-            .sheet(isPresented: $showingFeeDetails) {
-                if let preparedPayment = preparedPayment {
-                    FeeDetailsSheet(preparedPayment: preparedPayment)
+            } catch {
+                await MainActor.run {
+                    errorMessage = error.localizedDescription
+                    isLoading = false
                 }
             }
         }
     }
-    
+
     private func parseInput() {
         guard !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             return
