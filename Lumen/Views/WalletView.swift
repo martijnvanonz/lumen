@@ -170,7 +170,6 @@ struct WalletView: View {
 
 struct BalanceCard: View {
     let balance: UInt64
-    @StateObject private var currencyManager = CurrencyManager.shared
 
     var body: some View {
         VStack(spacing: 16) {
@@ -179,19 +178,7 @@ struct BalanceCard: View {
                     .font(.headline)
                     .foregroundColor(.secondary)
                 
-                Text("\(balance) sats")
-                    .font(.system(size: 36, weight: .bold, design: .rounded))
-                    .foregroundColor(.primary)
-                
-                if let fiatValue = formattedFiatValue {
-                    Text("≈ \(fiatValue)")
-                        .font(.title3)
-                        .foregroundColor(.secondary)
-                } else if currencyManager.isLoadingRates {
-                    Text("Loading rate...")
-                        .font(.title3)
-                        .foregroundColor(.secondary)
-                }
+                SatsAmountView.balance(balance)
             }
             
             // Lightning Network indicator
@@ -213,16 +200,7 @@ struct BalanceCard: View {
         )
         .padding(.horizontal)
     }
-    
-    private var formattedFiatValue: String? {
-        guard let fiatAmount = currencyManager.convertSatsToFiat(balance),
-              fiatAmount.isFinite && !fiatAmount.isNaN else {
-            return nil
-        }
 
-        let formatted = currencyManager.formatFiatAmount(fiatAmount)
-        return formatted.isEmpty ? nil : formatted
-    }
 }
 
 // MARK: - Action Button
@@ -377,9 +355,28 @@ struct SendPaymentView: View {
             } message: {
                 if let preparedPayment = preparedPayment {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Amount: \(amountSatsFromPayAmount(preparedPayment.amount)) sats")
-                        Text("Fee: \(preparedPayment.feesSat ?? 0) sats")
-                        Text("Total: \(amountSatsFromPayAmount(preparedPayment.amount) + (preparedPayment.feesSat ?? 0)) sats")
+                        HStack {
+                            Text("Amount:")
+                            SatsAmountView(
+                                amount: amountSatsFromPayAmount(preparedPayment.amount),
+                                displayMode: .satsOnly,
+                                size: .compact,
+                                style: .primary
+                            )
+                        }
+                        HStack {
+                            Text("Fee:")
+                            SatsAmountView.fee(preparedPayment.feesSat ?? 0)
+                        }
+                        HStack {
+                            Text("Total:")
+                            SatsAmountView(
+                                amount: amountSatsFromPayAmount(preparedPayment.amount) + (preparedPayment.feesSat ?? 0),
+                                displayMode: .satsOnly,
+                                size: .compact,
+                                style: .primary
+                            )
+                        }
                     }
                 }
             }
@@ -509,9 +506,12 @@ struct PaymentInfoCard: View {
 
                     Spacer()
 
-                    Text("\(amount) sats")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
+                    SatsAmountView(
+                        amount: amount,
+                        displayMode: .satsOnly,
+                        size: .compact,
+                        style: .primary
+                    )
                 }
             } else if let minAmount = paymentInfo.minAmount, let maxAmount = paymentInfo.maxAmount {
                 HStack {
@@ -521,9 +521,23 @@ struct PaymentInfoCard: View {
 
                     Spacer()
 
-                    Text("\(minAmount) - \(maxAmount) sats")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
+                    HStack(spacing: 4) {
+                        SatsAmountView(
+                            amount: minAmount,
+                            displayMode: .satsOnly,
+                            size: .compact,
+                            style: .primary
+                        )
+                        Text("-")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                        SatsAmountView(
+                            amount: maxAmount,
+                            displayMode: .satsOnly,
+                            size: .compact,
+                            style: .primary
+                        )
+                    }
                 }
             }
 
@@ -688,10 +702,12 @@ struct FeeRowView: View {
 
             Spacer()
 
-            Text("\(amount) sats")
-                .font(isTotal ? .headline : .subheadline)
-                .fontWeight(isTotal ? .semibold : .regular)
-                .foregroundColor(color)
+            SatsAmountView(
+                amount: amount,
+                displayMode: .satsOnly,
+                size: isTotal ? .regular : .compact,
+                style: color == .primary ? .primary : .secondary
+            )
         }
     }
 }
@@ -700,93 +716,227 @@ struct FeeRowView: View {
 
 struct ReceivePaymentView: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var amount = ""
+    @State private var currencyAmount = ""
+    @State private var satsAmount = ""
     @State private var description = ""
     @State private var invoice: String?
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var preparedReceive: PrepareReceiveResponse?
-    
+    @State private var isEditingCurrency = true // true = currency input, false = sats input
+
+    @ObservedObject private var currencyManager = CurrencyManager.shared
+
     var body: some View {
         NavigationView {
             VStack(spacing: 24) {
-                Text("Receive Payment")
+                Text("Receive payment")
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .padding(.top)
-                
+
                 if let invoice = invoice {
-                    // Show generated invoice
-                    VStack(spacing: 16) {
-                        Text("Payment Request Created")
-                            .font(.headline)
-                            .foregroundColor(.green)
+                    // Show generated invoice with new layout
+                    VStack(spacing: 24) {
+                        // QR Code
+                        QRCodeView(data: invoice, size: 250)
+                            .padding(.horizontal)
 
-                        // Fee information for receive
-                        if let preparedReceive = preparedReceive {
-                            ReceiveFeeCard(preparedReceive: preparedReceive)
-                        }
-
-                        Text(invoice)
-                            .font(.caption)
-                            .padding()
-                            .background(Color(.systemGray6))
-                            .cornerRadius(8)
-                            .textSelection(.enabled)
-
-                        Button("Copy Invoice") {
+                        // Copy Invoice Button
+                        Button("Copy invoice") {
                             UIPasteboard.general.string = invoice
                         }
-                        .buttonStyle(.bordered)
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue)
+                        .cornerRadius(12)
+                        .padding(.horizontal)
+
+                        // Amount and Fee Information
+                        if let preparedReceive = preparedReceive {
+                            VStack(spacing: 12) {
+                                // You receive amount
+                                HStack {
+                                    Text("You receive")
+                                        .font(.body)
+                                        .foregroundColor(.primary)
+
+                                    Spacer()
+
+                                    SatsAmountView(
+                                        amount: getReceiveAmount(preparedReceive),
+                                        displayMode: .both,
+                                        size: .regular,
+                                        style: .success
+                                    )
+                                }
+
+                                // Service fee
+                                if preparedReceive.feesSat > 0 {
+                                    HStack {
+                                        Text("Service fee")
+                                            .font(.body)
+                                            .foregroundColor(.primary)
+
+                                        Spacer()
+
+                                        SatsAmountView.fee(preparedReceive.feesSat)
+                                    }
+                                }
+                            }
+                            .padding(.horizontal)
+                        }
                     }
-                    .padding(.horizontal)
                 } else {
-                    // Invoice creation form
-                    VStack(spacing: 16) {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Amount (sats)")
-                                .font(.headline)
-                            
-                            TextField("Enter amount...", text: $amount)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .keyboardType(.numberPad)
+                    // Invoice creation form with new layout
+                    VStack(spacing: 20) {
+                        // Amount input section with toggle
+                        VStack(spacing: 12) {
+                            HStack(spacing: 12) {
+                                if isEditingCurrency {
+                                    // Currency icon/code
+                                    if let currency = currencyManager.selectedCurrency {
+                                        HStack(spacing: 8) {
+                                            Image(systemName: currency.icon)
+                                                .font(.title2)
+                                                .foregroundColor(currency.iconColor)
+
+                                            Text(currency.displayCode)
+                                                .font(.title2)
+                                                .fontWeight(.semibold)
+                                        }
+                                    } else {
+                                        HStack(spacing: 8) {
+                                            Image(systemName: "dollarsign.circle")
+                                                .font(.title2)
+                                                .foregroundColor(.blue)
+
+                                            Text("USD")
+                                                .font(.title2)
+                                                .fontWeight(.semibold)
+                                        }
+                                    }
+
+                                    // Currency amount input
+                                    TextField("0", text: $currencyAmount)
+                                        .font(.largeTitle)
+                                        .fontWeight(.bold)
+                                        .keyboardType(.decimalPad)
+                                        .multilineTextAlignment(.leading)
+                                        .textFieldStyle(PlainTextFieldStyle())
+                                        .onChange(of: currencyAmount) { _, newValue in
+                                            updateSatsFromCurrency(newValue)
+                                        }
+                                } else {
+                                    // Sats icon
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "bitcoinsign.circle")
+                                            .font(.title2)
+                                            .foregroundColor(.orange)
+
+                                        Text("SATS")
+                                            .font(.title2)
+                                            .fontWeight(.semibold)
+                                    }
+
+                                    // Sats amount input
+                                    TextField("0", text: $satsAmount)
+                                        .font(.largeTitle)
+                                        .fontWeight(.bold)
+                                        .keyboardType(.numberPad)
+                                        .multilineTextAlignment(.leading)
+                                        .textFieldStyle(PlainTextFieldStyle())
+                                        .onChange(of: satsAmount) { _, newValue in
+                                            updateCurrencyFromSats(newValue)
+                                        }
+                                }
+
+                                Spacer()
+                            }
+
+                            // Divider line
+                            Rectangle()
+                                .fill(Color(.systemGray4))
+                                .frame(height: 1)
+
+                            // Exchange icon
+                            HStack {
+                                Button(action: toggleInputMode) {
+                                    Image(systemName: "arrow.up.arrow.down")
+                                        .font(.title3)
+                                        .foregroundColor(.blue)
+                                }
+
+                                Spacer()
+                            }
+
+                            // Secondary amount display
+                            HStack {
+                                if isEditingCurrency {
+                                    // Show sats equivalent
+                                    if let satsValue = convertToSats() {
+                                        Text("\(satsValue) sats")
+                                            .font(.title2)
+                                            .foregroundColor(.secondary)
+                                    } else {
+                                        Text("0 sats")
+                                            .font(.title2)
+                                            .foregroundColor(.secondary)
+                                    }
+                                } else {
+                                    // Show currency equivalent
+                                    if let currencyValue = convertToCurrency() {
+                                        Text(currencyManager.formatFiatAmount(currencyValue))
+                                            .font(.title2)
+                                            .foregroundColor(.secondary)
+                                    } else {
+                                        Text(currencyManager.formatFiatAmount(0))
+                                            .font(.title2)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+
+                                Spacer()
+                            }
                         }
-                        
+                        .padding(.horizontal)
+
+                        // Description field
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Description (optional)")
-                                .font(.headline)
-                            
-                            TextField("What's this for?", text: $description)
+                            TextField("Description", text: $description)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .font(.body)
                         }
+                        .padding(.horizontal)
                     }
-                    .padding(.horizontal)
                 }
-                
+
                 if let errorMessage = errorMessage {
                     Text(errorMessage)
                         .foregroundColor(.red)
                         .padding(.horizontal)
                 }
-                
+
                 Spacer()
-                
+
                 if invoice == nil {
                     Button(action: createInvoice) {
                         if isLoading {
                             ProgressView()
                                 .progressViewStyle(CircularProgressViewStyle(tint: .white))
                         } else {
-                            Text("Create Invoice")
+                            Text("Create invoice")
                         }
                     }
                     .font(.headline)
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(amount.isEmpty ? Color.gray : Color.green)
+                    .background(currentAmountIsEmpty ? Color.gray : Color.green)
                     .cornerRadius(12)
-                    .disabled(amount.isEmpty || isLoading)
+                    .disabled(currentAmountIsEmpty || isLoading)
                     .padding(.horizontal)
                     .padding(.bottom)
                 }
@@ -802,9 +952,82 @@ struct ReceivePaymentView: View {
             }
         }
     }
-    
+
+    // MARK: - Helper Functions
+
+    private var currentAmountIsEmpty: Bool {
+        return isEditingCurrency ? currencyAmount.isEmpty : satsAmount.isEmpty
+    }
+
+    private func toggleInputMode() {
+        isEditingCurrency.toggle()
+    }
+
+    private func updateSatsFromCurrency(_ currencyValue: String) {
+        guard let currencyDouble = Double(currencyValue),
+              currencyDouble > 0,
+              let rate = currencyManager.getCurrentRate(),
+              rate > 0 else {
+            satsAmount = ""
+            return
+        }
+
+        let btcAmount = currencyDouble / rate
+        let satsValue = btcAmount * 100_000_000.0
+        satsAmount = String(UInt64(max(0, satsValue)))
+    }
+
+    private func updateCurrencyFromSats(_ satsValue: String) {
+        guard let satsUInt = UInt64(satsValue),
+              satsUInt > 0,
+              let rate = currencyManager.getCurrentRate(),
+              rate > 0 else {
+            currencyAmount = ""
+            return
+        }
+
+        let btcAmount = Double(satsUInt) / 100_000_000.0
+        let currencyValue = btcAmount * rate
+        currencyAmount = String(format: "%.2f", currencyValue)
+    }
+
+    private func convertToSats() -> UInt64? {
+        if isEditingCurrency {
+            guard let currencyValue = Double(currencyAmount),
+                  currencyValue > 0,
+                  let rate = currencyManager.getCurrentRate(),
+                  rate > 0 else {
+                return nil
+            }
+
+            let btcAmount = currencyValue / rate
+            let satsAmount = btcAmount * 100_000_000.0
+
+            return UInt64(max(0, satsAmount))
+        } else {
+            return UInt64(satsAmount) ?? nil
+        }
+    }
+
+    private func convertToCurrency() -> Double? {
+        guard let satsValue = UInt64(satsAmount),
+              satsValue > 0,
+              let rate = currencyManager.getCurrentRate(),
+              rate > 0 else {
+            return nil
+        }
+
+        let btcAmount = Double(satsValue) / 100_000_000.0
+        return btcAmount * rate
+    }
+
+    private func getReceiveAmount(_ preparedReceive: PrepareReceiveResponse) -> UInt64 {
+        let totalAmount = amountSatsFromReceiveAmount(preparedReceive.amount)
+        return totalAmount - preparedReceive.feesSat
+    }
+
     private func createInvoice() {
-        guard let amountSats = UInt64(amount) else {
+        guard let amountSats = convertToSats() else {
             errorMessage = "Invalid amount"
             return
         }
@@ -868,9 +1091,7 @@ struct ReceiveFeeCard: View {
 
                         Spacer()
 
-                        Text("\(preparedReceive.feesSat) sats")
-                            .font(.caption)
-                            .foregroundColor(.orange)
+                        SatsAmountView.fee(preparedReceive.feesSat)
                     }
 
                     HStack {
@@ -880,10 +1101,12 @@ struct ReceiveFeeCard: View {
 
                         Spacer()
 
-                        Text("\(amountSatsFromReceiveAmount(preparedReceive.amount) - preparedReceive.feesSat) sats")
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.green)
+                        SatsAmountView(
+                            amount: amountSatsFromReceiveAmount(preparedReceive.amount) - preparedReceive.feesSat,
+                            displayMode: .both,
+                            size: .compact,
+                            style: .success
+                        )
                     }
                 } else {
                     HStack {

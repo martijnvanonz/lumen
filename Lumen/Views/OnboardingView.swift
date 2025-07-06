@@ -39,8 +39,9 @@ struct OnboardingView: View {
     }
     
     private func checkExistingWallet() {
-        // Always start with the welcome screen, which will handle existing wallet detection
-        // and provide appropriate UI for both new and existing users
+        // If we reach onboarding, it means no existing wallet was found
+        // or user explicitly chose to create a new wallet
+        // Always start with welcome screen for new wallet creation
         onboardingState.currentStep = .welcome
     }
 }
@@ -51,156 +52,16 @@ struct WelcomeStepView: View {
     @ObservedObject var onboardingState: OnboardingState
     @StateObject private var walletManager = WalletManager.shared
     @StateObject private var currencyManager = CurrencyManager.shared
-    @State private var showingNewWalletWarning = false
-
-    var hasExistingWallet: Bool {
-        // Check both keychain and UserDefaults state for consistency
-        return KeychainManager.shared.mnemonicExists() || walletManager.hasWallet
-    }
 
     var body: some View {
-        Group {
-            if hasExistingWallet {
-                ExistingWalletView(
-                    onboardingState: onboardingState,
-                    onCreateNewWallet: {
-                        showingNewWalletWarning = true
-                    }
-                )
-            } else {
-                NewWalletWelcomeView(onboardingState: onboardingState)
-            }
-        }
-        .alert("Create New Wallet", isPresented: $showingNewWalletWarning) {
-            Button("Cancel", role: .cancel) { }
-            Button("Delete & Create New", role: .destructive) {
-                createNewWallet()
-            }
-        } message: {
-            Text("Creating a new wallet will permanently delete your existing wallet and all funds. This action cannot be undone. Are you sure you want to continue?")
-        }
+        // If we reach onboarding, it means this is for a new wallet
+        // ContentView already handles existing wallet detection
+        NewWalletWelcomeView(onboardingState: onboardingState)
     }
 
-    // MARK: - Private Methods
 
-    private func createNewWallet() {
-        Task {
-            do {
-                // Delete the existing wallet from keychain
-                try await walletManager.deleteWalletFromKeychain()
-
-                await MainActor.run {
-                    // Continue with new wallet creation - go to biometric setup
-                    onboardingState.currentStep = .biometricSetup
-                }
-            } catch {
-                print("❌ Failed to delete existing wallet: \(error)")
-            }
-        }
-    }
 }
 
-// MARK: - Existing Wallet View
-
-struct ExistingWalletView: View {
-    @ObservedObject var onboardingState: OnboardingState
-    @StateObject private var currencyManager = CurrencyManager.shared
-    let onCreateNewWallet: () -> Void
-
-    var body: some View {
-        VStack(spacing: 40) {
-            Spacer()
-
-            // App Icon and Title
-            VStack(spacing: 20) {
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 80))
-                    .foregroundColor(.green)
-                    .shadow(color: .green.opacity(0.3), radius: 20)
-
-                VStack(spacing: 8) {
-                    Text("Existing Wallet Found")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-
-                    Text("Your wallet is safely stored in iCloud Keychain")
-                        .font(.title3)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                }
-            }
-
-            // Wallet Info Display
-            VStack(spacing: 16) {
-                VStack(spacing: 8) {
-                    Text("Ready to Continue")
-                        .font(.headline)
-                        .foregroundColor(.secondary)
-
-                    Text("Your wallet will be restored and your balance will be available once connected")
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                }
-                .padding()
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.secondary.opacity(0.1))
-                )
-            }
-
-            Spacer()
-
-            // Action Buttons
-            VStack(spacing: 16) {
-                Button(action: {
-                    continueWithExistingWallet()
-                }) {
-                    Text("Continue with Existing Wallet")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.blue)
-                        .cornerRadius(12)
-                }
-
-                Button(action: onCreateNewWallet) {
-                    Text("Create New Wallet")
-                        .font(.headline)
-                        .foregroundColor(.red)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.red.opacity(0.1))
-                        .cornerRadius(12)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color.red, lineWidth: 1)
-                        )
-                }
-            }
-            .padding(.horizontal)
-            .padding(.bottom, 40)
-        }
-    }
-
-    // MARK: - Private Methods
-
-    private func continueWithExistingWallet() {
-        let biometricManager = BiometricManager.shared
-
-        // Always go to biometric setup first, then wallet initialization
-        // Currency selection will happen after wallet is initialized
-        if biometricManager.isBiometricAvailable() {
-            // Biometrics available, go directly to wallet initialization
-            onboardingState.currentStep = .walletInitialization
-        } else {
-            // Need to set up biometrics first
-            onboardingState.currentStep = .biometricSetup
-        }
-    }
-}
 
 // MARK: - New Wallet Welcome View
 
@@ -655,14 +516,15 @@ struct CurrencySelectionView: View {
                         .frame(height: 200)
                 } else {
                     ScrollView {
-                        LazyVStack(spacing: 8) {
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 3), spacing: 12) {
                             ForEach(filteredCurrencies, id: \.id) { currency in
-                                CurrencyRowView(
+                                CurrencyGridItem(
                                     currency: currency,
-                                    isSelected: currencyManager.selectedCurrency?.id == currency.id
-                                ) {
-                                    currencyManager.setSelectedCurrency(currency)
-                                }
+                                    isSelected: currencyManager.selectedCurrency?.id == currency.id,
+                                    onTap: {
+                                        currencyManager.setSelectedCurrency(currency)
+                                    }
+                                )
                             }
                         }
                         .padding(.horizontal)
@@ -693,54 +555,17 @@ struct CurrencySelectionView: View {
             .padding(.bottom, 32)
         }
         .onAppear {
-            Task {
-                await currencyManager.loadAvailableCurrencies(setDefaultIfNone: false)
+            // Only load if we don't have currencies yet
+            if currencyManager.availableCurrencies.isEmpty {
+                Task {
+                    await currencyManager.loadAvailableCurrencies(setDefaultIfNone: false)
+                }
             }
         }
     }
 }
 
-// MARK: - Currency Row View
 
-struct CurrencyRowView: View {
-    let currency: FiatCurrency
-    let isSelected: Bool
-    let onTap: () -> Void
-
-    var body: some View {
-        Button(action: onTap) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(currency.id.uppercased())
-                        .font(.headline)
-                        .foregroundColor(.primary)
-
-                    Text(currency.info.name)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-
-                Spacer()
-
-                if isSelected {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.yellow)
-                        .font(.title2)
-                }
-            }
-            .padding()
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(isSelected ? Color.yellow.opacity(0.1) : Color.clear)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(isSelected ? Color.yellow : Color.gray.opacity(0.3), lineWidth: 1)
-                    )
-            )
-        }
-        .buttonStyle(PlainButtonStyle())
-    }
-}
 
 #Preview {
     OnboardingView()

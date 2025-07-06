@@ -143,9 +143,12 @@ struct RefundRowView: View {
                         .font(.subheadline)
                         .foregroundColor(.secondary)
 
-                    Text("\(swap.amountSat) sats")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    SatsAmountView(
+                        amount: swap.amountSat,
+                        displayMode: .satsOnly,
+                        size: .compact,
+                        style: .secondary
+                    )
                 }
 
                 Spacer()

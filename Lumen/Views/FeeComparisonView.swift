@@ -57,11 +57,25 @@ struct FeeComparisonView: View {
                 HStack {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundColor(.green)
-                    
-                    Text("Save \(savings) sats (\(String(format: "%.1f", savingsPercentage))%) vs credit cards")
-                        .font(.caption)
-                        .foregroundColor(.green)
-                        .fontWeight(.medium)
+
+                    HStack(spacing: 4) {
+                        Text("Save")
+                            .font(.caption)
+                            .foregroundColor(.green)
+                            .fontWeight(.medium)
+
+                        SatsAmountView(
+                            amount: savings,
+                            displayMode: .satsOnly,
+                            size: .compact,
+                            style: .success
+                        )
+
+                        Text("(\(String(format: "%.1f", savingsPercentage))%) vs credit cards")
+                            .font(.caption)
+                            .foregroundColor(.green)
+                            .fontWeight(.medium)
+                    }
                 }
                 .padding(.top, 8)
             }
@@ -118,24 +132,28 @@ struct FeeComparisonRow: View {
                     }
                 }
                 
-                Text("\(fee) sats (\(feePercentage)%)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                HStack(spacing: 4) {
+                    SatsAmountView(
+                        amount: fee,
+                        displayMode: .satsOnly,
+                        size: .compact,
+                        style: .secondary
+                    )
+                    Text("(\(feePercentage)%)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
             
             Spacer()
             
             // Fee amount
-            VStack(alignment: .trailing, spacing: 2) {
-                Text("\(fee)")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundColor(color)
-                
-                Text("sats")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-            }
+            SatsAmountView(
+                amount: fee,
+                displayMode: .satsOnly,
+                size: .regular,
+                style: .primary
+            )
         }
         .padding(.vertical, 4)
         .background(
@@ -280,10 +298,12 @@ struct FeeBreakdownRow: View {
                 
                 Spacer()
                 
-                Text("\(amount) sats")
-                    .font(isTotal ? .subheadline : .caption)
-                    .fontWeight(isTotal ? .semibold : .medium)
-                    .foregroundColor(isTotal ? .primary : .secondary)
+                SatsAmountView(
+                    amount: amount,
+                    displayMode: .satsOnly,
+                    size: isTotal ? .regular : .compact,
+                    style: isTotal ? .primary : .secondary
+                )
             }
             
             if !description.isEmpty {

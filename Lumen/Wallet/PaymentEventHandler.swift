@@ -179,18 +179,20 @@ class PaymentEventHandler: ObservableObject {
     // MARK: - Payment Event Handlers
     
     private func handlePaymentSucceeded(_ details: Payment) {
-        let paymentInfo = createPaymentInfo(from: details, status: .succeeded)
-        addOrUpdatePayment(paymentInfo)
-        
-        let direction = details.paymentType == .receive ? "received" : "sent"
-        addNotification(
-            title: "Payment \(direction.capitalized)",
-            message: "\(details.amountSat) sats \(direction) successfully",
-            type: .success
-        )
-        
-        // Remove from pending if it was there
-        removePendingPayment(paymentHash: details.txId ?? "")
+        Task { @MainActor in
+            let paymentInfo = createPaymentInfo(from: details, status: .succeeded)
+            addOrUpdatePayment(paymentInfo)
+
+            let direction = details.paymentType == .receive ? "received" : "sent"
+            addNotification(
+                title: "Payment \(direction.capitalized)",
+                message: "\(details.amountSat) sats \(direction) successfully",
+                type: .success
+            )
+
+            // Remove from pending if it was there
+            removePendingPayment(paymentHash: details.txId ?? "")
+        }
     }
     
     private func handlePaymentFailed(_ details: Payment) {
