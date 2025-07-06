@@ -142,12 +142,7 @@ struct SettingsView: View {
                 }
 
                 // Add Bitcoin Section
-                Section("Add Bitcoin") {
-                    Text("Transfer from your exchange or buy instantly")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .padding(.bottom, 8)
-
+                Section {
                     Button(action: {
                         showingAddBitcoin = true
                     }) {
@@ -173,6 +168,10 @@ struct SettingsView: View {
                         }
                     }
                     .buttonStyle(PlainButtonStyle())
+                } header: {
+                    Text("Add Bitcoin")
+                } footer: {
+                    Text("Transfer from your exchange or buy instantly")
                 }
 
                 // Refund Section (always available as backup)

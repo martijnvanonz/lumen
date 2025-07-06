@@ -158,12 +158,12 @@ struct WalletView: View {
                     }
                 }
 
-                // Notification overlay
-                VStack {
-                    NotificationOverlay()
-                    Spacer()
+                // Payment success overlay
+                if eventHandler.showPaymentSuccess, let payment = eventHandler.lastSuccessfulPayment {
+                    PaymentSuccessOverlay(payment: payment) {
+                        eventHandler.dismissSuccessFeedback()
+                    }
                 }
-                .allowsHitTesting(false)
             }
         }
         .sheet(isPresented: $showingSendView) {
@@ -1375,6 +1375,69 @@ private func amountSatsFromReceiveAmount(_ receiveAmount: ReceiveAmount?) -> UIn
         // For assets, we approximate using the payer amount
         // In a real app, you'd need proper conversion logic
         return UInt64(payerAmount ?? 0)
+    }
+}
+
+// MARK: - Payment Success Overlay
+
+struct PaymentSuccessOverlay: View {
+    let payment: PaymentEventHandler.PaymentInfo
+    let onDismiss: () -> Void
+
+    var body: some View {
+        VStack {
+            Spacer()
+
+            VStack(spacing: 16) {
+                // Success icon
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 60))
+                    .foregroundColor(.green)
+
+                // Success message
+                Text("Payment Received!")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
+
+                // Amount
+                SatsAmountView(
+                    amount: payment.amountSat,
+                    displayMode: .both,
+                    size: .large,
+                    style: .success
+                )
+
+                // Dismiss button
+                Button("Continue") {
+                    onDismiss()
+                }
+                .font(.headline)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.green)
+                .cornerRadius(12)
+            }
+            .padding(24)
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color(.systemBackground))
+                    .shadow(color: .black.opacity(0.2), radius: 20, x: 0, y: 10)
+            )
+            .padding(.horizontal, 32)
+
+            Spacer()
+        }
+        .background(Color.black.opacity(0.4))
+        .transition(.asymmetric(
+            insertion: .scale.combined(with: .opacity),
+            removal: .scale.combined(with: .opacity)
+        ))
+        .animation(.spring(response: 0.6, dampingFraction: 0.8), value: true)
+        .onTapGesture {
+            onDismiss()
+        }
     }
 }
 
