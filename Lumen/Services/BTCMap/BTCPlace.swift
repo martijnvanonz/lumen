@@ -46,16 +46,16 @@ struct BTCPlace: Codable, Identifiable {
     }
     
     // MARK: - Custom Decoding
-    
+
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        
+
         // Required fields
         id = try container.decode(Int.self, forKey: .id)
         lat = try container.decode(Double.self, forKey: .lat)
         lon = try container.decode(Double.self, forKey: .lon)
         icon = try container.decode(String.self, forKey: .icon)
-        
+
         // Optional fields
         name = try container.decodeIfPresent(String.self, forKey: .name)
         address = try container.decodeIfPresent(String.self, forKey: .address)
@@ -68,19 +68,55 @@ struct BTCPlace: Codable, Identifiable {
         createdAt = try container.decodeIfPresent(String.self, forKey: .createdAt)
         updatedAt = try container.decodeIfPresent(String.self, forKey: .updatedAt)
         deletedAt = try container.decodeIfPresent(String.self, forKey: .deletedAt)
-        
+
         // Payment methods - decode as strings and convert to booleans
         if let lightningValue = try container.decodeIfPresent(String.self, forKey: .paymentLightning) {
             acceptsLightning = lightningValue.lowercased() == "yes"
+        } else {
+            acceptsLightning = false
         }
-        
+
         if let onchainValue = try container.decodeIfPresent(String.self, forKey: .paymentOnchain) {
             acceptsOnchain = onchainValue.lowercased() == "yes"
+        } else {
+            acceptsOnchain = false
         }
-        
+
         if let nfcValue = try container.decodeIfPresent(String.self, forKey: .paymentLightningContactless) {
             acceptsNFC = nfcValue.lowercased() == "yes"
+        } else {
+            acceptsNFC = false
         }
+    }
+
+    // MARK: - Custom Encoding
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+
+        // Required fields
+        try container.encode(id, forKey: .id)
+        try container.encode(lat, forKey: .lat)
+        try container.encode(lon, forKey: .lon)
+        try container.encode(icon, forKey: .icon)
+
+        // Optional fields
+        try container.encodeIfPresent(name, forKey: .name)
+        try container.encodeIfPresent(address, forKey: .address)
+        try container.encodeIfPresent(phone, forKey: .phone)
+        try container.encodeIfPresent(website, forKey: .website)
+        try container.encodeIfPresent(openingHours, forKey: .openingHours)
+        try container.encodeIfPresent(comments, forKey: .comments)
+        try container.encodeIfPresent(verifiedAt, forKey: .verifiedAt)
+        try container.encodeIfPresent(boostedUntil, forKey: .boostedUntil)
+        try container.encodeIfPresent(createdAt, forKey: .createdAt)
+        try container.encodeIfPresent(updatedAt, forKey: .updatedAt)
+        try container.encodeIfPresent(deletedAt, forKey: .deletedAt)
+
+        // Payment methods - encode as strings
+        try container.encode(acceptsLightning ? "yes" : "no", forKey: .paymentLightning)
+        try container.encode(acceptsOnchain ? "yes" : "no", forKey: .paymentOnchain)
+        try container.encode(acceptsNFC ? "yes" : "no", forKey: .paymentLightningContactless)
     }
     
     // MARK: - Computed Properties
