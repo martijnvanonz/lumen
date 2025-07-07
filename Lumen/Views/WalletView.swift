@@ -371,7 +371,7 @@ struct SendPaymentView: View {
                                         .foregroundColor(.secondary)
                                     Spacer()
                                     SatsAmountView.transaction(
-                                        amountSatsFromPayAmount(preparedPayment.amount),
+                                        extractPaymentAmount(from: preparedPayment, paymentInfo: paymentInfo),
                                         isReceive: false
                                     )
                                 }
@@ -391,7 +391,7 @@ struct SendPaymentView: View {
                                         .font(.headline)
                                     Spacer()
                                     SatsAmountView.balance(
-                                        amountSatsFromPayAmount(preparedPayment.amount) + (preparedPayment.feesSat ?? 0)
+                                        extractPaymentAmount(from: preparedPayment, paymentInfo: paymentInfo) + (preparedPayment.feesSat ?? 0)
                                     )
                                 }
                             }
@@ -415,7 +415,7 @@ struct SendPaymentView: View {
 
                         // Swipe to send
                         SwipeToSendView(
-                            totalAmount: amountSatsFromPayAmount(preparedPayment.amount) + (preparedPayment.feesSat ?? 0)
+                            totalAmount: extractPaymentAmount(from: preparedPayment, paymentInfo: paymentInfo) + (preparedPayment.feesSat ?? 0)
                         ) {
                             sendPayment()
                         }
@@ -765,87 +765,7 @@ struct PaymentInfoCard: View {
     }
 }
 
-// MARK: - Fee Estimation Card
 
-struct FeeEstimationCard: View {
-    let preparedPayment: PrepareSendResponse
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            // Header
-            HStack {
-                Image(systemName: "creditcard")
-                    .foregroundColor(.blue)
-
-                Text("Payment Summary")
-                    .font(.headline)
-                    .foregroundColor(.blue)
-
-                Spacer()
-
-                Text("Ready to Send")
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.green)
-                    .cornerRadius(4)
-            }
-
-            // Payment breakdown
-            VStack(spacing: 8) {
-                FeeRowView(
-                    label: "Payment Amount",
-                    amount: amountSatsFromPayAmount(preparedPayment.amount),
-                    isTotal: false
-                )
-
-                FeeRowView(
-                    label: "Lightning Fee",
-                    amount: preparedPayment.feesSat ?? 0,
-                    isTotal: false,
-                    color: .orange
-                )
-
-                Divider()
-
-                FeeRowView(
-                    label: "Total",
-                    amount: amountSatsFromPayAmount(preparedPayment.amount) + (preparedPayment.feesSat ?? 0),
-                    isTotal: true
-                )
-            }
-
-            // Fee percentage
-            let amountSats = amountSatsFromPayAmount(preparedPayment.amount)
-            let feesSats = preparedPayment.feesSat ?? 0
-            let feePercentage = amountSats > 0 ? Double(feesSats) / Double(amountSats) * 100 : 0
-            if feePercentage > 0 {
-                HStack {
-                    Text("Fee Rate:")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-
-                    Spacer()
-
-                    Text(String(format: "%.2f%%", feePercentage))
-                        .font(.caption)
-                        .foregroundColor(feePercentage > 5 ? .orange : .secondary)
-                }
-            }
-        }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color(.secondarySystemBackground))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.blue.opacity(0.3), lineWidth: 1)
-                )
-        )
-    }
-}
 
 struct FeeRowView: View {
     let label: String
@@ -1321,6 +1241,7 @@ struct ReceiveFeeCard: View {
 
 struct FeeDetailsSheet: View {
     let preparedPayment: PrepareSendResponse
+    let paymentInfo: PaymentInputInfo?
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -1330,7 +1251,7 @@ struct FeeDetailsSheet: View {
                     // Fee comparison
                     FeeComparisonView(
                         lightningFeeSats: preparedPayment.feesSat ?? 0,
-                        paymentAmountSats: amountSatsFromPayAmount(preparedPayment.amount)
+                        paymentAmountSats: extractPaymentAmount(from: preparedPayment, paymentInfo: paymentInfo)
                     )
 
                     // Fee breakdown
@@ -1371,6 +1292,8 @@ private func amountSatsFromPayAmount(_ payAmount: PayAmount?) -> UInt64 {
         return 0 // Drain means send all available, amount is determined dynamically
     }
 }
+
+
 
 /// Extracts the amount in satoshis from a ReceiveAmount enum
 private func amountSatsFromReceiveAmount(_ receiveAmount: ReceiveAmount?) -> UInt64 {
@@ -1447,6 +1370,28 @@ struct PaymentSuccessOverlay: View {
             onDismiss()
         }
     }
+}
+
+/// Extracts the payment amount in satoshis with fallback logic
+/// For BOLT11 invoices, PrepareSendResponse.amount can be nil, so we fall back to PaymentInputInfo
+private func extractPaymentAmount(
+    from preparedPayment: PrepareSendResponse?,
+    paymentInfo: PaymentInputInfo?
+) -> UInt64 {
+    // First try to get amount from PrepareSendResponse
+    if let preparedPayment = preparedPayment,
+       let amount = preparedPayment.amount {
+        return amountSatsFromPayAmount(amount)
+    }
+
+    // Fallback to PaymentInputInfo for BOLT11 invoices with fixed amounts
+    if let paymentInfo = paymentInfo,
+       let amountMsat = paymentInfo.amount {
+        // Convert millisats to sats
+        return amountMsat / 1000
+    }
+
+    return 0
 }
 
 #Preview {
