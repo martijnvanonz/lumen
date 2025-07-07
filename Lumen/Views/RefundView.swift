@@ -46,7 +46,7 @@ struct RefundView: View {
                     await loadRefundableSwaps()
                 }
             }
-            .onChange(of: refundableSwaps) { swaps in
+            .onChange(of: refundableSwaps) { _, swaps in
                 // Auto-dismiss if no refunds are available
                 if swaps.isEmpty && !isLoading {
                     dismiss()

@@ -36,6 +36,7 @@ private func getUserFriendlyErrorMessage(_ error: Error) -> String {
 
 struct WalletView: View {
     @StateObject private var walletManager = WalletManager.shared
+    @StateObject private var eventHandler = PaymentEventHandler.shared
     @State private var showingSendView = false
     @State private var showingReceiveView = false
     @State private var showingRefundView = false
