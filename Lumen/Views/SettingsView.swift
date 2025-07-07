@@ -13,6 +13,7 @@ struct SettingsView: View {
     @State private var showingRefundView = false
     @State private var showingWalletInfo = false
     @State private var showingExportSeed = false
+    @State private var showingAddBitcoin = false
     @State private var isLoggingOut = false
     @State private var isDeletingWallet = false
     @State private var searchRadius: Double = 5.0
@@ -138,6 +139,39 @@ struct SettingsView: View {
                             .foregroundColor(.orange)
                         }
                     }
+                }
+
+                // Add Bitcoin Section
+                Section {
+                    Button(action: {
+                        showingAddBitcoin = true
+                    }) {
+                        HStack {
+                            Image(systemName: "plus.circle.fill")
+                                .foregroundColor(.green)
+                                .frame(width: 24)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Add Bitcoin")
+                                    .foregroundColor(.primary)
+
+                                Text("Receive or purchase Bitcoin")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+
+                            Spacer()
+
+                            Image(systemName: "chevron.right")
+                                .foregroundColor(.secondary)
+                                .font(.caption)
+                        }
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                } header: {
+                    Text("Add Bitcoin")
+                } footer: {
+                    Text("Transfer from your exchange or buy instantly")
                 }
 
                 // Refund Section (always available as backup)
@@ -344,6 +378,9 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showingExportSeed) {
             ExportSeedView()
+        }
+        .sheet(isPresented: $showingAddBitcoin) {
+            AddBitcoinView()
         }
         .alert("Logout Wallet", isPresented: $showingLogoutConfirmation) {
             Button("Cancel", role: .cancel) { }

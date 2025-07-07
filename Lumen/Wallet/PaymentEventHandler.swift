@@ -1,16 +1,18 @@
 import Foundation
 import BreezSDKLiquid
 import SwiftUI
+import UIKit
 
-/// Handles real-time payment events and UI notifications
+/// Handles real-time payment events
 class PaymentEventHandler: ObservableObject {
-    
+
     // MARK: - Published Properties
-    
+
     @Published var recentPayments: [PaymentInfo] = []
     @Published var pendingPayments: [PaymentInfo] = []
-    @Published var notifications: [PaymentNotification] = []
     @Published var connectionStatus: ConnectionStatus = .disconnected
+    @Published var showPaymentSuccess: Bool = false
+    @Published var lastSuccessfulPayment: PaymentInfo?
     
     // MARK: - Types
     
@@ -98,38 +100,7 @@ class PaymentEventHandler: ObservableObject {
         }
     }
     
-    struct PaymentNotification: Identifiable, Equatable {
-        let id = UUID()
-        let title: String
-        let message: String
-        let type: NotificationType
-        let timestamp: Date
-        
-        enum NotificationType {
-            case success
-            case failure
-            case info
-            case warning
-            
-            var icon: String {
-                switch self {
-                case .success: return "checkmark.circle.fill"
-                case .failure: return "xmark.circle.fill"
-                case .info: return "info.circle.fill"
-                case .warning: return "exclamationmark.triangle.fill"
-                }
-            }
-            
-            var color: Color {
-                switch self {
-                case .success: return .green
-                case .failure: return .red
-                case .info: return .blue
-                case .warning: return .orange
-                }
-            }
-        }
-    }
+
     
     // MARK: - Singleton
     
@@ -183,12 +154,10 @@ class PaymentEventHandler: ObservableObject {
             let paymentInfo = createPaymentInfo(from: details, status: .succeeded)
             addOrUpdatePayment(paymentInfo)
 
-            let direction = details.paymentType == .receive ? "received" : "sent"
-            addNotification(
-                title: "Payment \(direction.capitalized)",
-                message: "\(details.amountSat) sats \(direction) successfully",
-                type: .success
-            )
+            // Show success feedback for received payments
+            if details.paymentType == .receive {
+                showSuccessFeedback(for: paymentInfo)
+            }
 
             // Remove from pending if it was there
             removePendingPayment(paymentHash: details.txId ?? "")
@@ -198,13 +167,7 @@ class PaymentEventHandler: ObservableObject {
     private func handlePaymentFailed(_ details: Payment) {
         let paymentInfo = createPaymentInfo(from: details, status: .failed)
         addOrUpdatePayment(paymentInfo)
-        
-        addNotification(
-            title: "Payment Failed",
-            message: "Payment of \(details.amountSat) sats failed",
-            type: .failure
-        )
-        
+
         // Remove from pending
         removePendingPayment(paymentHash: details.txId ?? "")
     }
@@ -212,72 +175,38 @@ class PaymentEventHandler: ObservableObject {
     private func handlePaymentPending(_ details: Payment) {
         let paymentInfo = createPaymentInfo(from: details, status: .pending)
         addPendingPayment(paymentInfo)
-        
-        let direction = details.paymentType == .receive ? "incoming" : "outgoing"
-        addNotification(
-            title: "Payment Pending",
-            message: "\(direction.capitalized) payment of \(details.amountSat) sats is processing",
-            type: .info
-        )
     }
     
     private func handlePaymentRefunded(_ details: Payment) {
-        addNotification(
-            title: "Payment Refunded",
-            message: "\(details.amountSat) sats refunded to your wallet",
-            type: .info
-        )
+        // Payment refunded - no action needed for now
     }
     
     private func handlePaymentRefundPending(_ details: Payment) {
-        addNotification(
-            title: "Refund Pending",
-            message: "Refund of \(details.amountSat) sats is being processed",
-            type: .info
-        )
+        // Refund pending - no action needed for now
     }
     
     private func handlePaymentWaitingConfirmation(_ details: Payment) {
         let paymentInfo = createPaymentInfo(from: details, status: .waitingConfirmation)
         addOrUpdatePayment(paymentInfo)
 
-        addNotification(
-            title: "Waiting for Confirmation",
-            message: "Payment of \(details.amountSat) sats is waiting for network confirmation",
-            type: .warning
-        )
+        // Show success feedback for received payments (as per Breez SDK docs)
+        if details.paymentType == .receive {
+            showSuccessFeedback(for: paymentInfo)
+        }
     }
 
     private func handlePaymentRefundable(_ details: Payment) {
         let paymentInfo = createPaymentInfo(from: details, status: .failed)
         addOrUpdatePayment(paymentInfo)
-
-        addNotification(
-            title: "Payment Refundable",
-            message: "Payment failed and can be refunded",
-            type: .warning
-        )
     }
 
     private func handlePaymentWaitingFeeAcceptance(_ details: Payment) {
         let paymentInfo = createPaymentInfo(from: details, status: .pending)
         addOrUpdatePayment(paymentInfo)
-
-        addNotification(
-            title: "Fee Acceptance Required",
-            message: "Payment is waiting for fee acceptance",
-            type: .info
-        )
     }
 
     private func handleDataSynced(_ didPullNewRecords: Bool) {
-        if didPullNewRecords {
-            addNotification(
-                title: "Data Updated",
-                message: "New payment data synchronized",
-                type: .info
-            )
-        }
+        // Data synced - no action needed for now
     }
     
     // MARK: - Helper Methods
@@ -320,41 +249,32 @@ class PaymentEventHandler: ObservableObject {
         pendingPayments.removeAll { $0.paymentHash == paymentHash }
     }
     
-    func addNotification(title: String, message: String, type: PaymentNotification.NotificationType) {
-        let notification = PaymentNotification(
-            title: title,
-            message: message,
-            type: type,
-            timestamp: Date()
-        )
-        
-        notifications.insert(notification, at: 0)
-        
-        // Keep only the last 20 notifications
-        if notifications.count > 20 {
-            notifications = Array(notifications.prefix(20))
-        }
-        
-        // Auto-remove success and info notifications after 5 seconds
-        if type == .success || type == .info {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-                self.notifications.removeAll { $0.id == notification.id }
-            }
+    // MARK: - Success Feedback
+
+    private func showSuccessFeedback(for payment: PaymentInfo) {
+        // Provide haptic feedback
+        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+        impactFeedback.impactOccurred()
+
+        // Show visual feedback
+        lastSuccessfulPayment = payment
+        showPaymentSuccess = true
+
+        // Auto-hide after 3 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            self.showPaymentSuccess = false
+            self.lastSuccessfulPayment = nil
         }
     }
-    
+
     // MARK: - Public Methods
-    
-    /// Manually dismiss a notification
-    func dismissNotification(_ notification: PaymentNotification) {
-        notifications.removeAll { $0.id == notification.id }
+
+    /// Manually dismiss success feedback
+    func dismissSuccessFeedback() {
+        showPaymentSuccess = false
+        lastSuccessfulPayment = nil
     }
-    
-    /// Clear all notifications
-    func clearAllNotifications() {
-        notifications.removeAll()
-    }
-    
+
     /// Update connection status
     func updateConnectionStatus(_ status: ConnectionStatus) {
         DispatchQueue.main.async {

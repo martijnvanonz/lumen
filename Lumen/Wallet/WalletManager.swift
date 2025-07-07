@@ -501,6 +501,154 @@ class WalletManager: ObservableObject {
         let prepared = try await prepareReceivePayment(amountSat: amountSat, description: description)
         return try await receivePayment(prepareResponse: prepared)
     }
+
+    // MARK: - Add Bitcoin Methods
+
+    /// Fetches onchain payment limits for receiving and sending
+    func fetchOnchainLimits() async throws -> OnchainPaymentLimitsResponse {
+        guard let sdk = sdk else {
+            throw WalletError.notConnected
+        }
+
+        logInfo("Fetching onchain limits")
+
+        do {
+            let limits = try sdk.fetchOnchainLimits()
+            logInfo("Onchain limits fetched - Receive: \(limits.receive.minSat)-\(limits.receive.maxSat) sats, Send: \(limits.send.minSat)-\(limits.send.maxSat) sats")
+            return limits
+        } catch {
+            logError("Failed to fetch onchain limits: \(error)")
+            throw error
+        }
+    }
+
+    /// Prepares an onchain receive payment
+    func prepareReceiveOnchain(payerAmountSat: UInt64?) async throws -> PrepareReceiveResponse {
+        guard let sdk = sdk else {
+            throw WalletError.notConnected
+        }
+
+        logInfo("Preparing onchain receive payment for \(payerAmountSat?.description ?? "any") sats")
+
+        do {
+            let receiveAmount = payerAmountSat != nil ? ReceiveAmount.bitcoin(payerAmountSat: payerAmountSat!) : nil
+            let request = PrepareReceiveRequest(
+                paymentMethod: .bitcoinAddress,
+                amount: receiveAmount
+            )
+            let response = try sdk.prepareReceivePayment(req: request)
+            logInfo("Onchain receive payment prepared. Fee: \(response.feesSat) sats")
+            return response
+        } catch {
+            logError("Failed to prepare onchain receive payment: \(error)")
+            throw error
+        }
+    }
+
+    /// Executes an onchain receive payment
+    func receiveOnchain(prepareResponse: PrepareReceiveResponse) async throws -> ReceivePaymentResponse {
+        guard let sdk = sdk else {
+            throw WalletError.notConnected
+        }
+
+        logInfo("Executing onchain receive payment")
+
+        do {
+            let request = ReceivePaymentRequest(
+                prepareResponse: prepareResponse,
+                description: "Lumen onchain receive"
+            )
+            let response = try sdk.receivePayment(req: request)
+            logInfo("Onchain receive payment executed successfully")
+            return response
+        } catch {
+            logError("Failed to execute onchain receive payment: \(error)")
+            throw error
+        }
+    }
+
+    /// Prepares a liquid receive payment (alternative to lightning)
+    func prepareReceiveLiquid(payerAmountSat: UInt64?) async throws -> PrepareReceiveResponse {
+        guard let sdk = sdk else {
+            throw WalletError.notConnected
+        }
+
+        logInfo("Preparing liquid receive payment for \(payerAmountSat?.description ?? "any") sats")
+
+        do {
+            let receiveAmount = payerAmountSat != nil ? ReceiveAmount.bitcoin(payerAmountSat: payerAmountSat!) : nil
+            let request = PrepareReceiveRequest(
+                paymentMethod: .liquidAddress,
+                amount: receiveAmount
+            )
+            let response = try sdk.prepareReceivePayment(req: request)
+            logInfo("Liquid receive payment prepared. Fee: \(response.feesSat) sats")
+            return response
+        } catch {
+            logError("Failed to prepare liquid receive payment: \(error)")
+            throw error
+        }
+    }
+
+    /// Executes a liquid receive payment
+    func receiveLiquid(prepareResponse: PrepareReceiveResponse, description: String? = nil) async throws -> ReceivePaymentResponse {
+        guard let sdk = sdk else {
+            throw WalletError.notConnected
+        }
+
+        logInfo("Executing liquid receive payment")
+
+        do {
+            let request = ReceivePaymentRequest(
+                prepareResponse: prepareResponse,
+                description: description
+            )
+            let response = try sdk.receivePayment(req: request)
+            logInfo("Liquid receive payment executed successfully")
+            return response
+        } catch {
+            logError("Failed to execute liquid receive payment: \(error)")
+            throw error
+        }
+    }
+
+    /// Prepares a Bitcoin purchase via Moonpay
+    func prepareBuyBitcoin(provider: BuyBitcoinProvider, amountSat: UInt64) async throws -> PrepareBuyBitcoinResponse {
+        guard let sdk = sdk else {
+            throw WalletError.notConnected
+        }
+
+        logInfo("Preparing buy bitcoin for \(amountSat) sats via \(provider)")
+
+        do {
+            let request = PrepareBuyBitcoinRequest(provider: provider, amountSat: amountSat)
+            let response = try sdk.prepareBuyBitcoin(req: request)
+            logInfo("Buy bitcoin prepared. Fee: \(response.feesSat) sats")
+            return response
+        } catch {
+            logError("Failed to prepare buy bitcoin: \(error)")
+            throw error
+        }
+    }
+
+    /// Executes a Bitcoin purchase and returns the provider URL
+    func buyBitcoin(prepareResponse: PrepareBuyBitcoinResponse, redirectUrl: String? = nil) async throws -> String {
+        guard let sdk = sdk else {
+            throw WalletError.notConnected
+        }
+
+        logInfo("Executing buy bitcoin")
+
+        do {
+            let request = BuyBitcoinRequest(prepareResponse: prepareResponse, redirectUrl: redirectUrl)
+            let url = try sdk.buyBitcoin(req: request)
+            logInfo("Buy bitcoin URL generated successfully")
+            return url
+        } catch {
+            logError("Failed to execute buy bitcoin: \(error)")
+            throw error
+        }
+    }
     
     // MARK: - Utility Methods
 
@@ -815,23 +963,7 @@ class WalletManager: ObservableObject {
         }
     }
 
-    /// Fetches onchain payment limits
-    func fetchOnchainLimits() async throws -> OnchainPaymentLimitsResponse {
-        guard let sdk = sdk else {
-            throw WalletError.notConnected
-        }
 
-        logInfo("Fetching onchain payment limits...")
-
-        do {
-            let limits = try sdk.fetchOnchainLimits()
-            logInfo("Onchain limits - Send: \(limits.send.minSat)-\(limits.send.maxSat) sats, Receive: \(limits.receive.minSat)-\(limits.receive.maxSat) sats")
-            return limits
-        } catch {
-            logError("Failed to fetch onchain limits: \(error)")
-            throw error
-        }
-    }
 
     /// Executes a refund for a failed swap
     func executeRefund(
