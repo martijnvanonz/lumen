@@ -164,6 +164,7 @@ struct WalletView: View {
                     PaymentSuccessOverlay(payment: payment) {
                         eventHandler.dismissSuccessFeedback()
                     }
+
                 }
             }
         }
@@ -892,6 +893,7 @@ struct ReceivePaymentView: View {
     @State private var isEditingCurrency = true // true = currency input, false = sats input
 
     @ObservedObject private var currencyManager = CurrencyManager.shared
+    @ObservedObject private var eventHandler = PaymentEventHandler.shared
 
     var body: some View {
         NavigationView {
@@ -1124,6 +1126,11 @@ struct ReceivePaymentView: View {
                         dismiss()
                     }
                 }
+            }
+        }
+        .onChange(of: eventHandler.showPaymentSuccess) { _, showSuccess in
+            if showSuccess {
+                dismiss()
             }
         }
     }

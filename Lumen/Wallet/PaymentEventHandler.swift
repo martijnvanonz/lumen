@@ -252,6 +252,10 @@ class PaymentEventHandler: ObservableObject {
     // MARK: - Success Feedback
 
     private func showSuccessFeedback(for payment: PaymentInfo) {
+        print("🎉 PaymentEventHandler: showSuccessFeedback called!")
+        print("🎉 Payment amount: \(payment.amountSat) sats")
+        print("🎉 Setting showPaymentSuccess = true")
+
         // Provide haptic feedback
         let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
         impactFeedback.impactOccurred()
@@ -260,11 +264,14 @@ class PaymentEventHandler: ObservableObject {
         lastSuccessfulPayment = payment
         showPaymentSuccess = true
 
-        // Auto-hide after 3 seconds
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-            self.showPaymentSuccess = false
-            self.lastSuccessfulPayment = nil
-        }
+
+
+        // Don't auto-hide - user must manually dismiss
+        // DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+        //     print("🎉 Auto-hiding success feedback after 3 seconds")
+        //     self.showPaymentSuccess = false
+        //     self.lastSuccessfulPayment = nil
+        // }
     }
 
     // MARK: - Public Methods
