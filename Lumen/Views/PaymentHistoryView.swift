@@ -22,11 +22,11 @@ struct PaymentHistoryView: View {
                     PaymentListView(payments: filteredPayments)
                 }
             }
-            .navigationTitle(L("payment_history"))
+            .navigationTitle(L("Payment History"))
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(L("filter")) {
+                    Button(L("Filter")) {
                         showingFilterSheet = true
                     }
                 }
@@ -72,12 +72,12 @@ enum PaymentFilter: String, CaseIterable {
 
     var displayName: String {
         switch self {
-        case .all: return L("all_payments")
-        case .sent: return L("sent_payments")
-        case .received: return L("received_payments")
-        case .pending: return L("pending_payments")
-        case .completed: return L("completed_payments")
-        case .failed: return L("failed_payments")
+        case .all: return L("All")
+        case .sent: return L("Sent")
+        case .received: return L("Received")
+        case .pending: return L("Pending")
+        case .completed: return L("Completed")
+        case .failed: return L("Failed")
         }
     }
     
@@ -237,21 +237,21 @@ struct PaymentRowView: View {
     
     private var paymentTypeText: String {
         switch payment.paymentType {
-        case .send: return L("sent")
-        case .receive: return L("received")
+        case .send: return L("Sent")
+        case .receive: return L("Received")
         }
     }
 
     private var statusText: String {
         switch payment.status {
-        case .created: return L("created")
-        case .pending: return L("pending")
-        case .complete: return L("completed")
-        case .failed: return L("failed")
-        case .timedOut: return L("timed_out")
-        case .refundable: return L("refundable")
-        case .refundPending: return L("refund_pending")
-        case .waitingFeeAcceptance: return L("waiting_fee_acceptance")
+        case .created: return L("Created")
+        case .pending: return L("Pending")
+        case .complete: return L("Completed")
+        case .failed: return L("Failed")
+        case .timedOut: return L("Timed Out")
+        case .refundable: return L("Refundable")
+        case .refundPending: return L("Refund Pending")
+        case .waitingFeeAcceptance: return L("Waiting Fee Acceptance")
         }
     }
     
@@ -341,23 +341,23 @@ struct EmptyStateView: View {
     
     private var emptyStateTitle: String {
         switch filter {
-        case .all: return L("no_payments_yet")
-        case .sent: return L("no_sent_payments")
-        case .received: return L("no_received_payments")
-        case .pending: return L("no_pending_payments")
-        case .completed: return L("no_completed_payments")
-        case .failed: return L("no_failed_payments")
+        case .all: return L("No Payments Yet")
+        case .sent: return L("No Sent Payments")
+        case .received: return L("No Received Payments")
+        case .pending: return L("No Pending Payments")
+        case .completed: return L("No Completed Payments")
+        case .failed: return L("No Failed Payments")
         }
     }
 
     private var emptyStateMessage: String {
         switch filter {
-        case .all: return L("no_payments_message")
-        case .sent: return L("no_sent_message")
-        case .received: return L("no_received_message")
-        case .pending: return L("no_pending_message")
-        case .completed: return L("no_completed_message")
-        case .failed: return L("no_failed_message")
+        case .all: return L("Your payment history will appear here once you start sending and receiving Lightning payments.")
+        case .sent: return L("Payments you send will appear here.")
+        case .received: return L("Payments you receive will appear here.")
+        case .pending: return L("Payments waiting for confirmation will appear here.")
+        case .completed: return L("Successfully completed payments will appear here.")
+        case .failed: return L("Failed payments will appear here.")
         }
     }
 }

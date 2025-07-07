@@ -36,10 +36,10 @@ struct ErrorAlertView: ViewModifier {
     
     private func actionButtonTitle(for actionType: ErrorHandler.RecoveryAction.ActionType) -> String {
         switch actionType {
-        case .retry: return L("try_again")
-        case .settings: return L("settings")
-        case .wait: return L("ok")
-        case .info: return L("got_it")
+        case .retry: return L("Try Again")
+        case .settings: return L("Settings")
+        case .wait: return L("OK")
+        case .info: return L("Got It")
         }
     }
     
@@ -196,7 +196,7 @@ struct ErrorStateView: View {
                 }
                 
                 if let onRetry = onRetry {
-                    Button(L("try_again")) {
+                    Button(L("Try Again")) {
                         onRetry()
                     }
                     .buttonStyle(.bordered)
@@ -227,10 +227,10 @@ struct ErrorStateView: View {
     
     private func actionButtonTitle(for actionType: ErrorHandler.RecoveryAction.ActionType) -> String {
         switch actionType {
-        case .retry: return L("try_again")
-        case .settings: return L("open_settings_button")
-        case .wait: return L("ok")
-        case .info: return L("got_it")
+        case .retry: return L("Try Again")
+        case .settings: return L("Open Settings")
+        case .wait: return L("OK")
+        case .info: return L("Got It")
         }
     }
     

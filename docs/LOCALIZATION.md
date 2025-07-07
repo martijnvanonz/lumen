@@ -78,35 +78,37 @@ func L(_ key: String, comment: String = "") -> String {
 
 ### Basic String Localization
 
-Replace hardcoded strings with localized versions:
+Replace hardcoded strings with localized versions using the full English text as the key:
 
 ```swift
 // Before
 Text("Send")
 
-// After  
-Text(L("send"))
+// After
+Text(L("Send"))
 ```
+
+**Key Principle**: Use the complete English sentence/phrase as the localization key. This makes it easy for translators to understand context without technical knowledge of the project.
 
 ### Dynamic Content
 
-For strings with dynamic content, use String formatting:
+For strings with dynamic content, use String formatting with the full English text as the key:
 
 ```swift
 // Before
 Text("Enter your \(wordCount)-word recovery phrase")
 
 // After
-Text(String(format: L("enter_recovery_phrase"), wordCount))
+Text(String(format: L("Enter your %d-word recovery phrase"), wordCount))
 ```
 
 ### Pluralization
 
-Handle plural forms properly:
+Handle plural forms properly using full English text as keys:
 
 ```swift
-let pluralSuffix = count == 1 ? L("place_singular") : L("place_plural")
-let message = String(format: L("places_near_you"), count, pluralSuffix)
+let pluralSuffix = count == 1 ? L("") : L("s")
+let message = String(format: L("%d place%@ to spend bitcoin near you"), count, pluralSuffix)
 ```
 
 ## File Structure
@@ -130,38 +132,46 @@ Lumen/
 ## String Categories
 
 ### Navigation & UI
-- `app_name`, `settings`, `done`, `cancel`, `ok`, `retry`
+- `"Lumen"`, `"Settings"`, `"Done"`, `"Cancel"`, `"OK"`, `"Retry"`
 
-### Wallet Operations  
-- `send`, `receive`, `balance`, `payment_history`
+### Wallet Operations
+- `"Send"`, `"Receive"`, `"Balance"`, `"Payment History"`
 
 ### Payment States
-- `pending`, `completed`, `failed`, `sent`, `received`
+- `"Pending"`, `"Completed"`, `"Failed"`, `"Sent"`, `"Received"`
 
 ### Error Messages
-- `insufficient_funds`, `network_error`, `invalid_payment`
+- `"Insufficient funds. You don't have enough sats for this payment."`
+- `"Network error. Please check your internet connection and try again."`
+- `"Invalid payment request. Please check the QR code or invoice."`
 
 ### Onboarding
-- `welcome_to_lumen`, `start_using_lumen`, `import_wallet`
+- `"Welcome to Lumen!"`, `"Start Using Lumen"`, `"Import Wallet"`
 
 ### Bitcoin Places
-- `find_bitcoin_places`, `location_required`, `enable_location`
+- `"Find Bitcoin places near you"`, `"Location Required"`, `"Enable Location"`
 
 ## Adding New Strings
 
-1. **Add to English base file** (`en.lproj/Localizable.strings`):
+1. **Add to English base file** (`en.lproj/Localizable.strings`) using full English text as key:
 ```
-"new_feature_title" = "New Feature";
-"new_feature_description" = "Description of the new feature";
+"New Feature" = "New Feature";
+"Description of the new feature" = "Description of the new feature";
 ```
 
 2. **Translate to all languages** in respective `.lproj` folders
 
 3. **Use in code**:
 ```swift
-Text(L("new_feature_title"))
-Text(L("new_feature_description"))
+Text(L("New Feature"))
+Text(L("Description of the new feature"))
 ```
+
+**Benefits of this approach:**
+- Translators can immediately understand what they're translating
+- No need for technical documentation explaining what each key means
+- Self-documenting code that's easier to maintain
+- Reduces translation errors due to lack of context
 
 ## Testing
 
@@ -185,7 +195,7 @@ xcodebuild test -scheme Lumen -destination 'platform=iOS Simulator,name=iPhone 1
 
 - Always use `L()` function for user-facing strings
 - Test all languages during development
-- Use descriptive string keys (e.g., `payment_failed` not `error1`)
+- Use full English sentences as keys (e.g., `"Payment Failed"` not `"error1"`)
 - Handle pluralization properly
 - Keep translations contextually appropriate
 

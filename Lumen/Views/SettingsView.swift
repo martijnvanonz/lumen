@@ -23,7 +23,7 @@ struct SettingsView: View {
         NavigationView {
             List {
                 // Currency Section
-                Section(L("currency")) {
+                Section(L("Currency")) {
                     Button(action: {
                         showingCurrencySelection = true
                     }) {
@@ -33,7 +33,7 @@ struct SettingsView: View {
                                 .frame(width: 24)
 
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(L("currency"))
+                                Text(L("Currency"))
                                     .foregroundColor(.primary)
 
                                 if let selectedCurrency = currencyManager.selectedCurrency {
@@ -58,7 +58,7 @@ struct SettingsView: View {
                 }
 
                 // Language Section
-                Section(L("language")) {
+                Section(L("Language")) {
                     Button(action: {
                         showingLanguageSelection = true
                     }) {
@@ -68,7 +68,7 @@ struct SettingsView: View {
                                 .frame(width: 24)
 
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(L("language"))
+                                Text(L("Language"))
                                     .foregroundColor(.primary)
 
                                 Text(localizationManager.currentLanguage.displayName)
@@ -354,11 +354,11 @@ struct SettingsView: View {
                     .buttonStyle(PlainButtonStyle())
                 }
             }
-            .navigationTitle(L("settings"))
+            .navigationTitle(L("Settings"))
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(L("done")) {
+                    Button(L("Done")) {
                         dismiss()
                     }
                 }
@@ -567,11 +567,11 @@ struct LanguageSelectionView: View {
                     .buttonStyle(PlainButtonStyle())
                 }
             }
-            .navigationTitle(L("language"))
+            .navigationTitle(L("Language"))
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(L("done")) {
+                    Button(L("Done")) {
                         dismiss()
                     }
                 }

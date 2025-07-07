@@ -7,13 +7,13 @@ private func getUserFriendlyErrorMessage(_ error: Error) -> String {
 
     // Check for common error patterns and provide user-friendly messages
     if errorString.contains("insufficient") || errorString.contains("not enough") || errorString.contains("balance") {
-        return L("insufficient_funds")
+        return L("Insufficient funds. You don't have enough sats for this payment.")
     } else if errorString.contains("expired") || errorString.contains("timeout") {
-        return L("payment_expired")
+        return L("This payment request has expired. Please request a new invoice.")
     } else if errorString.contains("invalid") || errorString.contains("malformed") {
-        return L("invalid_payment")
+        return L("Invalid payment request. Please check the QR code or invoice.")
     } else if errorString.contains("network") || errorString.contains("connection") {
-        return L("network_error")
+        return L("Network error. Please check your internet connection and try again.")
     } else if errorString.contains("route") || errorString.contains("path") {
         return "Unable to find a payment route. The recipient may be offline."
     } else if errorString.contains("fee") {
@@ -25,9 +25,9 @@ private func getUserFriendlyErrorMessage(_ error: Error) -> String {
             return "Payment amount is too large. Please try a smaller amount."
         }
     } else if errorString.contains("channel") {
-        return L("channel_issue")
+        return L("Lightning channel issue. Please try again in a moment.")
     } else if errorString.contains("invoice") {
-        return L("invalid_invoice")
+        return L("Invalid Lightning invoice. Please check the payment request.")
     }
 
     // Fallback to original error message if no pattern matches
@@ -56,7 +56,7 @@ struct WalletView: View {
                         VStack(spacing: 16) {
                             HStack(spacing: 16) {
                                 ActionButton(
-                                    title: L("send"),
+                                    title: L("Send"),
                                     icon: "arrow.up.circle.fill",
                                     color: .orange
                                 ) {
@@ -64,7 +64,7 @@ struct WalletView: View {
                                 }
 
                                 ActionButton(
-                                    title: L("receive"),
+                                    title: L("Receive"),
                                     icon: "arrow.down.circle.fill",
                                     color: .green
                                 ) {
@@ -83,7 +83,7 @@ struct WalletView: View {
                                             .foregroundColor(.orange)
 
                                         VStack(alignment: .leading, spacing: 2) {
-                                            Text(L("get_money_back"))
+                                            Text(L("Get Money Back"))
                                                 .font(.subheadline)
                                                 .fontWeight(.medium)
                                                 .foregroundColor(.orange)
@@ -131,7 +131,7 @@ struct WalletView: View {
                     }
                     .padding(.top)
                 }
-                .navigationTitle(L("app_name"))
+                .navigationTitle(L("Lumen"))
                 .navigationBarTitleDisplayMode(.large)
                 .toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {
@@ -211,7 +211,7 @@ struct BalanceCard: View {
     var body: some View {
         VStack(spacing: 16) {
             VStack(spacing: 8) {
-                Text(L("balance"))
+                Text(L("Balance"))
                     .font(.headline)
                     .foregroundColor(.secondary)
 
@@ -223,7 +223,7 @@ struct BalanceCard: View {
                 Image(systemName: "bolt.fill")
                     .foregroundColor(.yellow)
 
-                Text(L("lightning_network"))
+                Text(L("Lightning Network"))
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -290,7 +290,7 @@ struct SendPaymentView: View {
         NavigationView {
             VStack(spacing: 0) {
                 // Header
-                Text(L("send_payment"))
+                Text(L("Send Payment"))
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .padding(.top)
@@ -311,7 +311,7 @@ struct SendPaymentView: View {
                         HStack(spacing: 12) {
                             Image(systemName: "doc.on.clipboard")
                                 .font(.title2)
-                            Text(L("paste_invoice"))
+                            Text(L("Paste Invoice"))
                                 .font(.headline)
                         }
                         .foregroundColor(.blue)
@@ -449,7 +449,7 @@ struct SendPaymentView: View {
             .navigationBarBackButtonHidden()
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button(L("cancel")) {
+                    Button(L("Cancel")) {
                         dismiss()
                     }
                 }
@@ -562,7 +562,7 @@ struct SendPaymentView: View {
 
                     // Check for expired payments
                     if info.isExpired {
-                        errorMessage = L("payment_request_expired")
+                        errorMessage = L("This payment request has expired")
                     }
                 }
             } catch {
@@ -908,7 +908,7 @@ struct ReceivePaymentView: View {
                             .padding(.horizontal)
 
                         // Copy Invoice Button
-                        Button(L("copy_invoice")) {
+                        Button(L("Copy Invoice")) {
                             UIPasteboard.general.string = invoice
                         }
                         .font(.headline)
@@ -1101,7 +1101,7 @@ struct ReceivePaymentView: View {
                             ProgressView()
                                 .progressViewStyle(CircularProgressViewStyle(tint: .white))
                         } else {
-                            Text(L("create_invoice"))
+                            Text(L("Create invoice"))
                         }
                     }
                     .font(.headline)
@@ -1202,7 +1202,7 @@ struct ReceivePaymentView: View {
 
     private func createInvoice() {
         guard let amountSats = convertToSats() else {
-            errorMessage = L("invalid_amount")
+            errorMessage = L("Invalid amount")
             return
         }
 
@@ -1216,7 +1216,7 @@ struct ReceivePaymentView: View {
                 // First prepare the receive payment to get fee information
                 let prepared = try await walletManager.prepareReceivePayment(
                     amountSat: amountSats,
-                    description: description.isEmpty ? L("lumen_payment") : description
+                    description: description.isEmpty ? L("Lumen payment") : description
                 )
 
                 // Then execute the receive payment

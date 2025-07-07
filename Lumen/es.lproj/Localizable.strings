@@ -7,223 +7,211 @@
 */
 
 // MARK: - App Name & Navigation
-"app_name" = "Lumen";
-"settings" = "Configuración";
-"done" = "Hecho";
-"cancel" = "Cancelar";
-"ok" = "OK";
-"retry" = "Reintentar";
-"continue" = "Continuar";
-"back" = "Atrás";
-"next" = "Siguiente";
-"save" = "Guardar";
-"delete" = "Eliminar";
-"edit" = "Editar";
-"close" = "Cerrar";
+"Lumen" = "Lumen";
+"Settings" = "Configuración";
+"Done" = "Hecho";
+"Cancel" = "Cancelar";
+"OK" = "OK";
+"Retry" = "Reintentar";
+"Continue" = "Continuar";
+"Back" = "Atrás";
+"Next" = "Siguiente";
+"Save" = "Guardar";
+"Delete" = "Eliminar";
+"Edit" = "Editar";
+"Close" = "Cerrar";
 
 // MARK: - Wallet Main Screen
-"send" = "Enviar";
-"receive" = "Recibir";
-"balance" = "Saldo";
-"payment_history" = "Historial de pagos";
-"wallet_info" = "Info de cartera";
+"Send" = "Enviar";
+"Receive" = "Recibir";
+"Balance" = "Saldo";
+"Payment History" = "Historial de pagos";
+"Wallet Info" = "Info de cartera";
 
 // MARK: - Payment States
-"pending" = "Pendiente";
-"completed" = "Completado";
-"failed" = "Fallido";
-"sent" = "Enviado";
-"received" = "Recibido";
-"created" = "Creado";
-"timed_out" = "Tiempo agotado";
-"refundable" = "Reembolsable";
-"refund_pending" = "Reembolso pendiente";
-"waiting_fee_acceptance" = "Esperando aceptación de tarifa";
+"Pending" = "Pendiente";
+"Completed" = "Completado";
+"Failed" = "Fallido";
+"Sent" = "Enviado";
+"Received" = "Recibido";
+"Created" = "Creado";
+"Timed Out" = "Tiempo agotado";
+"Refundable" = "Reembolsable";
+"Refund Pending" = "Reembolso pendiente";
+"Waiting Fee Acceptance" = "Esperando aceptación de tarifa";
 
 // MARK: - Send Payment
-"send_payment" = "Enviar pago";
-"paste_invoice" = "Pegar factura";
-"scan_qr" = "Escanear QR";
-"amount" = "Cantidad";
-"description" = "Descripción";
-"prepare_payment" = "Preparar pago";
-"send_now" = "Enviar ahora";
-"payment_details" = "Detalles del pago";
-"fee_details" = "Detalles de tarifas";
+"Send Payment" = "Enviar pago";
+"Paste Invoice" = "Pegar factura";
+"Scan QR" = "Escanear QR";
+"Amount" = "Cantidad";
+"Description" = "Descripción";
+"Prepare Payment" = "Preparar pago";
+"Send Now" = "Enviar ahora";
+"Payment Details" = "Detalles del pago";
+"Fee Details" = "Detalles de tarifas";
 
 // MARK: - Receive Payment
-"receive_payment" = "Recibir pago";
-"create_invoice" = "Crear factura";
-"invoice_created" = "Factura creada";
-"you_receive" = "Recibes";
-"service_fee" = "Tarifa de servicio";
-"copy_invoice" = "Copiar factura";
-"share_invoice" = "Compartir factura";
+"Receive Payment" = "Recibir pago";
+"Create invoice" = "Crear factura";
+"Invoice Created" = "Factura creada";
+"You receive" = "Recibes";
+"Service fee" = "Tarifa de servicio";
+"Copy Invoice" = "Copiar factura";
+"Share Invoice" = "Compartir factura";
 
 // MARK: - Payment History
-"filter" = "Filtrar";
-"all_payments" = "Todos";
-"sent_payments" = "Enviados";
-"received_payments" = "Recibidos";
-"pending_payments" = "Pendientes";
-"completed_payments" = "Completados";
-"failed_payments" = "Fallidos";
+"Filter" = "Filtrar";
+"All" = "Todos";
 
 // MARK: - Payment History Empty States
-"no_payments_yet" = "Aún no hay pagos";
-"no_sent_payments" = "No hay pagos enviados";
-"no_received_payments" = "No hay pagos recibidos";
-"no_pending_payments" = "No hay pagos pendientes";
-"no_completed_payments" = "No hay pagos completados";
-"no_failed_payments" = "No hay pagos fallidos";
+"No Payments Yet" = "Aún no hay pagos";
+"No Sent Payments" = "No hay pagos enviados";
+"No Received Payments" = "No hay pagos recibidos";
+"No Pending Payments" = "No hay pagos pendientes";
+"No Completed Payments" = "No hay pagos completados";
+"No Failed Payments" = "No hay pagos fallidos";
 
-"no_payments_message" = "Su historial de pagos aparecerá aquí una vez que comience a enviar y recibir pagos Lightning.";
-"no_sent_message" = "Los pagos que envíe aparecerán aquí.";
-"no_received_message" = "Los pagos que reciba aparecerán aquí.";
-"no_pending_message" = "Los pagos esperando confirmación aparecerán aquí.";
-"no_completed_message" = "Los pagos completados exitosamente aparecerán aquí.";
-"no_failed_message" = "Los pagos fallidos aparecerán aquí.";
+"Your payment history will appear here once you start sending and receiving Lightning payments." = "Su historial de pagos aparecerá aquí una vez que comience a enviar y recibir pagos Lightning.";
+"Payments you send will appear here." = "Los pagos que envíe aparecerán aquí.";
+"Payments you receive will appear here." = "Los pagos que reciba aparecerán aquí.";
+"Payments waiting for confirmation will appear here." = "Los pagos esperando confirmación aparecerán aquí.";
+"Successfully completed payments will appear here." = "Los pagos completados exitosamente aparecerán aquí.";
+"Failed payments will appear here." = "Los pagos fallidos aparecerán aquí.";
 
 // MARK: - Refunds
-"get_money_back" = "Recuperar dinero";
-"money_to_get_back" = "Dinero para recuperar";
-"payment_failed" = "Pago fallido";
-"get_your_money_back" = "Recupere su dinero";
-"money_sent_successfully" = "¡Dinero enviado exitosamente! 🎉";
-"great" = "¡Genial!";
-"refund_success_message" = "Su dinero ha sido enviado de vuelta a su cartera Bitcoin. Debería llegar dentro del plazo seleccionado.";
-"refund_explanation" = "Estos pagos no se completaron. Toque 'Recuperar dinero' para devolver los fondos a su cartera Bitcoin.";
+"Get Money Back" = "Recuperar dinero";
+"Money to Get Back" = "Dinero para recuperar";
+"Payment Failed" = "Pago fallido";
+"Get Your Money Back" = "Recupere su dinero";
+"Money Sent Successfully! 🎉" = "¡Dinero enviado exitosamente! 🎉";
+"Great!" = "¡Genial!";
+"Your money has been sent back to your Bitcoin wallet. It should arrive within the selected timeframe." = "Su dinero ha sido enviado de vuelta a su cartera Bitcoin. Debería llegar dentro del plazo seleccionado.";
+"These payments didn't go through. Tap 'Get Money Back' to return the funds to your Bitcoin wallet." = "Estos pagos no se completaron. Toque 'Recuperar dinero' para devolver los fondos a su cartera Bitcoin.";
 
 // MARK: - Settings
-"currency" = "Moneda";
-"language" = "Idioma";
-"security" = "Seguridad";
-"about" = "Acerca de";
-"logout" = "Cerrar sesión";
-"delete_wallet" = "Eliminar cartera";
-"export_seed" = "Exportar frase semilla";
-"import_wallet" = "Importar cartera";
-"search_currencies" = "Buscar monedas...";
-"loading_currencies" = "Cargando monedas...";
+"Currency" = "Moneda";
+"Language" = "Idioma";
+"Security" = "Seguridad";
+"About" = "Acerca de";
+"Logout" = "Cerrar sesión";
+"Delete Wallet" = "Eliminar cartera";
+"Export Seed Phrase" = "Exportar frase semilla";
+"Import Wallet" = "Importar cartera";
+"Search currencies..." = "Buscar monedas...";
+"Loading currencies..." = "Cargando monedas...";
 
 // MARK: - Onboarding
-"welcome_to_lumen" = "¡Bienvenido a Lumen!";
-"your_wallet_is_ready" = "Su cartera Lightning está lista para usar";
-"start_using_lumen" = "Comenzar a usar Lumen";
-"create_new_wallet" = "Crear nueva cartera";
-"import_existing_wallet" = "Importar cartera existente";
-"wallet_choice_title" = "Elegir opción de cartera";
-"wallet_choice_subtitle" = "Crear una nueva cartera o importar una existente";
+"Welcome to Lumen!" = "¡Bienvenido a Lumen!";
+"Your Lightning wallet is ready to use" = "Su cartera Lightning está lista para usar";
+"Start Using Lumen" = "Comenzar a usar Lumen";
+"Create New Wallet" = "Crear nueva cartera";
+"Import Existing Wallet" = "Importar cartera existente";
+"Choose Wallet Option" = "Elegir opción de cartera";
+"Create a new wallet or import an existing one" = "Crear una nueva cartera o importar una existente";
 
 // MARK: - Biometric Setup
-"biometric_setup" = "Configuración biométrica";
-"enable_biometric" = "Habilitar autenticación biométrica";
-"biometric_description" = "Use Face ID o Touch ID para asegurar su cartera";
-"skip_biometric" = "Omitir por ahora";
+"Biometric Setup" = "Configuración biométrica";
+"Enable Biometric Authentication" = "Habilitar autenticación biométrica";
+"Use Face ID or Touch ID to secure your wallet" = "Use Face ID o Touch ID para asegurar su cartera";
+"Skip for Now" = "Omitir por ahora";
 
 // MARK: - Wallet Initialization
-"creating_wallet" = "Creando cartera...";
-"initializing_wallet" = "Inicializando su cartera Lightning";
-"please_wait" = "Por favor espere mientras configuramos su cartera";
+"Creating Wallet..." = "Creando cartera...";
+"Initializing your Lightning wallet" = "Inicializando su cartera Lightning";
+"Please wait while we set up your wallet" = "Por favor espere mientras configuramos su cartera";
 
 // MARK: - Currency Selection
-"select_currency" = "Seleccionar moneda";
-"currency_selection_subtitle" = "Elija su moneda de visualización preferida";
+"Select Currency" = "Seleccionar moneda";
+"Choose your preferred display currency" = "Elija su moneda de visualización preferida";
 
 // MARK: - Import Seed
-"import_wallet_title" = "Importar cartera";
-"enter_recovery_phrase" = "Ingrese su frase de recuperación de %d palabras";
-"word_count" = "Número de palabras:";
-"select_word_count" = "Seleccionar número de palabras";
-"word_count_question" = "¿Cuántas palabras tiene su frase semilla?";
-"paste_seed_phrase" = "Pegar frase semilla";
-"paste_confirmation" = "Se encontraron %d palabras en el portapapeles. ¿Pegarlas en el formulario?";
-"import_wallet_button" = "Importar cartera";
-"importing_wallet" = "Importando cartera...";
+"Enter your %d-word recovery phrase" = "Ingrese su frase de recuperación de %d palabras";
+"Word Count:" = "Número de palabras:";
+"Select Word Count" = "Seleccionar número de palabras";
+"How many words does your seed phrase have?" = "¿Cuántas palabras tiene su frase semilla?";
+"Paste Seed Phrase" = "Pegar frase semilla";
+"Found %d words in clipboard. Paste them into the form?" = "Se encontraron %d palabras en el portapapeles. ¿Pegarlas en el formulario?";
+"Importing Wallet..." = "Importando cartera...";
 
 // MARK: - Export Seed
-"export_seed_title" = "Exportar frase semilla";
-"seed_phrase_warning" = "Mantenga su frase semilla segura y privada";
-"access_seed_reason" = "Acceder a su frase de recuperación de cartera";
+"Keep your seed phrase safe and private" = "Mantenga su frase semilla segura y privada";
+"Access your wallet recovery phrase" = "Acceder a su frase de recuperación de cartera";
 
 // MARK: - Connection Status
-"connected" = "Conectado";
-"disconnected" = "Desconectado";
-"connecting" = "Conectando...";
-"connection_status" = "Estado de conexión";
+"Connected" = "Conectado";
+"Disconnected" = "Desconectado";
+"Connecting..." = "Conectando...";
+"Connection Status" = "Estado de conexión";
 
 // MARK: - Wallet Info
-"balance_details" = "Detalles del saldo";
-"total_balance" = "Saldo total";
-"pending_receive" = "Recepción pendiente";
-"pending_send" = "Envío pendiente";
-"payment_limits" = "Límites de pago";
-"loading_limits" = "Cargando límites...";
-"error_loading_limits" = "Error cargando límites";
-"no_limits_loaded" = "No se cargaron límites";
-"send_range" = "Rango de envío";
-"receive_range" = "Rango de recepción";
-"liquid_tip" = "Punta Liquid";
+"Balance Details" = "Detalles del saldo";
+"Total Balance" = "Saldo total";
+"Pending Receive" = "Recepción pendiente";
+"Pending Send" = "Envío pendiente";
+"Payment Limits" = "Límites de pago";
+"Loading limits..." = "Cargando límites...";
+"Error loading limits" = "Error cargando límites";
+"No limits loaded" = "No se cargaron límites";
+"Send Range" = "Rango de envío";
+"Receive Range" = "Rango de recepción";
+"Liquid Tip" = "Punta Liquid";
 
 // MARK: - Bitcoin Places
-"find_bitcoin_places" = "Encuentra lugares Bitcoin cerca de ti";
-"getting_location" = "Obteniendo su ubicación...";
-"no_places_nearby" = "No se encontraron lugares Bitcoin cercanos";
-"places_near_you" = "%d lugar%@ para gastar bitcoin cerca de ti";
-"location_required" = "Ubicación requerida";
-"find_bitcoin_places_title" = "Encuentra lugares Bitcoin cerca de ti";
-"location_permission_message" = "Usamos su ubicación para mostrar negocios cercanos que aceptan pagos Bitcoin. Su ubicación permanece privada y nunca se comparte con terceros.";
-"enable_location" = "Habilitar ubicación";
-"open_settings" = "Abrir configuración";
+"Find Bitcoin places near you" = "Encuentra lugares Bitcoin cerca de ti";
+"Getting your location..." = "Obteniendo su ubicación...";
+"No Bitcoin places found nearby" = "No se encontraron lugares Bitcoin cercanos";
+"%d place%@ to spend bitcoin near you" = "%d lugar%@ para gastar bitcoin cerca de ti";
+"Location Required" = "Ubicación requerida";
+"Find Bitcoin Places Near You" = "Encuentra lugares Bitcoin cerca de ti";
+"We use your location to show nearby businesses that accept Bitcoin payments. Your location stays private and is never shared with third parties." = "Usamos su ubicación para mostrar negocios cercanos que aceptan pagos Bitcoin. Su ubicación permanece privada y nunca se comparte con terceros.";
+"Enable Location" = "Habilitar ubicación";
 
 // MARK: - Fee Comparison
-"lightning_network" = "Red Lightning";
-"credit_card_fee" = "Tarjeta de crédito (3%)";
-"bank_wire_fee" = "Transferencia bancaria (€25)";
-"recommended" = "RECOMENDADO";
+"Lightning Network" = "Red Lightning";
+"Credit Card (3%)" = "Tarjeta de crédito (3%)";
+"Bank Wire ($25)" = "Transferencia bancaria (€25)";
+"RECOMMENDED" = "RECOMENDADO";
 
 // MARK: - Error Messages
-"insufficient_funds" = "Fondos insuficientes. No tiene suficientes sats para este pago.";
-"payment_expired" = "Esta solicitud de pago ha expirado. Por favor solicite una nueva factura.";
-"invalid_payment" = "Solicitud de pago inválida. Por favor verifique el código QR o la factura.";
-"network_error" = "Error de red. Por favor verifique su conexión a internet e intente nuevamente.";
-"channel_issue" = "Problema de canal Lightning. Por favor intente nuevamente en un momento.";
-"invalid_invoice" = "Factura Lightning inválida. Por favor verifique la solicitud de pago.";
-"invalid_amount" = "Cantidad inválida";
-"payment_request_expired" = "Esta solicitud de pago ha expirado";
+"Insufficient funds. You don't have enough sats for this payment." = "Fondos insuficientes. No tiene suficientes sats para este pago.";
+"This payment request has expired. Please request a new invoice." = "Esta solicitud de pago ha expirado. Por favor solicite una nueva factura.";
+"Invalid payment request. Please check the QR code or invoice." = "Solicitud de pago inválida. Por favor verifique el código QR o la factura.";
+"Network error. Please check your internet connection and try again." = "Error de red. Por favor verifique su conexión a internet e intente nuevamente.";
+"Lightning channel issue. Please try again in a moment." = "Problema de canal Lightning. Por favor intente nuevamente en un momento.";
+"Invalid Lightning invoice. Please check the payment request." = "Factura Lightning inválida. Por favor verifique la solicitud de pago.";
+"Invalid amount" = "Cantidad inválida";
+"This payment request has expired" = "Esta solicitud de pago ha expirado";
 
 // MARK: - Action Buttons
-"try_again" = "Intentar nuevamente";
-"open_settings_button" = "Abrir configuración";
-"got_it" = "Entendido";
+"Try Again" = "Intentar nuevamente";
+"Got It" = "Entendido";
 
 // MARK: - Loading States
-"loading" = "Cargando...";
-"processing" = "Procesando...";
-"please_wait_processing" = "Por favor espere...";
+"Loading..." = "Cargando...";
+"Processing..." = "Procesando...";
+"Please wait..." = "Por favor espere...";
 
 // MARK: - Confirmation Dialogs
-"logout_confirmation" = "¿Está seguro de que quiere cerrar sesión?";
-"delete_wallet_confirmation" = "¿Está seguro de que quiere eliminar esta cartera? Esta acción no se puede deshacer.";
-"confirm_logout" = "Cerrar sesión";
-"confirm_delete" = "Eliminar";
+"Are you sure you want to logout?" = "¿Está seguro de que quiere cerrar sesión?";
+"Are you sure you want to delete this wallet? This action cannot be undone." = "¿Está seguro de que quiere eliminar esta cartera? Esta acción no se puede deshacer.";
 
 // MARK: - Default Values
-"lumen_payment" = "Pago Lumen";
-"default_description" = "Pago Lightning";
+"Lumen payment" = "Pago Lumen";
+"Lightning payment" = "Pago Lightning";
 
 // MARK: - Units
 "sats" = "sats";
-"bitcoin" = "Bitcoin";
+"Bitcoin" = "Bitcoin";
 "words" = "palabras";
 "word" = "palabra";
 
 // MARK: - Time
 "now" = "ahora";
-"minutes_ago" = "hace %d minutos";
-"hours_ago" = "hace %d horas";
-"days_ago" = "hace %d días";
+"%d minutes ago" = "hace %d minutos";
+"%d hours ago" = "hace %d horas";
+"%d days ago" = "hace %d días";
 
 // MARK: - Pluralization
-"place_singular" = "";
-"place_plural" = "es";
+"" = "";
+"es" = "es";

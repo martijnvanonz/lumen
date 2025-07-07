@@ -129,25 +129,25 @@ struct ConnectionStatusCard: View {
     
     var body: some View {
         InfoCard(
-            title: L("connection_status"),
+            title: L("Connection Status"),
             icon: "wifi",
             iconColor: .green
         ) {
             VStack(alignment: .leading, spacing: 8) {
                 InfoRow(
                     label: "Status",
-                    value: L("connected"),
+                    value: L("Connected"),
                     valueColor: .green
                 )
 
                 InfoRow(
-                    label: L("liquid_tip"),
+                    label: L("Liquid Tip"),
                     value: "\(walletInfo.blockchainInfo.liquidTip)"
                 )
 
                 if walletInfo.walletInfo.pendingReceiveSat > 0 {
                     InfoRow(
-                        label: L("pending_receive"),
+                        label: L("Pending Receive"),
                         value: formatSatsString(walletInfo.walletInfo.pendingReceiveSat),
                         valueColor: .orange
                     )
@@ -155,7 +155,7 @@ struct ConnectionStatusCard: View {
 
                 if walletInfo.walletInfo.pendingSendSat > 0 {
                     InfoRow(
-                        label: L("pending_send"),
+                        label: L("Pending Send"),
                         value: formatSatsString(walletInfo.walletInfo.pendingSendSat),
                         valueColor: .orange
                     )
@@ -195,13 +195,13 @@ struct BalanceInfoCard: View {
     
     var body: some View {
         InfoCard(
-            title: L("balance_details"),
+            title: L("Balance Details"),
             icon: "bitcoinsign.circle",
             iconColor: .orange
         ) {
             VStack(alignment: .leading, spacing: 8) {
                 InfoRow(
-                    label: L("total_balance"),
+                    label: L("Total Balance"),
                     value: formatSatsString(walletInfo.walletInfo.balanceSat, formatLarge: true),
                     valueColor: .primary,
                     isHighlighted: true
@@ -209,7 +209,7 @@ struct BalanceInfoCard: View {
 
                 if walletInfo.walletInfo.pendingReceiveSat > 0 {
                     InfoRow(
-                        label: L("pending_receive"),
+                        label: L("Pending Receive"),
                         value: formatSatsString(walletInfo.walletInfo.pendingReceiveSat),
                         valueColor: .green
                     )
@@ -217,7 +217,7 @@ struct BalanceInfoCard: View {
 
                 if walletInfo.walletInfo.pendingSendSat > 0 {
                     InfoRow(
-                        label: L("pending_send"),
+                        label: L("Pending Send"),
                         value: formatSatsString(walletInfo.walletInfo.pendingSendSat),
                         valueColor: .orange
                     )

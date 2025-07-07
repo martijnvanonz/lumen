@@ -29,11 +29,11 @@ struct RefundView: View {
                     )
                 }
             }
-            .navigationTitle(L("get_money_back"))
+            .navigationTitle(L("Get Money Back"))
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(L("done")) {
+                    Button(L("Done")) {
                         dismiss()
                     }
                 }
@@ -107,9 +107,9 @@ struct RefundListView: View {
                     }
                 }
             } header: {
-                Text(L("money_to_get_back"))
+                Text(L("Money to Get Back"))
             } footer: {
-                Text(L("refund_explanation"))
+                Text(L("These payments didn\'t go through. Tap \'Get Money Back\' to return the funds to your Bitcoin wallet."))
             }
         }
     }
@@ -135,7 +135,7 @@ struct RefundRowView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(L("payment_failed"))
+                    Text(L("Payment Failed"))
                         .font(.headline)
                         .foregroundColor(.primary)
 
@@ -153,7 +153,7 @@ struct RefundRowView: View {
 
                 Spacer()
 
-                Button(L("get_money_back")) {
+                Button(L("Get Money Back")) {
                     onRefundTapped()
                 }
                 .buttonStyle(.borderedProminent)
@@ -211,7 +211,7 @@ struct RefundExecutionView: View {
                             .font(.system(size: 60))
                             .foregroundColor(.orange)
 
-                        Text(L("get_your_money_back"))
+                        Text(L("Get Your Money Back"))
                             .font(.largeTitle)
                             .fontWeight(.bold)
                             .multilineTextAlignment(.center)
@@ -325,13 +325,13 @@ struct RefundExecutionView: View {
                     }
                 }
             }
-            .alert(L("money_sent_successfully"), isPresented: $showingSuccess) {
-                Button(L("great")) {
+            .alert(L("Money Sent Successfully! 🎉"), isPresented: $showingSuccess) {
+                Button(L("Great!")) {
                     onRefundCompleted()
                     dismiss()
                 }
             } message: {
-                Text(L("refund_success_message"))
+                Text(L("Your money has been sent back to your Bitcoin wallet. It should arrive within the selected timeframe."))
             }
         }
         .onAppear {

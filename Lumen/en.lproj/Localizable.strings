@@ -7,223 +7,211 @@
 */
 
 // MARK: - App Name & Navigation
-"app_name" = "Lumen";
-"settings" = "Settings";
-"done" = "Done";
-"cancel" = "Cancel";
-"ok" = "OK";
-"retry" = "Retry";
-"continue" = "Continue";
-"back" = "Back";
-"next" = "Next";
-"save" = "Save";
-"delete" = "Delete";
-"edit" = "Edit";
-"close" = "Close";
+"Lumen" = "Lumen";
+"Settings" = "Settings";
+"Done" = "Done";
+"Cancel" = "Cancel";
+"OK" = "OK";
+"Retry" = "Retry";
+"Continue" = "Continue";
+"Back" = "Back";
+"Next" = "Next";
+"Save" = "Save";
+"Delete" = "Delete";
+"Edit" = "Edit";
+"Close" = "Close";
 
 // MARK: - Wallet Main Screen
-"send" = "Send";
-"receive" = "Receive";
-"balance" = "Balance";
-"payment_history" = "Payment History";
-"wallet_info" = "Wallet Info";
+"Send" = "Send";
+"Receive" = "Receive";
+"Balance" = "Balance";
+"Payment History" = "Payment History";
+"Wallet Info" = "Wallet Info";
 
 // MARK: - Payment States
-"pending" = "Pending";
-"completed" = "Completed";
-"failed" = "Failed";
-"sent" = "Sent";
-"received" = "Received";
-"created" = "Created";
-"timed_out" = "Timed Out";
-"refundable" = "Refundable";
-"refund_pending" = "Refund Pending";
-"waiting_fee_acceptance" = "Waiting Fee Acceptance";
+"Pending" = "Pending";
+"Completed" = "Completed";
+"Failed" = "Failed";
+"Sent" = "Sent";
+"Received" = "Received";
+"Created" = "Created";
+"Timed Out" = "Timed Out";
+"Refundable" = "Refundable";
+"Refund Pending" = "Refund Pending";
+"Waiting Fee Acceptance" = "Waiting Fee Acceptance";
 
 // MARK: - Send Payment
-"send_payment" = "Send Payment";
-"paste_invoice" = "Paste Invoice";
-"scan_qr" = "Scan QR";
-"amount" = "Amount";
-"description" = "Description";
-"prepare_payment" = "Prepare Payment";
-"send_now" = "Send Now";
-"payment_details" = "Payment Details";
-"fee_details" = "Fee Details";
+"Send Payment" = "Send Payment";
+"Paste Invoice" = "Paste Invoice";
+"Scan QR" = "Scan QR";
+"Amount" = "Amount";
+"Description" = "Description";
+"Prepare Payment" = "Prepare Payment";
+"Send Now" = "Send Now";
+"Payment Details" = "Payment Details";
+"Fee Details" = "Fee Details";
 
 // MARK: - Receive Payment
-"receive_payment" = "Receive Payment";
-"create_invoice" = "Create invoice";
-"invoice_created" = "Invoice Created";
-"you_receive" = "You receive";
-"service_fee" = "Service fee";
-"copy_invoice" = "Copy Invoice";
-"share_invoice" = "Share Invoice";
+"Receive Payment" = "Receive Payment";
+"Create invoice" = "Create invoice";
+"Invoice Created" = "Invoice Created";
+"You receive" = "You receive";
+"Service fee" = "Service fee";
+"Copy Invoice" = "Copy Invoice";
+"Share Invoice" = "Share Invoice";
 
 // MARK: - Payment History
-"filter" = "Filter";
-"all_payments" = "All";
-"sent_payments" = "Sent";
-"received_payments" = "Received";
-"pending_payments" = "Pending";
-"completed_payments" = "Completed";
-"failed_payments" = "Failed";
+"Filter" = "Filter";
+"All" = "All";
 
 // MARK: - Payment History Empty States
-"no_payments_yet" = "No Payments Yet";
-"no_sent_payments" = "No Sent Payments";
-"no_received_payments" = "No Received Payments";
-"no_pending_payments" = "No Pending Payments";
-"no_completed_payments" = "No Completed Payments";
-"no_failed_payments" = "No Failed Payments";
+"No Payments Yet" = "No Payments Yet";
+"No Sent Payments" = "No Sent Payments";
+"No Received Payments" = "No Received Payments";
+"No Pending Payments" = "No Pending Payments";
+"No Completed Payments" = "No Completed Payments";
+"No Failed Payments" = "No Failed Payments";
 
-"no_payments_message" = "Your payment history will appear here once you start sending and receiving Lightning payments.";
-"no_sent_message" = "Payments you send will appear here.";
-"no_received_message" = "Payments you receive will appear here.";
-"no_pending_message" = "Payments waiting for confirmation will appear here.";
-"no_completed_message" = "Successfully completed payments will appear here.";
-"no_failed_message" = "Failed payments will appear here.";
+"Your payment history will appear here once you start sending and receiving Lightning payments." = "Your payment history will appear here once you start sending and receiving Lightning payments.";
+"Payments you send will appear here." = "Payments you send will appear here.";
+"Payments you receive will appear here." = "Payments you receive will appear here.";
+"Payments waiting for confirmation will appear here." = "Payments waiting for confirmation will appear here.";
+"Successfully completed payments will appear here." = "Successfully completed payments will appear here.";
+"Failed payments will appear here." = "Failed payments will appear here.";
 
 // MARK: - Refunds
-"get_money_back" = "Get Money Back";
-"money_to_get_back" = "Money to Get Back";
-"payment_failed" = "Payment Failed";
-"get_your_money_back" = "Get Your Money Back";
-"money_sent_successfully" = "Money Sent Successfully! 🎉";
-"great" = "Great!";
-"refund_success_message" = "Your money has been sent back to your Bitcoin wallet. It should arrive within the selected timeframe.";
-"refund_explanation" = "These payments didn't go through. Tap 'Get Money Back' to return the funds to your Bitcoin wallet.";
+"Get Money Back" = "Get Money Back";
+"Money to Get Back" = "Money to Get Back";
+"Payment Failed" = "Payment Failed";
+"Get Your Money Back" = "Get Your Money Back";
+"Money Sent Successfully! 🎉" = "Money Sent Successfully! 🎉";
+"Great!" = "Great!";
+"Your money has been sent back to your Bitcoin wallet. It should arrive within the selected timeframe." = "Your money has been sent back to your Bitcoin wallet. It should arrive within the selected timeframe.";
+"These payments didn't go through. Tap 'Get Money Back' to return the funds to your Bitcoin wallet." = "These payments didn't go through. Tap 'Get Money Back' to return the funds to your Bitcoin wallet.";
 
 // MARK: - Settings
-"currency" = "Currency";
-"language" = "Language";
-"security" = "Security";
-"about" = "About";
-"logout" = "Logout";
-"delete_wallet" = "Delete Wallet";
-"export_seed" = "Export Seed Phrase";
-"import_wallet" = "Import Wallet";
-"search_currencies" = "Search currencies...";
-"loading_currencies" = "Loading currencies...";
+"Currency" = "Currency";
+"Language" = "Language";
+"Security" = "Security";
+"About" = "About";
+"Logout" = "Logout";
+"Delete Wallet" = "Delete Wallet";
+"Export Seed Phrase" = "Export Seed Phrase";
+"Import Wallet" = "Import Wallet";
+"Search currencies..." = "Search currencies...";
+"Loading currencies..." = "Loading currencies...";
 
 // MARK: - Onboarding
-"welcome_to_lumen" = "Welcome to Lumen!";
-"your_wallet_is_ready" = "Your Lightning wallet is ready to use";
-"start_using_lumen" = "Start Using Lumen";
-"create_new_wallet" = "Create New Wallet";
-"import_existing_wallet" = "Import Existing Wallet";
-"wallet_choice_title" = "Choose Wallet Option";
-"wallet_choice_subtitle" = "Create a new wallet or import an existing one";
+"Welcome to Lumen!" = "Welcome to Lumen!";
+"Your Lightning wallet is ready to use" = "Your Lightning wallet is ready to use";
+"Start Using Lumen" = "Start Using Lumen";
+"Create New Wallet" = "Create New Wallet";
+"Import Existing Wallet" = "Import Existing Wallet";
+"Choose Wallet Option" = "Choose Wallet Option";
+"Create a new wallet or import an existing one" = "Create a new wallet or import an existing one";
 
 // MARK: - Biometric Setup
-"biometric_setup" = "Biometric Setup";
-"enable_biometric" = "Enable Biometric Authentication";
-"biometric_description" = "Use Face ID or Touch ID to secure your wallet";
-"skip_biometric" = "Skip for Now";
+"Biometric Setup" = "Biometric Setup";
+"Enable Biometric Authentication" = "Enable Biometric Authentication";
+"Use Face ID or Touch ID to secure your wallet" = "Use Face ID or Touch ID to secure your wallet";
+"Skip for Now" = "Skip for Now";
 
 // MARK: - Wallet Initialization
-"creating_wallet" = "Creating Wallet...";
-"initializing_wallet" = "Initializing your Lightning wallet";
-"please_wait" = "Please wait while we set up your wallet";
+"Creating Wallet..." = "Creating Wallet...";
+"Initializing your Lightning wallet" = "Initializing your Lightning wallet";
+"Please wait while we set up your wallet" = "Please wait while we set up your wallet";
 
 // MARK: - Currency Selection
-"select_currency" = "Select Currency";
-"currency_selection_subtitle" = "Choose your preferred display currency";
+"Select Currency" = "Select Currency";
+"Choose your preferred display currency" = "Choose your preferred display currency";
 
 // MARK: - Import Seed
-"import_wallet_title" = "Import Wallet";
-"enter_recovery_phrase" = "Enter your %d-word recovery phrase";
-"word_count" = "Word Count:";
-"select_word_count" = "Select Word Count";
-"word_count_question" = "How many words does your seed phrase have?";
-"paste_seed_phrase" = "Paste Seed Phrase";
-"paste_confirmation" = "Found %d words in clipboard. Paste them into the form?";
-"import_wallet_button" = "Import Wallet";
-"importing_wallet" = "Importing Wallet...";
+"Enter your %d-word recovery phrase" = "Enter your %d-word recovery phrase";
+"Word Count:" = "Word Count:";
+"Select Word Count" = "Select Word Count";
+"How many words does your seed phrase have?" = "How many words does your seed phrase have?";
+"Paste Seed Phrase" = "Paste Seed Phrase";
+"Found %d words in clipboard. Paste them into the form?" = "Found %d words in clipboard. Paste them into the form?";
+"Importing Wallet..." = "Importing Wallet...";
 
 // MARK: - Export Seed
-"export_seed_title" = "Export Seed Phrase";
-"seed_phrase_warning" = "Keep your seed phrase safe and private";
-"access_seed_reason" = "Access your wallet recovery phrase";
+"Keep your seed phrase safe and private" = "Keep your seed phrase safe and private";
+"Access your wallet recovery phrase" = "Access your wallet recovery phrase";
 
 // MARK: - Connection Status
-"connected" = "Connected";
-"disconnected" = "Disconnected";
-"connecting" = "Connecting...";
-"connection_status" = "Connection Status";
+"Connected" = "Connected";
+"Disconnected" = "Disconnected";
+"Connecting..." = "Connecting...";
+"Connection Status" = "Connection Status";
 
 // MARK: - Wallet Info
-"balance_details" = "Balance Details";
-"total_balance" = "Total Balance";
-"pending_receive" = "Pending Receive";
-"pending_send" = "Pending Send";
-"payment_limits" = "Payment Limits";
-"loading_limits" = "Loading limits...";
-"error_loading_limits" = "Error loading limits";
-"no_limits_loaded" = "No limits loaded";
-"send_range" = "Send Range";
-"receive_range" = "Receive Range";
-"liquid_tip" = "Liquid Tip";
+"Balance Details" = "Balance Details";
+"Total Balance" = "Total Balance";
+"Pending Receive" = "Pending Receive";
+"Pending Send" = "Pending Send";
+"Payment Limits" = "Payment Limits";
+"Loading limits..." = "Loading limits...";
+"Error loading limits" = "Error loading limits";
+"No limits loaded" = "No limits loaded";
+"Send Range" = "Send Range";
+"Receive Range" = "Receive Range";
+"Liquid Tip" = "Liquid Tip";
 
 // MARK: - Bitcoin Places
-"find_bitcoin_places" = "Find Bitcoin places near you";
-"getting_location" = "Getting your location...";
-"no_places_nearby" = "No Bitcoin places found nearby";
-"places_near_you" = "%d place%@ to spend bitcoin near you";
-"location_required" = "Location Required";
-"find_bitcoin_places_title" = "Find Bitcoin Places Near You";
-"location_permission_message" = "We use your location to show nearby businesses that accept Bitcoin payments. Your location stays private and is never shared with third parties.";
-"enable_location" = "Enable Location";
-"open_settings" = "Open Settings";
+"Find Bitcoin places near you" = "Find Bitcoin places near you";
+"Getting your location..." = "Getting your location...";
+"No Bitcoin places found nearby" = "No Bitcoin places found nearby";
+"%d place%@ to spend bitcoin near you" = "%d place%@ to spend bitcoin near you";
+"Location Required" = "Location Required";
+"Find Bitcoin Places Near You" = "Find Bitcoin Places Near You";
+"We use your location to show nearby businesses that accept Bitcoin payments. Your location stays private and is never shared with third parties." = "We use your location to show nearby businesses that accept Bitcoin payments. Your location stays private and is never shared with third parties.";
+"Enable Location" = "Enable Location";
 
 // MARK: - Fee Comparison
-"lightning_network" = "Lightning Network";
-"credit_card_fee" = "Credit Card (3%)";
-"bank_wire_fee" = "Bank Wire ($25)";
-"recommended" = "RECOMMENDED";
+"Lightning Network" = "Lightning Network";
+"Credit Card (3%)" = "Credit Card (3%)";
+"Bank Wire ($25)" = "Bank Wire ($25)";
+"RECOMMENDED" = "RECOMMENDED";
 
 // MARK: - Error Messages
-"insufficient_funds" = "Insufficient funds. You don't have enough sats for this payment.";
-"payment_expired" = "This payment request has expired. Please request a new invoice.";
-"invalid_payment" = "Invalid payment request. Please check the QR code or invoice.";
-"network_error" = "Network error. Please check your internet connection and try again.";
-"channel_issue" = "Lightning channel issue. Please try again in a moment.";
-"invalid_invoice" = "Invalid Lightning invoice. Please check the payment request.";
-"invalid_amount" = "Invalid amount";
-"payment_request_expired" = "This payment request has expired";
+"Insufficient funds. You don't have enough sats for this payment." = "Insufficient funds. You don't have enough sats for this payment.";
+"This payment request has expired. Please request a new invoice." = "This payment request has expired. Please request a new invoice.";
+"Invalid payment request. Please check the QR code or invoice." = "Invalid payment request. Please check the QR code or invoice.";
+"Network error. Please check your internet connection and try again." = "Network error. Please check your internet connection and try again.";
+"Lightning channel issue. Please try again in a moment." = "Lightning channel issue. Please try again in a moment.";
+"Invalid Lightning invoice. Please check the payment request." = "Invalid Lightning invoice. Please check the payment request.";
+"Invalid amount" = "Invalid amount";
+"This payment request has expired" = "This payment request has expired";
 
 // MARK: - Action Buttons
-"try_again" = "Try Again";
-"open_settings_button" = "Open Settings";
-"got_it" = "Got It";
+"Try Again" = "Try Again";
+"Got It" = "Got It";
 
 // MARK: - Loading States
-"loading" = "Loading...";
-"processing" = "Processing...";
-"please_wait_processing" = "Please wait...";
+"Loading..." = "Loading...";
+"Processing..." = "Processing...";
+"Please wait..." = "Please wait...";
 
 // MARK: - Confirmation Dialogs
-"logout_confirmation" = "Are you sure you want to logout?";
-"delete_wallet_confirmation" = "Are you sure you want to delete this wallet? This action cannot be undone.";
-"confirm_logout" = "Logout";
-"confirm_delete" = "Delete";
+"Are you sure you want to logout?" = "Are you sure you want to logout?";
+"Are you sure you want to delete this wallet? This action cannot be undone." = "Are you sure you want to delete this wallet? This action cannot be undone.";
 
 // MARK: - Default Values
-"lumen_payment" = "Lumen payment";
-"default_description" = "Lightning payment";
+"Lumen payment" = "Lumen payment";
+"Lightning payment" = "Lightning payment";
 
 // MARK: - Units
 "sats" = "sats";
-"bitcoin" = "Bitcoin";
+"Bitcoin" = "Bitcoin";
 "words" = "words";
 "word" = "word";
 
 // MARK: - Time
 "now" = "now";
-"minutes_ago" = "%d minutes ago";
-"hours_ago" = "%d hours ago";
-"days_ago" = "%d days ago";
+"%d minutes ago" = "%d minutes ago";
+"%d hours ago" = "%d hours ago";
+"%d days ago" = "%d days ago";
 
 // MARK: - Pluralization
-"place_singular" = "";
-"place_plural" = "s";
+"" = "";
+"s" = "s";

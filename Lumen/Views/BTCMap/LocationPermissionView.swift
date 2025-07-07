@@ -19,12 +19,12 @@ struct LocationPermissionView: View {
                 
                 // Title and Description
                 VStack(spacing: 16) {
-                    Text(L("find_bitcoin_places_title"))
+                    Text(L("Find Bitcoin Places Near You"))
                         .font(.title2)
                         .fontWeight(.bold)
                         .multilineTextAlignment(.center)
 
-                    Text(L("location_permission_message"))
+                    Text(L("We use your location to show nearby businesses that accept Bitcoin payments. Your location stays private and is never shared with third parties."))
                         .font(.body)
                         .multilineTextAlignment(.center)
                         .foregroundColor(.secondary)
@@ -163,7 +163,7 @@ struct NoLocationView: View {
                 .foregroundColor(.gray)
             
             VStack(spacing: 8) {
-                Text(L("location_required"))
+                Text(L("Location Required"))
                     .font(.title2)
                     .fontWeight(.bold)
                 
