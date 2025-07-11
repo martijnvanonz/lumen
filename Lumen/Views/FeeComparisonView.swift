@@ -4,65 +4,64 @@ import BreezSDKLiquid
 struct FeeComparisonView: View {
     let lightningFeeSats: UInt64
     let paymentAmountSats: UInt64
-    
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: DesignSystem.Spacing.md) {
             Text("Fee Comparison")
-                .font(.headline)
-                .foregroundColor(.primary)
-            
-            VStack(spacing: 12) {
+                .font(DesignSystem.Typography.headline())
+                .foregroundColor(DesignSystem.Colors.textPrimary)
+
+            VStack(spacing: DesignSystem.Spacing.component) {
                 // Lightning Network fee
                 FeeComparisonRow(
                     title: "Lightning Network",
                     fee: lightningFeeSats,
                     amount: paymentAmountSats,
-                    color: .yellow,
-                    icon: "bolt.fill",
+                    color: AppConstants.Colors.lightning,
+                    icon: DesignSystem.Icons.lightning,
                     isRecommended: true
                 )
-                
+
                 // Traditional payment comparisons
                 FeeComparisonRow(
-                    title: "Credit Card (3%)",
-                    fee: UInt64(Double(paymentAmountSats) * 0.03),
+                    title: "Credit Card (\(String(format: "%.1f", AppConstants.Fees.creditCardRate * 100))%)",
+                    fee: calculateCreditCardFee(for: paymentAmountSats),
                     amount: paymentAmountSats,
-                    color: .blue,
+                    color: DesignSystem.Colors.info,
                     icon: "creditcard.fill"
                 )
-                
+
                 FeeComparisonRow(
-                    title: "Bank Wire ($25)",
-                    fee: UInt64(25 * 100_000_000 / 45000), // ~$25 in sats at $45k BTC
+                    title: "Bank Wire ($\(String(format: "%.0f", AppConstants.Fees.bankWireFee)))",
+                    fee: calculateBankWireFee(),
                     amount: paymentAmountSats,
-                    color: .gray,
+                    color: DesignSystem.Colors.textSecondary,
                     icon: "building.columns.fill"
                 )
-                
+
                 FeeComparisonRow(
-                    title: "PayPal (2.9% + $0.30)",
-                    fee: UInt64(Double(paymentAmountSats) * 0.029 + (0.30 * 100_000_000 / 45000)),
+                    title: "PayPal (\(String(format: "%.1f", AppConstants.Fees.paypalRate * 100))% + $\(String(format: "%.2f", AppConstants.Fees.paypalFixedFee)))",
+                    fee: calculatePayPalFee(for: paymentAmountSats),
                     amount: paymentAmountSats,
-                    color: .purple,
+                    color: Color.purple,
                     icon: "p.circle.fill"
                 )
             }
-            
+
             // Savings summary
-            let creditCardFee = UInt64(Double(paymentAmountSats) * 0.03)
+            let creditCardFee = calculateCreditCardFee(for: paymentAmountSats)
             if lightningFeeSats < creditCardFee {
                 let savings = creditCardFee - lightningFeeSats
                 let savingsPercentage = Double(savings) / Double(creditCardFee) * 100
-                
-                HStack {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.green)
 
-                    HStack(spacing: 4) {
+                HStack {
+                    Image(systemName: DesignSystem.Icons.success)
+                        .foregroundColor(DesignSystem.Colors.success)
+
+                    HStack(spacing: DesignSystem.Spacing.xs) {
                         Text("Save")
-                            .font(.caption)
-                            .foregroundColor(.green)
-                            .fontWeight(.medium)
+                            .font(DesignSystem.Typography.caption(.medium))
+                            .foregroundColor(DesignSystem.Colors.success)
 
                         SatsAmountView(
                             amount: savings,
@@ -72,19 +71,36 @@ struct FeeComparisonView: View {
                         )
 
                         Text("(\(String(format: "%.1f", savingsPercentage))%) vs credit cards")
-                            .font(.caption)
-                            .foregroundColor(.green)
-                            .fontWeight(.medium)
+                            .font(DesignSystem.Typography.caption(.medium))
+                            .foregroundColor(DesignSystem.Colors.success)
                     }
                 }
-                .padding(.top, 8)
+                .padding(.top, DesignSystem.Spacing.sm)
             }
         }
-        .padding()
+        .standardPadding()
         .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color(.tertiarySystemBackground))
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
+                .fill(DesignSystem.Colors.backgroundTertiary)
         )
+    }
+
+    // MARK: - Fee Calculation Methods
+
+    private func calculateCreditCardFee(for amount: UInt64) -> UInt64 {
+        return UInt64(Double(amount) * AppConstants.Fees.creditCardRate)
+    }
+
+    private func calculateBankWireFee() -> UInt64 {
+        let satsPerDollar = 100_000_000 / AppConstants.Fees.btcPriceForCalculation
+        return UInt64(AppConstants.Fees.bankWireFee * satsPerDollar)
+    }
+
+    private func calculatePayPalFee(for amount: UInt64) -> UInt64 {
+        let percentageFee = Double(amount) * AppConstants.Fees.paypalRate
+        let satsPerDollar = 100_000_000 / AppConstants.Fees.btcPriceForCalculation
+        let fixedFee = AppConstants.Fees.paypalFixedFee * satsPerDollar
+        return UInt64(percentageFee + fixedFee)
     }
 }
 
@@ -95,7 +111,7 @@ struct FeeComparisonRow: View {
     let color: Color
     let icon: String
     let isRecommended: Bool
-    
+
     init(title: String, fee: UInt64, amount: UInt64, color: Color, icon: String, isRecommended: Bool = false) {
         self.title = title
         self.fee = fee
@@ -104,35 +120,33 @@ struct FeeComparisonRow: View {
         self.icon = icon
         self.isRecommended = isRecommended
     }
-    
+
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: DesignSystem.Spacing.component) {
             // Icon
             Image(systemName: icon)
-                .font(.title3)
+                .font(DesignSystem.Typography.title3())
                 .foregroundColor(color)
-                .frame(width: 24)
-            
+                .frame(width: DesignSystem.Icons.sizeLarge)
+
             // Payment method info
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: DesignSystem.Spacing.xs / 2) {
                 HStack {
                     Text(title)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                    
+                        .font(DesignSystem.Typography.subheadline(.medium))
+
                     if isRecommended {
                         Text("RECOMMENDED")
-                            .font(.caption2)
-                            .fontWeight(.bold)
+                            .font(DesignSystem.Typography.caption(.bold))
                             .foregroundColor(.white)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(Color.green)
-                            .cornerRadius(4)
+                            .padding(.horizontal, DesignSystem.Spacing.xs + 2)
+                            .padding(.vertical, DesignSystem.Spacing.xs / 2)
+                            .background(DesignSystem.Colors.success)
+                            .cornerRadius(DesignSystem.CornerRadius.sm / 2)
                     }
                 }
-                
-                HStack(spacing: 4) {
+
+                HStack(spacing: DesignSystem.Spacing.xs) {
                     SatsAmountView(
                         amount: fee,
                         displayMode: .satsOnly,
@@ -140,13 +154,13 @@ struct FeeComparisonRow: View {
                         style: .secondary
                     )
                     Text("(\(feePercentage)%)")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .font(DesignSystem.Typography.caption())
+                        .foregroundColor(DesignSystem.Colors.textSecondary)
                 }
             }
-            
+
             Spacer()
-            
+
             // Fee amount
             SatsAmountView(
                 amount: fee,
@@ -155,13 +169,13 @@ struct FeeComparisonRow: View {
                 style: .primary
             )
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, DesignSystem.Spacing.xs)
         .background(
-            RoundedRectangle(cornerRadius: 8)
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.sm)
                 .fill(isRecommended ? color.opacity(0.1) : Color.clear)
         )
     }
-    
+
     private var feePercentage: String {
         let percentage = Double(fee) / Double(amount) * 100
         return String(format: "%.2f", percentage)
@@ -172,29 +186,29 @@ struct FeeComparisonRow: View {
 
 struct FeeEducationView: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: DesignSystem.Spacing.md) {
             Text("Why Lightning Fees Are Lower")
-                .font(.headline)
-            
-            VStack(alignment: .leading, spacing: 12) {
+                .font(DesignSystem.Typography.headline())
+
+            VStack(alignment: .leading, spacing: DesignSystem.Spacing.component) {
                 EducationPoint(
-                    icon: "network",
+                    icon: DesignSystem.Icons.network,
                     title: "Direct Peer-to-Peer",
                     description: "No intermediary banks or payment processors taking cuts"
                 )
-                
+
                 EducationPoint(
-                    icon: "bolt.fill",
+                    icon: DesignSystem.Icons.lightning,
                     title: "Instant Settlement",
                     description: "No waiting periods or clearing houses to pay"
                 )
-                
+
                 EducationPoint(
                     icon: "globe",
                     title: "Global Network",
                     description: "Same low fees whether paying locally or internationally"
                 )
-                
+
                 EducationPoint(
                     icon: "lock.shield.fill",
                     title: "Cryptographic Security",
@@ -202,10 +216,10 @@ struct FeeEducationView: View {
                 )
             }
         }
-        .padding()
+        .standardPadding()
         .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color(.secondarySystemBackground))
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
+                .fill(DesignSystem.Colors.backgroundSecondary)
         )
     }
 }
@@ -214,22 +228,21 @@ struct EducationPoint: View {
     let icon: String
     let title: String
     let description: String
-    
+
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .top, spacing: DesignSystem.Spacing.component) {
             Image(systemName: icon)
-                .font(.title3)
-                .foregroundColor(.blue)
-                .frame(width: 24)
-            
-            VStack(alignment: .leading, spacing: 4) {
+                .font(DesignSystem.Typography.title3())
+                .foregroundColor(DesignSystem.Colors.info)
+                .frame(width: DesignSystem.Icons.sizeLarge)
+
+            VStack(alignment: .leading, spacing: DesignSystem.Spacing.xs) {
                 Text(title)
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                
+                    .font(DesignSystem.Typography.subheadline(.semibold))
+
                 Text(description)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(DesignSystem.Typography.caption())
+                    .foregroundColor(DesignSystem.Colors.textSecondary)
             }
         }
     }
@@ -239,13 +252,13 @@ struct EducationPoint: View {
 
 struct FeeBreakdownView: View {
     let preparedPayment: PrepareSendResponse
-    
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: DesignSystem.Spacing.component) {
             Text("Fee Breakdown")
-                .font(.headline)
-            
-            VStack(spacing: 8) {
+                .font(DesignSystem.Typography.headline())
+
+            VStack(spacing: DesignSystem.Spacing.sm) {
                 FeeBreakdownRow(
                     label: "Base Fee",
                     amount: (preparedPayment.feesSat ?? 0) / 2, // Simplified breakdown
@@ -257,9 +270,10 @@ struct FeeBreakdownView: View {
                     amount: (preparedPayment.feesSat ?? 0) / 2,
                     description: "Cost to route through Lightning Network"
                 )
-                
+
                 Divider()
-                
+                    .background(DesignSystem.Colors.borderPrimary)
+
                 FeeBreakdownRow(
                     label: "Total Lightning Fee",
                     amount: preparedPayment.feesSat ?? 0,
@@ -268,10 +282,10 @@ struct FeeBreakdownView: View {
                 )
             }
         }
-        .padding()
+        .standardPadding()
         .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color(.tertiarySystemBackground))
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
+                .fill(DesignSystem.Colors.backgroundTertiary)
         )
     }
 }
@@ -281,23 +295,22 @@ struct FeeBreakdownRow: View {
     let amount: UInt64
     let description: String
     let isTotal: Bool
-    
+
     init(label: String, amount: UInt64, description: String, isTotal: Bool = false) {
         self.label = label
         self.amount = amount
         self.description = description
         self.isTotal = isTotal
     }
-    
+
     var body: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: DesignSystem.Spacing.xs) {
             HStack {
                 Text(label)
-                    .font(isTotal ? .subheadline : .caption)
-                    .fontWeight(isTotal ? .semibold : .medium)
-                
+                    .font(isTotal ? DesignSystem.Typography.subheadline(.semibold) : DesignSystem.Typography.caption(.medium))
+
                 Spacer()
-                
+
                 SatsAmountView(
                     amount: amount,
                     displayMode: .satsOnly,
@@ -305,13 +318,13 @@ struct FeeBreakdownRow: View {
                     style: isTotal ? .primary : .secondary
                 )
             }
-            
+
             if !description.isEmpty {
                 HStack {
                     Text(description)
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                    
+                        .font(DesignSystem.Typography.caption(.regular))
+                        .foregroundColor(DesignSystem.Colors.textSecondary)
+
                     Spacer()
                 }
             }
