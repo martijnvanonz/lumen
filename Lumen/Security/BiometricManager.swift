@@ -270,6 +270,28 @@ class BiometricManager {
         UserDefaults.standard.set(currentTypeString, forKey: "StoredBiometricType")
     }
 
+    // MARK: - Biometric Token Management
+
+    /// Stores a biometric token in the keychain
+    /// - Parameter token: The token to store
+    /// - Throws: KeychainError if storage fails
+    func storeBiometricToken(_ token: String) throws {
+        try KeychainManager.shared.storeBiometricToken(token)
+    }
+
+    /// Retrieves a biometric token from the keychain
+    /// - Returns: The stored biometric token
+    /// - Throws: KeychainError if retrieval fails
+    func retrieveBiometricToken() throws -> String {
+        return try KeychainManager.shared.retrieveBiometricToken()
+    }
+
+    /// Deletes the biometric token from the keychain
+    /// - Throws: KeychainError if deletion fails
+    func deleteBiometricToken() throws {
+        try KeychainManager.shared.deleteBiometricToken()
+    }
+
     /// Provides user-friendly error messages for authentication failures
     /// - Parameter error: The error to convert
     /// - Returns: User-friendly error message
