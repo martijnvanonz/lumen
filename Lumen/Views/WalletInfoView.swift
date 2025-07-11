@@ -128,7 +128,7 @@ struct ConnectionStatusCard: View {
     let walletInfo: GetInfoResponse
     
     var body: some View {
-        InfoCard(
+        WalletInfoCard(
             title: "Connection Status",
             icon: "wifi",
             iconColor: .green
@@ -171,7 +171,7 @@ struct NodeInfoCard: View {
     let walletInfo: GetInfoResponse
     
     var body: some View {
-        InfoCard(
+        WalletInfoCard(
             title: "Node Information",
             icon: "server.rack",
             iconColor: .blue
@@ -194,7 +194,7 @@ struct BalanceInfoCard: View {
     let walletInfo: GetInfoResponse
     
     var body: some View {
-        InfoCard(
+        WalletInfoCard(
             title: "Balance Details",
             icon: "bitcoinsign.circle",
             iconColor: .orange
@@ -233,7 +233,7 @@ struct NetworkInfoCard: View {
     let walletInfo: GetInfoResponse
     
     var body: some View {
-        InfoCard(
+        WalletInfoCard(
             title: "Network Information",
             icon: "globe",
             iconColor: .purple
@@ -264,7 +264,7 @@ struct LimitsInfoCard: View {
     @State private var limitsError: String?
 
     var body: some View {
-        InfoCard(
+        WalletInfoCard(
             title: "Payment Limits",
             icon: "gauge",
             iconColor: .red
@@ -394,7 +394,7 @@ struct LimitsInfoCard: View {
 
 // MARK: - Reusable Components
 
-struct InfoCard<Content: View>: View {
+struct WalletInfoCard<Content: View>: View {
     let title: String
     let icon: String
     let iconColor: Color

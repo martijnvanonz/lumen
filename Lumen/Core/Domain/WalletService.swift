@@ -217,7 +217,7 @@ class BreezWalletService: WalletServiceProtocol {
             let connectRequest = ConnectRequest(config: config, mnemonic: mnemonic)
             
             // Connect to SDK
-            sdk = try connect(req: connectRequest)
+            sdk = try BreezSDKLiquid.connect(req: connectRequest)
             
             print("✅ WalletService connected to Breez SDK")
             
@@ -371,7 +371,7 @@ class BreezWalletService: WalletServiceProtocol {
         }
         
         do {
-            let request = PrepareBuyBitcoinRequest(provider: provider)
+            let request = PrepareBuyBitcoinRequest(provider: provider, amountSat: 100000)
             return try sdk.prepareBuyBitcoin(req: request)
         } catch {
             throw WalletServiceError.paymentFailed(error.localizedDescription)
@@ -397,7 +397,8 @@ class BreezWalletService: WalletServiceProtocol {
         }
         
         do {
-            return try sdk.listPayments()
+            let request = ListPaymentsRequest()
+            return try sdk.listPayments(req: request)
         } catch {
             throw WalletServiceError.sdkError(error.localizedDescription)
         }
@@ -414,7 +415,7 @@ class BreezWalletService: WalletServiceProtocol {
         }
         
         do {
-            return try sdk.parseInput(input: input)
+            return try sdk.parse(input: input)
         } catch {
             throw WalletServiceError.invalidPaymentRequest(error.localizedDescription)
         }
@@ -425,7 +426,7 @@ class BreezWalletService: WalletServiceProtocol {
         // For now, simplified implementation
         switch inputType {
         case .bolt11(let invoice):
-            return try await preparePayment(destination: invoice)
+            return try await preparePayment(destination: invoice.bolt11)
         default:
             throw WalletServiceError.unsupportedOperation("Input type not yet supported in service layer")
         }

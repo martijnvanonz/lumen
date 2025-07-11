@@ -60,7 +60,7 @@ struct FeeComparisonView: View {
 
                     HStack(spacing: DesignSystem.Spacing.xs) {
                         Text("Save")
-                            .font(DesignSystem.Typography.caption(.medium))
+                            .font(DesignSystem.Typography.caption(weight: .medium))
                             .foregroundColor(DesignSystem.Colors.success)
 
                         SatsAmountView(
@@ -71,7 +71,7 @@ struct FeeComparisonView: View {
                         )
 
                         Text("(\(String(format: "%.1f", savingsPercentage))%) vs credit cards")
-                            .font(DesignSystem.Typography.caption(.medium))
+                            .font(DesignSystem.Typography.caption(weight: .medium))
                             .foregroundColor(DesignSystem.Colors.success)
                     }
                 }
@@ -133,11 +133,11 @@ struct FeeComparisonRow: View {
             VStack(alignment: .leading, spacing: DesignSystem.Spacing.xs / 2) {
                 HStack {
                     Text(title)
-                        .font(DesignSystem.Typography.subheadline(.medium))
+                        .font(DesignSystem.Typography.subheadline(weight: .medium))
 
                     if isRecommended {
                         Text("RECOMMENDED")
-                            .font(DesignSystem.Typography.caption(.bold))
+                            .font(DesignSystem.Typography.caption(weight: .bold))
                             .foregroundColor(.white)
                             .padding(.horizontal, DesignSystem.Spacing.xs + 2)
                             .padding(.vertical, DesignSystem.Spacing.xs / 2)
@@ -238,7 +238,7 @@ struct EducationPoint: View {
 
             VStack(alignment: .leading, spacing: DesignSystem.Spacing.xs) {
                 Text(title)
-                    .font(DesignSystem.Typography.subheadline(.semibold))
+                    .font(DesignSystem.Typography.subheadline(weight: .semibold))
 
                 Text(description)
                     .font(DesignSystem.Typography.caption())
@@ -307,7 +307,7 @@ struct FeeBreakdownRow: View {
         VStack(spacing: DesignSystem.Spacing.xs) {
             HStack {
                 Text(label)
-                    .font(isTotal ? DesignSystem.Typography.subheadline(.semibold) : DesignSystem.Typography.caption(.medium))
+                    .font(isTotal ? DesignSystem.Typography.subheadline(weight: .semibold) : DesignSystem.Typography.caption(weight: .medium))
 
                 Spacer()
 
@@ -322,7 +322,7 @@ struct FeeBreakdownRow: View {
             if !description.isEmpty {
                 HStack {
                     Text(description)
-                        .font(DesignSystem.Typography.caption(.regular))
+                        .font(DesignSystem.Typography.caption(weight: .regular))
                         .foregroundColor(DesignSystem.Colors.textSecondary)
 
                     Spacer()

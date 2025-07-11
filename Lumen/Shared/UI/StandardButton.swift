@@ -97,13 +97,13 @@ struct StandardButton: View {
         var font: Font {
             switch self {
             case .compact:
-                return DesignSystem.Typography.caption(.medium)
+                return DesignSystem.Typography.caption(weight: .medium)
             case .regular:
-                return DesignSystem.Typography.subheadline(.medium)
+                return DesignSystem.Typography.subheadline(weight: .medium)
             case .large:
-                return DesignSystem.Typography.headline(.semibold)
+                return DesignSystem.Typography.headline(weight: .semibold)
             case .huge:
-                return DesignSystem.Typography.title3(.semibold)
+                return DesignSystem.Typography.title3(weight: .semibold)
             }
         }
         
@@ -228,13 +228,13 @@ struct StandardButton: View {
     private var iconFont: Font {
         switch size {
         case .compact:
-            return DesignSystem.Typography.caption(.medium)
+            return DesignSystem.Typography.caption(weight: .medium)
         case .regular:
-            return DesignSystem.Typography.subheadline(.medium)
+            return DesignSystem.Typography.subheadline(weight: .medium)
         case .large:
-            return DesignSystem.Typography.headline(.medium)
+            return DesignSystem.Typography.headline(weight: .medium)
         case .huge:
-            return DesignSystem.Typography.title3(.medium)
+            return DesignSystem.Typography.title3(weight: .medium)
         }
     }
     
@@ -374,10 +374,10 @@ extension StandardButton {
                 Text("Button Sizes")
                     .font(DesignSystem.Typography.headline())
                 
-                StandardButton("Compact", action: {}).size(.compact)
-                StandardButton("Regular", action: {}).size(.regular)
-                StandardButton("Large", action: {}).size(.large)
-                StandardButton("Huge", action: {}).size(.huge)
+                StandardButton(title: "Compact", action: {}).size(.compact)
+                StandardButton(title: "Regular", action: {}).size(.regular)
+                StandardButton(title: "Large", action: {}).size(.large)
+                StandardButton(title: "Huge", action: {}).size(.huge)
             }
             
             // States
@@ -385,10 +385,10 @@ extension StandardButton {
                 Text("Button States")
                     .font(DesignSystem.Typography.headline())
                 
-                StandardButton("Loading", action: {}).loading(true)
-                StandardButton("Disabled", action: {}).enabled(false)
-                StandardButton("With Icon", action: {}).icon(DesignSystem.Icons.lightning)
-                StandardButton("Trailing Icon", action: {}).icon("arrow.right", position: .trailing)
+                StandardButton(title: "Loading", action: {}).loading(true)
+                StandardButton(title: "Disabled", action: {}).enabled(false)
+                StandardButton(title: "With Icon", action: {}).icon(DesignSystem.Icons.lightning)
+                StandardButton(title: "Trailing Icon", action: {}).icon("arrow.right", position: .trailing)
             }
         }
         .padding()

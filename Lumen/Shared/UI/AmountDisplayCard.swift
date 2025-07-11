@@ -153,39 +153,52 @@ struct AmountDisplayCard: View {
         var amountFont: Font {
             switch self {
             case .compact:
-                return DesignSystem.Typography.subheadline(.semibold)
+                return DesignSystem.Typography.subheadline(weight: .semibold)
             case .regular:
-                return DesignSystem.Typography.title3(.semibold)
+                return DesignSystem.Typography.title3(weight: .semibold)
             case .large:
-                return DesignSystem.Typography.title2(.bold)
+                return DesignSystem.Typography.title2(weight: .bold)
             case .hero:
-                return DesignSystem.Typography.largeTitle(.bold)
+                return DesignSystem.Typography.largeTitle(weight: .bold)
+            }
+        }
+
+        var amountFontSize: CGFloat {
+            switch self {
+            case .compact:
+                return 16
+            case .regular:
+                return 20
+            case .large:
+                return 28
+            case .hero:
+                return 34
             }
         }
         
         var titleFont: Font {
             switch self {
             case .compact:
-                return DesignSystem.Typography.caption(.medium)
+                return DesignSystem.Typography.caption(weight: .medium)
             case .regular:
-                return DesignSystem.Typography.subheadline(.medium)
+                return DesignSystem.Typography.subheadline(weight: .medium)
             case .large:
-                return DesignSystem.Typography.headline(.semibold)
+                return DesignSystem.Typography.headline(weight: .semibold)
             case .hero:
-                return DesignSystem.Typography.title3(.semibold)
+                return DesignSystem.Typography.title3(weight: .semibold)
             }
         }
         
         var subtitleFont: Font {
             switch self {
             case .compact:
-                return DesignSystem.Typography.caption(.regular)
+                return DesignSystem.Typography.caption(weight: .regular)
             case .regular:
-                return DesignSystem.Typography.caption(.medium)
+                return DesignSystem.Typography.caption(weight: .medium)
             case .large:
-                return DesignSystem.Typography.subheadline(.regular)
+                return DesignSystem.Typography.subheadline(weight: .regular)
             case .hero:
-                return DesignSystem.Typography.subheadline(.medium)
+                return DesignSystem.Typography.subheadline(weight: .medium)
             }
         }
     }
@@ -193,7 +206,7 @@ struct AmountDisplayCard: View {
     // MARK: - View Body
     
     var body: some View {
-        let content = VStack(spacing: size == .compact ? DesignSystem.Spacing.xs : DesignSystem.Spacing.sm) {
+        let _ = VStack(spacing: size == .compact ? DesignSystem.Spacing.xs : DesignSystem.Spacing.sm) {
             // Title
             if let title = title {
                 Text(title)
@@ -268,7 +281,7 @@ struct AmountDisplayCard: View {
     private var satsAmountView: some View {
         HStack(spacing: DesignSystem.Spacing.xs) {
             Text(formattedSatsAmount)
-                .font(DesignSystem.Typography.numeric(size: size.amountFont.pointSize))
+                .font(DesignSystem.Typography.numeric(size: size.amountFontSize))
                 .foregroundColor(style.accentColor)
             
             Text("sats")
@@ -281,7 +294,7 @@ struct AmountDisplayCard: View {
     private var currencyAmountView: some View {
         if let currencyAmount = formattedCurrencyAmount {
             Text(currencyAmount)
-                .font(DesignSystem.Typography.numeric(size: size.amountFont.pointSize))
+                .font(DesignSystem.Typography.numeric(size: size.amountFontSize))
                 .foregroundColor(displayMode.showsSats ? DesignSystem.Colors.textSecondary : style.accentColor)
         }
     }

@@ -1,4 +1,5 @@
 import SwiftUI
+import BreezSDKLiquid
 
 /// Currency selection step for onboarding flow
 /// Uses new design system and improved currency selection UI
@@ -42,12 +43,12 @@ struct OnboardingCurrencySelectionStep: View {
                 
                 VStack(spacing: DesignSystem.Spacing.sm) {
                     Text("Choose Your Currency")
-                        .font(DesignSystem.Typography.largeTitle(.bold))
+                        .font(DesignSystem.Typography.largeTitle(weight: .bold))
                         .foregroundColor(DesignSystem.Colors.textPrimary)
                         .multilineTextAlignment(.center)
                     
                     Text("Select your preferred currency for displaying Bitcoin values. You can change this later in settings.")
-                        .font(DesignSystem.Typography.body(.regular))
+                        .font(DesignSystem.Typography.body(weight: .regular))
                         .foregroundColor(DesignSystem.Colors.textSecondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, DesignSystem.Spacing.md)
@@ -59,7 +60,7 @@ struct OnboardingCurrencySelectionStep: View {
             VStack(spacing: DesignSystem.Spacing.lg) {
                 // Search bar
                 HStack(spacing: DesignSystem.Spacing.sm) {
-                    Image(systemName: DesignSystem.Icons.search)
+                    Image(systemName: "magnifyingglass")
                         .foregroundColor(DesignSystem.Colors.textSecondary)
                     
                     TextField("Search currencies...", text: $searchText)
@@ -79,8 +80,9 @@ struct OnboardingCurrencySelectionStep: View {
             Spacer()
             
             // Continue button
-            StandardButton("Continue", action: onContinue)
-                .style(canContinue ? .warning : .disabled)
+            StandardButton(title: "Continue", action: onContinue)
+                .style(canContinue ? .primary : .secondary)
+                .enabled(canContinue)
                 .size(.large)
                 .enabled(canContinue)
                 .padding(.horizontal, DesignSystem.Spacing.md)
@@ -138,17 +140,17 @@ struct CurrencySelectionCard: View {
         Button(action: onTap) {
             VStack(spacing: DesignSystem.Spacing.sm) {
                 // Currency icon/flag placeholder
-                Text(currency.info.flag ?? "💱")
+                Image(systemName: currency.icon)
                     .font(DesignSystem.Typography.title2())
                 
                 // Currency code
                 Text(currency.id.uppercased())
-                    .font(DesignSystem.Typography.subheadline(.semibold))
+                    .font(DesignSystem.Typography.subheadline(weight: .semibold))
                     .foregroundColor(isSelected ? .white : DesignSystem.Colors.textPrimary)
                 
                 // Currency name (truncated)
                 Text(currency.info.name)
-                    .font(DesignSystem.Typography.caption(.regular))
+                    .font(DesignSystem.Typography.caption(weight: .regular))
                     .foregroundColor(isSelected ? .white.opacity(0.8) : DesignSystem.Colors.textSecondary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
@@ -232,11 +234,11 @@ struct EnhancedOnboardingCurrencySelectionStep: View {
                     .foregroundColor(DesignSystem.Colors.warning)
                 
                 Text("Choose Your Currency")
-                    .font(DesignSystem.Typography.title2(.bold))
+                    .font(DesignSystem.Typography.title2(weight: .bold))
                     .foregroundColor(DesignSystem.Colors.textPrimary)
                 
                 Text("Select your preferred currency for displaying Bitcoin values")
-                    .font(DesignSystem.Typography.subheadline(.regular))
+                    .font(DesignSystem.Typography.subheadline(weight: .regular))
                     .foregroundColor(DesignSystem.Colors.textSecondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, DesignSystem.Spacing.md)
@@ -253,7 +255,7 @@ struct EnhancedOnboardingCurrencySelectionStep: View {
                         // Popular currencies section
                         VStack(spacing: DesignSystem.Spacing.md) {
                             Text("Popular Currencies")
-                                .font(DesignSystem.Typography.headline(.semibold))
+                                .font(DesignSystem.Typography.headline(weight: .semibold))
                                 .foregroundColor(DesignSystem.Colors.textPrimary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(.horizontal, DesignSystem.Spacing.md)
@@ -275,7 +277,7 @@ struct EnhancedOnboardingCurrencySelectionStep: View {
                             .padding(.horizontal, DesignSystem.Spacing.md)
                             
                             // Show all currencies button
-                            StandardButton("Show All Currencies", action: {
+                            StandardButton(title: "Show All Currencies", action: {
                                 showingAllCurrencies = true
                             })
                             .style(.outline)
@@ -287,7 +289,7 @@ struct EnhancedOnboardingCurrencySelectionStep: View {
                         VStack(spacing: DesignSystem.Spacing.md) {
                             // Search bar
                             HStack(spacing: DesignSystem.Spacing.sm) {
-                                Image(systemName: DesignSystem.Icons.search)
+                                Image(systemName: "magnifyingglass")
                                     .foregroundColor(DesignSystem.Colors.textSecondary)
                                 
                                 TextField("Search currencies...", text: $searchText)
@@ -315,7 +317,7 @@ struct EnhancedOnboardingCurrencySelectionStep: View {
                             }
                             
                             // Back to popular button
-                            StandardButton("Back to Popular", action: {
+                            StandardButton(title: "Back to Popular", action: {
                                 showingAllCurrencies = false
                                 searchText = ""
                             })
@@ -330,8 +332,9 @@ struct EnhancedOnboardingCurrencySelectionStep: View {
             Spacer()
             
             // Continue button
-            StandardButton("Continue", action: onContinue)
-                .style(canContinue ? .warning : .disabled)
+            StandardButton(title: "Continue", action: onContinue)
+                .style(canContinue ? .primary : .secondary)
+                .enabled(canContinue)
                 .size(.large)
                 .enabled(canContinue)
                 .padding(.horizontal, DesignSystem.Spacing.md)

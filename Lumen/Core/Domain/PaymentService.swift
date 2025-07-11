@@ -174,7 +174,23 @@ class DefaultPaymentService: PaymentServiceProtocol {
             
             // Validate amount against balance
             if let feesSat = preparedPayment.feesSat {
-                let totalRequired = (preparedPayment.recipientAmountSat ?? 0) + feesSat
+                // Extract amount from PayAmount enum
+                let recipientAmount: UInt64
+                if let amount = preparedPayment.amount {
+                    switch amount {
+                    case .bitcoin(let receiverAmountSat):
+                        recipientAmount = receiverAmountSat
+                    case .asset(_, let receiverAmount, _):
+                        // For asset payments, convert to sats (this is an approximation)
+                        recipientAmount = UInt64(receiverAmount)
+                    case .drain:
+                        recipientAmount = 0
+                    }
+                } else {
+                    recipientAmount = 0
+                }
+
+                let totalRequired = recipientAmount + feesSat
                 try await validatePaymentAmount(totalRequired)
             }
             
@@ -209,7 +225,7 @@ class DefaultPaymentService: PaymentServiceProtocol {
             let result = try await walletService.sendPayment(preparedPayment: preparedPayment)
             
             // Log successful payment
-            print("✅ Payment executed successfully: \(result.payment.id)")
+            print("✅ Payment executed successfully: \(result.payment.txId ?? "unknown")")
             
             return result
         } catch let error as WalletServiceError {

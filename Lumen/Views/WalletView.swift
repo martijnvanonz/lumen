@@ -508,8 +508,8 @@ struct SendPaymentView: View {
                 }
             } catch {
                 await MainActor.run {
-                    let appError = errorHandler.mapError(error)
-                    errorMessage = appError.message
+                    ErrorHandler.shared.handle(error, context: "Prepare payment")
+                    errorMessage = error.localizedDescription
                     isLoading = false
                 }
             }
@@ -540,8 +540,8 @@ struct SendPaymentView: View {
                 await MainActor.run {
                     paymentInfo = nil
                     preparedPayment = nil
-                    let appError = errorHandler.mapError(error)
-                    errorMessage = appError.message
+                    ErrorHandler.shared.handle(error, context: "Parse payment")
+                    errorMessage = error.localizedDescription
                 }
             }
         }
@@ -565,8 +565,8 @@ struct SendPaymentView: View {
                 }
             } catch {
                 await MainActor.run {
-                    let appError = errorHandler.mapError(error)
-                    errorMessage = appError.message
+                    ErrorHandler.shared.handle(error, context: "Prepare refund")
+                    errorMessage = error.localizedDescription
                     isLoading = false
                 }
             }
@@ -597,8 +597,8 @@ struct SendPaymentView: View {
                 notificationFeedback.notificationOccurred(.error)
 
                 await MainActor.run {
-                    let appError = errorHandler.mapError(error)
-                    errorMessage = appError.message
+                    ErrorHandler.shared.handle(error, context: "Send payment")
+                    errorMessage = error.localizedDescription
                     isLoading = false
                 }
             }
@@ -1131,8 +1131,8 @@ struct ReceivePaymentView: View {
                 }
             } catch {
                 await MainActor.run {
-                    let appError = errorHandler.mapError(error)
-                    errorMessage = appError.message
+                    ErrorHandler.shared.handle(error, context: "Receive payment")
+                    errorMessage = error.localizedDescription
                     isLoading = false
                 }
             }
@@ -1282,68 +1282,7 @@ private func amountSatsFromReceiveAmount(_ receiveAmount: ReceiveAmount?) -> UIn
     }
 }
 
-// MARK: - Payment Success Overlay
-
-struct PaymentSuccessOverlay: View {
-    let payment: PaymentEventHandler.PaymentInfo
-    let onDismiss: () -> Void
-
-    var body: some View {
-        VStack {
-            Spacer()
-
-            VStack(spacing: 16) {
-                // Success icon
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 60))
-                    .foregroundColor(.green)
-
-                // Success message
-                Text("Payment Received!")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primary)
-
-                // Amount
-                SatsAmountView(
-                    amount: payment.amountSat,
-                    displayMode: .both,
-                    size: .large,
-                    style: .success
-                )
-
-                // Dismiss button
-                Button("Continue") {
-                    onDismiss()
-                }
-                .font(.headline)
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.green)
-                .cornerRadius(12)
-            }
-            .padding(24)
-            .background(
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color(.systemBackground))
-                    .shadow(color: .black.opacity(0.2), radius: 20, x: 0, y: 10)
-            )
-            .padding(.horizontal, 32)
-
-            Spacer()
-        }
-        .background(Color.black.opacity(0.4))
-        .transition(.asymmetric(
-            insertion: .scale.combined(with: .opacity),
-            removal: .scale.combined(with: .opacity)
-        ))
-        .animation(.spring(response: 0.6, dampingFraction: 0.8), value: true)
-        .onTapGesture {
-            onDismiss()
-        }
-    }
-}
+// Note: PaymentSuccessOverlay is defined in WalletHomeView.swift
 
 /// Extracts the payment amount in satoshis with fallback logic
 /// For BOLT11 invoices, PrepareSendResponse.amount can be nil, so we fall back to PaymentInputInfo

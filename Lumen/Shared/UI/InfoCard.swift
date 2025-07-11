@@ -179,39 +179,39 @@ struct InfoCard: View {
         var titleFont: Font {
             switch self {
             case .compact:
-                return DesignSystem.Typography.subheadline(.medium)
+                return DesignSystem.Typography.subheadline(weight: .medium)
             case .regular:
-                return DesignSystem.Typography.headline(.semibold)
+                return DesignSystem.Typography.headline(weight: .semibold)
             case .large:
-                return DesignSystem.Typography.title3(.semibold)
+                return DesignSystem.Typography.title3(weight: .semibold)
             case .hero:
-                return DesignSystem.Typography.title2(.bold)
+                return DesignSystem.Typography.title2(weight: .bold)
             }
         }
         
         var subtitleFont: Font {
             switch self {
             case .compact:
-                return DesignSystem.Typography.caption(.regular)
+                return DesignSystem.Typography.caption(weight: .regular)
             case .regular:
-                return DesignSystem.Typography.subheadline(.regular)
+                return DesignSystem.Typography.subheadline(weight: .regular)
             case .large:
-                return DesignSystem.Typography.subheadline(.medium)
+                return DesignSystem.Typography.subheadline(weight: .medium)
             case .hero:
-                return DesignSystem.Typography.headline(.medium)
+                return DesignSystem.Typography.headline(weight: .medium)
             }
         }
         
         var contentFont: Font {
             switch self {
             case .compact:
-                return DesignSystem.Typography.caption(.regular)
+                return DesignSystem.Typography.caption(weight: .regular)
             case .regular:
-                return DesignSystem.Typography.body(.regular)
+                return DesignSystem.Typography.body(weight: .regular)
             case .large:
-                return DesignSystem.Typography.body(.medium)
+                return DesignSystem.Typography.body(weight: .medium)
             case .hero:
-                return DesignSystem.Typography.headline(.regular)
+                return DesignSystem.Typography.headline(weight: .regular)
             }
         }
         
@@ -372,7 +372,7 @@ extension InfoCard {
     static func success(
         title: String,
         subtitle: String? = nil,
-        icon: String = DesignSystem.Icons.success
+        icon: String = "checkmark.circle.fill"
     ) -> InfoCard {
         InfoCard(title: title, subtitle: subtitle, content: nil, icon: icon)
             .style(.success)
@@ -384,7 +384,7 @@ extension InfoCard {
     static func warning(
         title: String,
         subtitle: String? = nil,
-        icon: String = DesignSystem.Icons.warning
+        icon: String = "exclamationmark.triangle.fill"
     ) -> InfoCard {
         InfoCard(title: title, subtitle: subtitle, content: nil, icon: icon)
             .style(.warning)
@@ -396,7 +396,7 @@ extension InfoCard {
     static func error(
         title: String,
         subtitle: String? = nil,
-        icon: String = DesignSystem.Icons.error
+        icon: String = "xmark.circle.fill"
     ) -> InfoCard {
         InfoCard(title: title, subtitle: subtitle, content: nil, icon: icon)
             .style(.error)

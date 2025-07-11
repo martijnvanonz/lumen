@@ -23,12 +23,12 @@ struct OnboardingWalletChoiceStep: View {
                 
                 VStack(spacing: DesignSystem.Spacing.sm) {
                     Text("Set Up Your Wallet")
-                        .font(DesignSystem.Typography.largeTitle(.bold))
+                        .font(DesignSystem.Typography.largeTitle(weight: .bold))
                         .foregroundColor(DesignSystem.Colors.textPrimary)
                         .multilineTextAlignment(.center)
                     
                     Text("Choose how you'd like to get started")
-                        .font(DesignSystem.Typography.title3(.regular))
+                        .font(DesignSystem.Typography.title3(weight: .regular))
                         .foregroundColor(DesignSystem.Colors.textSecondary)
                         .multilineTextAlignment(.center)
                 }
@@ -81,7 +81,7 @@ struct OnboardingChoiceCard: View {
             HStack(spacing: DesignSystem.Spacing.md) {
                 // Icon
                 Image(systemName: icon)
-                    .font(DesignSystem.Typography.title2(.medium))
+                    .font(DesignSystem.Typography.title2(weight: .medium))
                     .foregroundColor(iconColor)
                     .frame(width: AppConstants.UI.iconSizeXLarge, height: AppConstants.UI.iconSizeXLarge)
                 
@@ -89,12 +89,12 @@ struct OnboardingChoiceCard: View {
                 VStack(alignment: .leading, spacing: DesignSystem.Spacing.xs) {
                     HStack {
                         Text(title)
-                            .font(DesignSystem.Typography.headline(.semibold))
+                            .font(DesignSystem.Typography.headline(weight: .semibold))
                             .foregroundColor(DesignSystem.Colors.textPrimary)
                         
                         if isRecommended {
                             Text("RECOMMENDED")
-                                .font(DesignSystem.Typography.caption(.bold))
+                                .font(DesignSystem.Typography.caption(weight: .bold))
                                 .foregroundColor(.white)
                                 .padding(.horizontal, DesignSystem.Spacing.xs + 2)
                                 .padding(.vertical, DesignSystem.Spacing.xs / 2)
@@ -106,14 +106,14 @@ struct OnboardingChoiceCard: View {
                     }
                     
                     Text(subtitle)
-                        .font(DesignSystem.Typography.subheadline(.regular))
+                        .font(DesignSystem.Typography.subheadline(weight: .regular))
                         .foregroundColor(DesignSystem.Colors.textSecondary)
                         .multilineTextAlignment(.leading)
                 }
                 
                 // Chevron
                 Image(systemName: "chevron.right")
-                    .font(DesignSystem.Typography.subheadline(.medium))
+                    .font(DesignSystem.Typography.subheadline(weight: .medium))
                     .foregroundColor(DesignSystem.Colors.textSecondary)
             }
             .standardPadding()
@@ -164,12 +164,12 @@ struct EnhancedOnboardingWalletChoiceStep: View {
                 
                 VStack(spacing: DesignSystem.Spacing.sm) {
                     Text("Set Up Your Wallet")
-                        .font(DesignSystem.Typography.largeTitle(.bold))
+                        .font(DesignSystem.Typography.largeTitle(weight: .bold))
                         .foregroundColor(DesignSystem.Colors.textPrimary)
                         .multilineTextAlignment(.center)
                     
                     Text("Choose how you'd like to get started with Lumen")
-                        .font(DesignSystem.Typography.title3(.regular))
+                        .font(DesignSystem.Typography.title3(weight: .regular))
                         .foregroundColor(DesignSystem.Colors.textSecondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, DesignSystem.Spacing.md)

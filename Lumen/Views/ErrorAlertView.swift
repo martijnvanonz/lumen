@@ -40,6 +40,7 @@ struct ErrorAlertView: ViewModifier {
         case .settings: return "Settings"
         case .wait: return "OK"
         case .info: return "Got It"
+        case .restart: return "Restart App"
         }
     }
     
@@ -48,17 +49,22 @@ struct ErrorAlertView: ViewModifier {
         case .retry:
             // Trigger retry logic - this would be handled by the specific view
             errorHandler.clearError()
-            
+
         case .settings:
             // Open device settings
             if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
                 UIApplication.shared.open(settingsUrl)
             }
             errorHandler.clearError()
-            
+
         case .wait, .info:
             // Just dismiss
             errorHandler.clearError()
+
+        case .restart:
+            // Restart the app - this would typically exit the app
+            errorHandler.clearError()
+            exit(0)
         }
     }
 }
@@ -145,6 +151,7 @@ struct ErrorBannerView: View {
         case .settings: return "Settings"
         case .wait: return "Wait"
         case .info: return "Info"
+        case .restart: return "Restart App"
         }
     }
 }
@@ -220,6 +227,18 @@ struct ErrorStateView: View {
             return "creditcard.trianglebadge.exclamationmark"
         case .sdk:
             return "server.rack"
+        case .onboarding:
+            return "person.crop.circle.badge.exclamationmark"
+        case .location:
+            return "location.slash"
+        case .configuration:
+            return "gear.badge.xmark"
+        case .currency:
+            return "dollarsign.circle.fill"
+        case .notification:
+            return "bell.slash"
+        case .cache:
+            return "externaldrive.badge.xmark"
         case .unknown:
             return "questionmark.circle"
         }
@@ -231,6 +250,7 @@ struct ErrorStateView: View {
         case .settings: return "Open Settings"
         case .wait: return "OK"
         case .info: return "Got It"
+        case .restart: return "Restart App"
         }
     }
     
@@ -238,14 +258,18 @@ struct ErrorStateView: View {
         switch action.type {
         case .retry:
             onRetry?()
-            
+
         case .settings:
             if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
                 UIApplication.shared.open(settingsUrl)
             }
-            
+
         case .wait, .info:
             // Just acknowledge
+            break
+
+        case .restart:
+            // Handle app restart - for now just acknowledge
             break
         }
     }

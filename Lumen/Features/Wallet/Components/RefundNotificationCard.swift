@@ -63,17 +63,17 @@ struct RefundNotificationCard: View {
             HStack(spacing: DesignSystem.Spacing.md) {
                 // Icon
                 Image(systemName: style.icon)
-                    .font(DesignSystem.Typography.title3(.medium))
+                    .font(DesignSystem.Typography.title3(weight: .medium))
                     .foregroundColor(style.cardStyle.iconColor)
                 
                 // Content
                 VStack(alignment: .leading, spacing: DesignSystem.Spacing.xs) {
                     Text(style.title)
-                        .font(DesignSystem.Typography.subheadline(.semibold))
+                        .font(DesignSystem.Typography.subheadline(weight: .semibold))
                         .foregroundColor(DesignSystem.Colors.textPrimary)
                     
                     Text(refundMessage)
-                        .font(DesignSystem.Typography.caption(.regular))
+                        .font(DesignSystem.Typography.caption(weight: .regular))
                         .foregroundColor(DesignSystem.Colors.textSecondary)
                         .lineLimit(2)
                 }
@@ -82,14 +82,14 @@ struct RefundNotificationCard: View {
                 
                 // Action indicator
                 Image(systemName: "chevron.right")
-                    .font(DesignSystem.Typography.caption(.medium))
+                    .font(DesignSystem.Typography.caption(weight: .medium))
                     .foregroundColor(DesignSystem.Colors.textSecondary)
                 
                 // Dismiss button (optional)
                 if isDismissible, let onDismiss = onDismiss {
                     Button(action: onDismiss) {
                         Image(systemName: "xmark")
-                            .font(DesignSystem.Typography.caption(.medium))
+                            .font(DesignSystem.Typography.caption(weight: .medium))
                             .foregroundColor(DesignSystem.Colors.textSecondary)
                     }
                 }
@@ -143,11 +143,11 @@ struct EnhancedRefundNotificationCard: View {
                 HStack {
                     HStack(spacing: DesignSystem.Spacing.sm) {
                         Image(systemName: DesignSystem.Icons.warning)
-                            .font(DesignSystem.Typography.subheadline(.medium))
+                            .font(DesignSystem.Typography.subheadline(weight: .medium))
                             .foregroundColor(DesignSystem.Colors.warning)
                         
                         Text("Refunds Available")
-                            .font(DesignSystem.Typography.subheadline(.semibold))
+                            .font(DesignSystem.Typography.subheadline(weight: .semibold))
                             .foregroundColor(DesignSystem.Colors.textPrimary)
                     }
                     
@@ -156,7 +156,7 @@ struct EnhancedRefundNotificationCard: View {
                     if let onDismiss = onDismiss {
                         Button(action: onDismiss) {
                             Image(systemName: "xmark")
-                                .font(DesignSystem.Typography.caption(.medium))
+                                .font(DesignSystem.Typography.caption(weight: .medium))
                                 .foregroundColor(DesignSystem.Colors.textSecondary)
                         }
                     }
@@ -165,13 +165,13 @@ struct EnhancedRefundNotificationCard: View {
                 // Content
                 VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
                     Text("You have \(refundCount) \(refundCount == 1 ? "refund" : "refunds") waiting to be claimed.")
-                        .font(DesignSystem.Typography.body(.regular))
+                        .font(DesignSystem.Typography.body(weight: .regular))
                         .foregroundColor(DesignSystem.Colors.textSecondary)
                     
                     if let totalAmount = totalAmount {
                         HStack {
                             Text("Total amount:")
-                                .font(DesignSystem.Typography.subheadline(.medium))
+                                .font(DesignSystem.Typography.subheadline(weight: .medium))
                                 .foregroundColor(DesignSystem.Colors.textPrimary)
                             
                             Spacer()
@@ -184,8 +184,8 @@ struct EnhancedRefundNotificationCard: View {
                 }
                 
                 // Action button
-                StandardButton("Claim Refunds", action: onTap)
-                    .style(.warning)
+                StandardButton(title: "Claim Refunds", action: onTap)
+                    .style(.primary)
                     .size(.regular)
                     .icon(DesignSystem.Icons.receive)
             }
@@ -221,15 +221,15 @@ struct CompactRefundBadge: View {
             Button(action: onTap) {
                 HStack(spacing: DesignSystem.Spacing.xs) {
                     Image(systemName: DesignSystem.Icons.warning)
-                        .font(DesignSystem.Typography.caption(.medium))
+                        .font(DesignSystem.Typography.caption(weight: .medium))
                         .foregroundColor(DesignSystem.Colors.warning)
                     
                     Text("\(refundCount)")
-                        .font(DesignSystem.Typography.caption(.semibold))
+                        .font(DesignSystem.Typography.caption(weight: .semibold))
                         .foregroundColor(DesignSystem.Colors.warning)
                     
                     Text("refund\(refundCount == 1 ? "" : "s")")
-                        .font(DesignSystem.Typography.caption(.medium))
+                        .font(DesignSystem.Typography.caption(weight: .medium))
                         .foregroundColor(DesignSystem.Colors.warning)
                 }
                 .padding(.horizontal, DesignSystem.Spacing.sm)

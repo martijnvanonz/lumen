@@ -266,40 +266,7 @@ struct PaymentMethodIcon: View {
 
 // MARK: - Payment Method Badge
 
-/// Badge showing payment method with label
-struct PaymentMethodBadge: View {
-    let paymentMethod: PaymentMethodIcon.PaymentMethod
-    let showLabel: Bool
-    
-    init(_ paymentMethod: PaymentMethodIcon.PaymentMethod, showLabel: Bool = true) {
-        self.paymentMethod = paymentMethod
-        self.showLabel = showLabel
-    }
-    
-    var body: some View {
-        HStack(spacing: DesignSystem.Spacing.xs) {
-            PaymentMethodIcon(paymentMethod: paymentMethod)
-                .size(.small)
-                .style(.minimal)
-            
-            if showLabel {
-                Text(paymentMethod.displayName)
-                    .font(DesignSystem.Typography.caption(.medium))
-                    .foregroundColor(DesignSystem.Colors.textSecondary)
-            }
-        }
-        .padding(.horizontal, DesignSystem.Spacing.sm)
-        .padding(.vertical, DesignSystem.Spacing.xs)
-        .background(
-            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.sm)
-                .fill(paymentMethod.color.opacity(0.1))
-                .overlay(
-                    RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.sm)
-                        .stroke(paymentMethod.color.opacity(0.3), lineWidth: AppConstants.UI.borderWidthThin)
-                )
-        )
-    }
-}
+// Note: PaymentMethodBadge is defined in PlacesListView.swift to avoid conflicts
 
 /// Grid of supported payment methods
 struct PaymentMethodGrid: View {
@@ -330,7 +297,7 @@ struct PaymentMethodGrid: View {
                         .style(.standard)
                     
                     Text(method.displayName)
-                        .font(DesignSystem.Typography.caption(.medium))
+                        .font(DesignSystem.Typography.caption(weight: .medium))
                         .foregroundColor(DesignSystem.Colors.textSecondary)
                         .multilineTextAlignment(.center)
                         .lineLimit(2)
@@ -462,9 +429,10 @@ extension PaymentMethodIcon {
                     .font(DesignSystem.Typography.headline())
                 
                 VStack(spacing: DesignSystem.Spacing.sm) {
-                    PaymentMethodBadge(.bolt11)
-                    PaymentMethodBadge(.bitcoinAddress)
-                    PaymentMethodBadge(.lnUrlPay)
+                    Text("Payment Method Badges")
+                    Text("(See PlacesListView for PaymentMethodBadge)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
             }
             

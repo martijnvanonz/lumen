@@ -242,11 +242,7 @@ class DefaultWalletRepository: WalletRepositoryProtocol {
     // MARK: - Secure Cache Management
     
     func cacheSeed(_ seed: String) throws {
-        do {
-            try secureSeedCache.storeSeed(seed)
-        } catch {
-            throw WalletRepositoryError.cacheError(error.localizedDescription)
-        }
+        secureSeedCache.storeSeed(seed)
     }
     
     func retrieveCachedSeed() throws -> String {
@@ -259,14 +255,14 @@ class DefaultWalletRepository: WalletRepositoryProtocol {
     
     func clearCachedSeed() throws {
         do {
-            try secureSeedCache.clearSeed()
+            secureSeedCache.clearCache()
         } catch {
             throw WalletRepositoryError.cacheError(error.localizedDescription)
         }
     }
     
     func isSeedCached() -> Bool {
-        return secureSeedCache.isSeedCached()
+        return secureSeedCache.isCacheValid()
     }
     
     // MARK: - Biometric Settings
@@ -280,28 +276,21 @@ class DefaultWalletRepository: WalletRepositoryProtocol {
         }
     }
     
+    // MARK: - Biometric Token Management
+
     func storeBiometricToken(_ token: String) throws {
-        do {
-            try keychainManager.storeBiometricToken(token)
-        } catch {
-            throw WalletRepositoryError.biometricTokenError(error.localizedDescription)
-        }
+        // Delegate to BiometricManager for secure token storage
+        try BiometricManager.shared.storeBiometricToken(token)
     }
-    
+
     func retrieveBiometricToken() throws -> String {
-        do {
-            return try keychainManager.retrieveBiometricToken()
-        } catch {
-            throw WalletRepositoryError.biometricTokenError(error.localizedDescription)
-        }
+        // Delegate to BiometricManager for secure token retrieval
+        return try BiometricManager.shared.retrieveBiometricToken()
     }
-    
+
     func deleteBiometricToken() throws {
-        do {
-            try keychainManager.deleteBiometricToken()
-        } catch {
-            throw WalletRepositoryError.biometricTokenError(error.localizedDescription)
-        }
+        // Delegate to BiometricManager for secure token deletion
+        try BiometricManager.shared.deleteBiometricToken()
     }
     
     // MARK: - Wallet Reset
@@ -310,7 +299,6 @@ class DefaultWalletRepository: WalletRepositoryProtocol {
         do {
             // Clear keychain data
             try deleteMnemonic()
-            try deleteBiometricToken()
             
             // Clear secure cache
             try clearCachedSeed()

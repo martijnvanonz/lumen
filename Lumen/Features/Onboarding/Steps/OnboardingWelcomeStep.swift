@@ -23,12 +23,12 @@ struct OnboardingWelcomeStep: View {
                 
                 VStack(spacing: DesignSystem.Spacing.sm) {
                     Text("Welcome to Lumen")
-                        .font(DesignSystem.Typography.largeTitle(.bold))
+                        .font(DesignSystem.Typography.largeTitle(weight: .bold))
                         .foregroundColor(DesignSystem.Colors.textPrimary)
                         .multilineTextAlignment(.center)
                     
                     Text("Your Lightning Bitcoin Wallet")
-                        .font(DesignSystem.Typography.title3(.medium))
+                        .font(DesignSystem.Typography.title3(weight: .medium))
                         .foregroundColor(DesignSystem.Colors.textSecondary)
                         .multilineTextAlignment(.center)
                 }
@@ -61,7 +61,7 @@ struct OnboardingWelcomeStep: View {
             Spacer()
             
             // Continue button
-            StandardButton("Get Started", action: onContinue)
+            StandardButton(title: "Get Started", action: onContinue)
                 .style(.primary)
                 .size(.large)
                 .padding(.horizontal, DesignSystem.Spacing.md)
@@ -82,18 +82,18 @@ struct OnboardingFeatureCard: View {
         HStack(spacing: DesignSystem.Spacing.md) {
             // Icon
             Image(systemName: icon)
-                .font(DesignSystem.Typography.title2(.medium))
+                .font(DesignSystem.Typography.title2(weight: .medium))
                 .foregroundColor(DesignSystem.Colors.primary)
                 .frame(width: AppConstants.UI.iconSizeXLarge, height: AppConstants.UI.iconSizeXLarge)
             
             // Content
             VStack(alignment: .leading, spacing: DesignSystem.Spacing.xs) {
                 Text(title)
-                    .font(DesignSystem.Typography.headline(.semibold))
+                    .font(DesignSystem.Typography.headline(weight: .semibold))
                     .foregroundColor(DesignSystem.Colors.textPrimary)
                 
                 Text(description)
-                    .font(DesignSystem.Typography.subheadline(.regular))
+                    .font(DesignSystem.Typography.subheadline(weight: .regular))
                     .foregroundColor(DesignSystem.Colors.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }

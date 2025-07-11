@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import BreezSDKLiquid
+import Web3Core
 
 /// ViewModel for wallet UI state management
 /// This extracts UI-related state from WalletManager and provides
@@ -38,7 +39,7 @@ class WalletViewModel: ObservableObject {
     
     private let walletService: WalletServiceProtocol
     private let paymentService: PaymentServiceProtocol
-    private let repository: WalletRepositoryProtocol
+    private var repository: WalletRepositoryProtocol
     private let errorHandler: ErrorHandler
     
     // MARK: - Initialization
@@ -320,11 +321,17 @@ class WalletViewModel: ObservableObject {
         }
     }
     
+    // MARK: - Onboarding Management
+
+    func markOnboardingCompleted() {
+        repository.hasCompletedOnboarding = true
+    }
+
     private func handleError(_ error: Error, context: String) {
-        let appError = errorHandler.mapError(error)
+        let appError = ErrorHandler.AppError.unknown(error.localizedDescription)
         errorMessage = appError.message
         showingError = true
-        
+
         print("❌ \(context) error: \(error)")
     }
     
@@ -350,7 +357,7 @@ class WalletViewModel: ObservableObject {
         // This would use the same logic as WalletManager
         // For now, simplified implementation
         do {
-            return try generateBIP39Mnemonic()
+            return try BIP39.generateMnemonics(bitsOfEntropy: 256, language: .english) ?? ""
         } catch {
             throw WalletViewModelError.mnemonicGenerationFailed(error.localizedDescription)
         }

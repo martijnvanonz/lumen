@@ -83,13 +83,16 @@ struct WalletHomeView: View {
             }
         }
         .sheet(isPresented: $showingSendView) {
-            SendPaymentSheet()
+            // TODO: Implement SendPaymentSheet
+            Text("Send Payment Sheet")
         }
         .sheet(isPresented: $showingReceiveView) {
-            ReceivePaymentSheet()
+            // TODO: Implement ReceivePaymentSheet
+            Text("Receive Payment Sheet")
         }
         .sheet(isPresented: $showingRefundView) {
-            RefundManagementView()
+            // TODO: Implement RefundManagementView
+            Text("Refund Management View")
         }
         .sheet(isPresented: $showingSettings) {
             SettingsView()
@@ -117,7 +120,7 @@ struct WalletHomeView: View {
             // Settings button
             Button(action: { showingSettings = true }) {
                 Image(systemName: DesignSystem.Icons.settings)
-                    .font(DesignSystem.Typography.title3(.medium))
+                    .font(DesignSystem.Typography.title3(weight: .medium))
                     .foregroundColor(DesignSystem.Colors.textPrimary)
             }
         }
@@ -151,33 +154,13 @@ struct WalletHomeView: View {
     }
 }
 
-// MARK: - Connection Status Icon
 
-/// Connection status indicator for the toolbar
-struct ConnectionStatusIcon: View {
-    @StateObject private var networkMonitor = NetworkMonitor.shared
-    
-    var body: some View {
-        Image(systemName: networkMonitor.isNetworkAvailableForLightning() ? DesignSystem.Icons.network : DesignSystem.Icons.networkOff)
-            .font(DesignSystem.Typography.subheadline(.medium))
-            .foregroundColor(connectionColor)
-            .animation(DesignSystem.Animation.fast, value: networkMonitor.isNetworkAvailableForLightning())
-    }
-    
-    private var connectionColor: Color {
-        if networkMonitor.isNetworkAvailableForLightning() {
-            return DesignSystem.Colors.success
-        } else {
-            return DesignSystem.Colors.error
-        }
-    }
-}
 
 // MARK: - Payment Success Overlay
 
 /// Payment success overlay component
 struct PaymentSuccessOverlay: View {
-    let payment: Payment
+    let payment: PaymentEventHandler.PaymentInfo
     let onDismiss: () -> Void
     
     var body: some View {
@@ -198,7 +181,7 @@ struct PaymentSuccessOverlay: View {
                 
                 // Success message
                 Text(successMessage)
-                    .font(DesignSystem.Typography.title2(.bold))
+                    .font(DesignSystem.Typography.title2(weight: .bold))
                     .foregroundColor(DesignSystem.Colors.textPrimary)
                     .multilineTextAlignment(.center)
                 
@@ -206,13 +189,13 @@ struct PaymentSuccessOverlay: View {
                 AmountDisplayCard.payment(
                     payment.amountSat,
                     title: nil,
-                    isReceived: payment.paymentType == .received
+                    isReceived: payment.direction == .incoming
                 )
                 .style(.success)
                 .size(.large)
                 
                 // Continue button
-                StandardButton("Continue", action: onDismiss)
+                StandardButton(title: "Continue", action: onDismiss)
                     .style(.success)
                     .size(.large)
             }
@@ -229,13 +212,11 @@ struct PaymentSuccessOverlay: View {
     }
     
     private var successMessage: String {
-        switch payment.paymentType {
-        case .sent:
+        switch payment.direction {
+        case .outgoing:
             return "Payment Sent!"
-        case .received:
+        case .incoming:
             return "Payment Received!"
-        default:
-            return "Payment Complete!"
         }
     }
 }

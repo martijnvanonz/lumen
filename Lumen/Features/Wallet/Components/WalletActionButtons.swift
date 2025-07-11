@@ -74,7 +74,7 @@ struct WalletActionButtons: View {
     
     @ViewBuilder
     private var sendButton: some View {
-        StandardButton("Send", action: onSendTap)
+        StandardButton(title: "Send", action: onSendTap)
             .style(.primary)
             .size(.large)
             .icon(DesignSystem.Icons.send)
@@ -83,7 +83,7 @@ struct WalletActionButtons: View {
     
     @ViewBuilder
     private var receiveButton: some View {
-        StandardButton("Receive", action: onReceiveTap)
+        StandardButton(title: "Receive", action: onReceiveTap)
             .style(.secondary)
             .size(.large)
             .icon(DesignSystem.Icons.receive)
@@ -114,13 +114,13 @@ struct EnhancedWalletActionButtons: View {
         VStack(spacing: DesignSystem.Spacing.lg) {
             // Primary actions
             HStack(spacing: DesignSystem.Spacing.md) {
-                StandardButton("Send", action: onSendTap)
+                StandardButton(title: "Send", action: onSendTap)
                     .style(.primary)
                     .size(.large)
                     .icon(DesignSystem.Icons.send)
                     .enabled(isEnabled)
                 
-                StandardButton("Receive", action: onReceiveTap)
+                StandardButton(title: "Receive", action: onReceiveTap)
                     .style(.secondary)
                     .size(.large)
                     .icon(DesignSystem.Icons.receive)
@@ -131,7 +131,7 @@ struct EnhancedWalletActionButtons: View {
             if showSecondaryActions {
                 HStack(spacing: DesignSystem.Spacing.md) {
                     if let onScanTap = onScanTap {
-                        StandardButton("Scan", action: onScanTap)
+                        StandardButton(title: "Scan", action: onScanTap)
                             .style(.outline)
                             .size(.regular)
                             .icon(DesignSystem.Icons.scan)
@@ -139,7 +139,7 @@ struct EnhancedWalletActionButtons: View {
                     }
                     
                     if let onAddBitcoinTap = onAddBitcoinTap {
-                        StandardButton("Add Bitcoin", action: onAddBitcoinTap)
+                        StandardButton(title: "Add Bitcoin", action: onAddBitcoinTap)
                             .style(.outline)
                             .size(.regular)
                             .icon(DesignSystem.Icons.bitcoin)
@@ -175,11 +175,11 @@ struct CompactWalletActionButtons: View {
             Button(action: onSendTap) {
                 VStack(spacing: DesignSystem.Spacing.xs) {
                     Image(systemName: DesignSystem.Icons.send)
-                        .font(DesignSystem.Typography.title3(.medium))
+                        .font(DesignSystem.Typography.title3(weight: .medium))
                         .foregroundColor(DesignSystem.Colors.primary)
                     
                     Text("Send")
-                        .font(DesignSystem.Typography.caption(.medium))
+                        .font(DesignSystem.Typography.caption(weight: .medium))
                         .foregroundColor(DesignSystem.Colors.textPrimary)
                 }
                 .frame(maxWidth: .infinity)
@@ -199,11 +199,11 @@ struct CompactWalletActionButtons: View {
             Button(action: onReceiveTap) {
                 VStack(spacing: DesignSystem.Spacing.xs) {
                     Image(systemName: DesignSystem.Icons.receive)
-                        .font(DesignSystem.Typography.title3(.medium))
+                        .font(DesignSystem.Typography.title3(weight: .medium))
                         .foregroundColor(DesignSystem.Colors.secondary)
                     
                     Text("Receive")
-                        .font(DesignSystem.Typography.caption(.medium))
+                        .font(DesignSystem.Typography.caption(weight: .medium))
                         .foregroundColor(DesignSystem.Colors.textPrimary)
                 }
                 .frame(maxWidth: .infinity)
@@ -224,11 +224,11 @@ struct CompactWalletActionButtons: View {
                 Button(action: onScanTap) {
                     VStack(spacing: DesignSystem.Spacing.xs) {
                         Image(systemName: DesignSystem.Icons.scan)
-                            .font(DesignSystem.Typography.title3(.medium))
+                            .font(DesignSystem.Typography.title3(weight: .medium))
                             .foregroundColor(DesignSystem.Colors.info)
                         
                         Text("Scan")
-                            .font(DesignSystem.Typography.caption(.medium))
+                            .font(DesignSystem.Typography.caption(weight: .medium))
                             .foregroundColor(DesignSystem.Colors.textPrimary)
                     }
                     .frame(maxWidth: .infinity)

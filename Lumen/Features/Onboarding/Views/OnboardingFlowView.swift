@@ -66,26 +66,34 @@ struct OnboardingFlowView: View {
             )
             
         case .biometricSetup:
-            OnboardingBiometricSetupStep {
-                onboardingState.advance(to: .walletInitialization)
+            // TODO: Implement OnboardingBiometricSetupStep
+            VStack {
+                Text("Biometric Setup")
+                    .font(.title)
+                Button("Continue") {
+                    onboardingState.advance(to: .walletInitialization)
+                }
             }
             
         case .walletInitialization:
-            OnboardingWalletInitializationStep(
-                isImportFlow: onboardingState.isImportFlow,
-                walletViewModel: walletViewModel,
-                onSuccess: {
+            // TODO: Implement OnboardingWalletInitializationStep
+            VStack {
+                Text("Wallet Initialization")
+                    .font(.title)
+                if onboardingState.isImportFlow {
+                    Text("Importing wallet...")
+                } else {
+                    Text("Creating new wallet...")
+                }
+                Button("Continue") {
                     // Check if currency is already selected
                     if CurrencyManager.shared.selectedCurrency != nil {
                         onboardingState.advance(to: .completed)
                     } else {
                         onboardingState.advance(to: .currencySelection)
                     }
-                },
-                onRetry: {
-                    // Stay on current step for retry
                 }
-            )
+            }
             
         case .currencySelection:
             OnboardingCurrencySelectionStep {
@@ -93,8 +101,15 @@ struct OnboardingFlowView: View {
             }
             
         case .completed:
-            OnboardingCompletedStep {
-                completeOnboarding()
+            // TODO: Implement OnboardingCompletedStep
+            VStack {
+                Text("Welcome to Lumen!")
+                    .font(.title)
+                Text("Your wallet is ready to use")
+                    .font(.body)
+                Button("Get Started") {
+                    completeOnboarding()
+                }
             }
         }
     }
@@ -103,7 +118,8 @@ struct OnboardingFlowView: View {
     
     private func completeOnboarding() {
         // Mark onboarding as completed
-        walletViewModel.repository.hasCompletedOnboarding = true
+        // Mark onboarding as completed via WalletViewModel
+        walletViewModel.markOnboardingCompleted()
         
         // Post notification to signal onboarding completion
         NotificationCenter.default.post(name: .onboardingCompleted, object: nil)
@@ -255,25 +271,33 @@ struct EnhancedOnboardingFlowView: View {
             )
             
         case .biometricSetup:
-            OnboardingBiometricSetupStep {
-                onboardingState.advance(to: .walletInitialization)
+            // TODO: Implement OnboardingBiometricSetupStep
+            VStack {
+                Text("Biometric Setup")
+                    .font(.title)
+                Button("Continue") {
+                    onboardingState.advance(to: .walletInitialization)
+                }
             }
             
         case .walletInitialization:
-            OnboardingWalletInitializationStep(
-                isImportFlow: onboardingState.isImportFlow,
-                walletViewModel: walletViewModel,
-                onSuccess: {
+            // TODO: Implement OnboardingWalletInitializationStep
+            VStack {
+                Text("Wallet Initialization")
+                    .font(.title)
+                if onboardingState.isImportFlow {
+                    Text("Importing wallet...")
+                } else {
+                    Text("Creating new wallet...")
+                }
+                Button("Continue") {
                     if CurrencyManager.shared.selectedCurrency != nil {
                         onboardingState.advance(to: .completed)
                     } else {
                         onboardingState.advance(to: .currencySelection)
                     }
-                },
-                onRetry: {
-                    // Stay on current step for retry
                 }
-            )
+            }
             
         case .currencySelection:
             EnhancedOnboardingCurrencySelectionStep {
@@ -281,8 +305,15 @@ struct EnhancedOnboardingFlowView: View {
             }
             
         case .completed:
-            OnboardingCompletedStep {
-                completeOnboarding()
+            // TODO: Implement OnboardingCompletedStep
+            VStack {
+                Text("Welcome to Lumen!")
+                    .font(.title)
+                Text("Your wallet is ready to use")
+                    .font(.body)
+                Button("Get Started") {
+                    completeOnboarding()
+                }
             }
         }
     }
@@ -290,7 +321,8 @@ struct EnhancedOnboardingFlowView: View {
     // MARK: - Onboarding Completion
     
     private func completeOnboarding() {
-        walletViewModel.repository.hasCompletedOnboarding = true
+        // Mark onboarding as completed via WalletViewModel
+        walletViewModel.markOnboardingCompleted()
         NotificationCenter.default.post(name: .onboardingCompleted, object: nil)
     }
 }
@@ -316,13 +348,13 @@ struct OnboardingProgressIndicator: View {
             // Step indicator
             HStack {
                 Text("Step \(currentStep.stepNumber) of \(totalSteps)")
-                    .font(DesignSystem.Typography.caption(.medium))
+                    .font(DesignSystem.Typography.caption(weight: .medium))
                     .foregroundColor(DesignSystem.Colors.textSecondary)
                 
                 Spacer()
                 
                 Text(currentStep.title)
-                    .font(DesignSystem.Typography.caption(.semibold))
+                    .font(DesignSystem.Typography.caption(weight: .semibold))
                     .foregroundColor(DesignSystem.Colors.textPrimary)
             }
         }

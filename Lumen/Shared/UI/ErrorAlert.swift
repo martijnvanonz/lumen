@@ -162,13 +162,13 @@ struct ErrorBanner: View {
         HStack(spacing: DesignSystem.Spacing.sm) {
             // Error icon
             Image(systemName: DesignSystem.Icons.error)
-                .font(DesignSystem.Typography.subheadline(.medium))
+                .font(DesignSystem.Typography.subheadline(weight: .medium))
                 .foregroundColor(DesignSystem.Colors.error)
             
             // Error message
             VStack(alignment: .leading, spacing: DesignSystem.Spacing.xs / 2) {
                 Text(error.title)
-                    .font(DesignSystem.Typography.subheadline(.semibold))
+                    .font(DesignSystem.Typography.subheadline(weight: .semibold))
                     .foregroundColor(DesignSystem.Colors.textPrimary)
                 
                 Text(error.message)
@@ -183,7 +183,7 @@ struct ErrorBanner: View {
             if let recoveryAction = error.recoveryAction, let onAction = onAction {
                 Button(action: onAction) {
                     Text(recoveryAction.type == .retry ? "Retry" : "Fix")
-                        .font(DesignSystem.Typography.caption(.medium))
+                        .font(DesignSystem.Typography.caption(weight: .medium))
                         .foregroundColor(DesignSystem.Colors.info)
                 }
             }

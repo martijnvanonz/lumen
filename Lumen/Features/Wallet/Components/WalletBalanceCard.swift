@@ -34,7 +34,7 @@ struct WalletBalanceCard: View {
             // Header with title and info button
             HStack {
                 Text("Balance")
-                    .font(DesignSystem.Typography.headline(.semibold))
+                    .font(DesignSystem.Typography.headline(weight: .semibold))
                     .foregroundColor(DesignSystem.Colors.textSecondary)
                 
                 Spacer()
@@ -42,7 +42,7 @@ struct WalletBalanceCard: View {
                 if showInfoButton {
                     Button(action: { onInfoTap?() }) {
                         Image(systemName: DesignSystem.Icons.info)
-                            .font(DesignSystem.Typography.subheadline(.medium))
+                            .font(DesignSystem.Typography.subheadline(weight: .medium))
                             .foregroundColor(DesignSystem.Colors.textSecondary)
                     }
                 }
@@ -81,7 +81,7 @@ struct WalletBalanceCard: View {
                 .style(.minimal)
             
             Text("Lightning Network")
-                .font(DesignSystem.Typography.caption(.medium))
+                .font(DesignSystem.Typography.caption(weight: .medium))
                 .foregroundColor(DesignSystem.Colors.textSecondary)
         }
     }

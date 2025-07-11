@@ -15,7 +15,7 @@ protocol AppConfigurationProtocol {
     var isProduction: Bool { get }
     
     /// Current log level for the application
-    var logLevel: LogLevel { get }
+    var logLevel: String { get }
     
     // MARK: - Network Configuration
     
@@ -102,7 +102,7 @@ enum AppEnvironment: String, CaseIterable {
 }
 
 /// Configuration errors
-enum ConfigurationError: Error, LocalizedError {
+enum AppConfigurationError: Error, LocalizedError {
     case missingApiKey
     case invalidApiKey
     case missingWorkingDirectory
@@ -138,7 +138,7 @@ class DefaultAppConfiguration: AppConfigurationProtocol {
     private var _environment: AppEnvironment = .development
     private var _liquidNetwork: LiquidNetwork = .mainnet
     private var _breezApiKey: String = ""
-    private var _logLevel: LogLevel = .info
+    private var _logLevel: String = "info"
     private var _biometricAuthEnabled: Bool = true
     private var _debugModeEnabled: Bool = false
     private var _crashReportingEnabled: Bool = true
@@ -160,7 +160,7 @@ class DefaultAppConfiguration: AppConfigurationProtocol {
         return _environment.isProduction
     }
     
-    var logLevel: LogLevel {
+    var logLevel: String {
         return _logLevel
     }
     
@@ -221,11 +221,11 @@ class DefaultAppConfiguration: AppConfigurationProtocol {
     
     func getBreezSDKConfig() throws -> Config {
         guard !breezApiKey.isEmpty else {
-            throw ConfigurationError.missingApiKey
+            throw AppConfigurationError.missingApiKey
         }
         
         guard isValidBreezApiKey(breezApiKey) else {
-            throw ConfigurationError.invalidApiKey
+            throw AppConfigurationError.invalidApiKey
         }
         
         do {
@@ -246,18 +246,18 @@ class DefaultAppConfiguration: AppConfigurationProtocol {
             
             return config
         } catch {
-            throw ConfigurationError.invalidConfiguration(error.localizedDescription)
+            throw AppConfigurationError.invalidConfiguration(error.localizedDescription)
         }
     }
     
     func validateConfiguration() throws {
         // Validate API key
         guard !breezApiKey.isEmpty else {
-            throw ConfigurationError.missingApiKey
+            throw AppConfigurationError.missingApiKey
         }
         
         guard isValidBreezApiKey(breezApiKey) else {
-            throw ConfigurationError.invalidApiKey
+            throw AppConfigurationError.invalidApiKey
         }
         
         // Validate working directory
@@ -265,7 +265,7 @@ class DefaultAppConfiguration: AppConfigurationProtocol {
         let parentDir = (workingDir as NSString).deletingLastPathComponent
         
         guard FileManager.default.isWritableFile(atPath: parentDir) else {
-            throw ConfigurationError.invalidWorkingDirectory
+            throw AppConfigurationError.invalidWorkingDirectory
         }
     }
     
@@ -292,8 +292,8 @@ class DefaultAppConfiguration: AppConfigurationProtocol {
         }
         
         if let logString = getEnvironmentValue(for: "LOG_LEVEL"),
-           let level = LogLevel(rawValue: logString) {
-            _logLevel = level
+           ["debug", "info", "warn", "error"].contains(logString.lowercased()) {
+            _logLevel = logString.lowercased()
         }
         
         // Load feature flags
