@@ -278,9 +278,15 @@ class DefaultAppConfiguration: AppConfigurationProtocol {
     private func loadConfiguration() {
         // Load from .env file if it exists
         loadDotEnvFile()
-        
+
         // Load configuration values
         _breezApiKey = getEnvironmentValue(for: "BREEZ_API_KEY") ?? ""
+
+        // Debug: Print API key status
+        print("🔧 Configuration Debug:")
+        print("   - API Key loaded: \(_breezApiKey.isEmpty ? "❌ EMPTY" : "✅ Found (\(_breezApiKey.count) chars)")")
+        print("   - Environment: \(_environment)")
+        print("   - Network: \(_liquidNetwork)")
         
         if let envString = getEnvironmentValue(for: "ENVIRONMENT"),
            let env = AppEnvironment(rawValue: envString) {
@@ -304,23 +310,50 @@ class DefaultAppConfiguration: AppConfigurationProtocol {
     }
     
     private func loadDotEnvFile() {
-        guard let path = Bundle.main.path(forResource: ".env", ofType: nil),
+        // Try to find .env file in bundle first
+        var envPath: String?
+
+        if let bundlePath = Bundle.main.path(forResource: ".env", ofType: nil) {
+            envPath = bundlePath
+            print("🔧 Found .env in bundle: \(bundlePath)")
+        } else {
+            // Fallback: try to find .env in project directory (development)
+            let projectPaths = [
+                Bundle.main.bundlePath + "/.env",
+                Bundle.main.bundlePath + "/../.env",
+                Bundle.main.bundlePath + "/../../.env"
+            ]
+
+            for path in projectPaths {
+                if FileManager.default.fileExists(atPath: path) {
+                    envPath = path
+                    print("🔧 Found .env at fallback path: \(path)")
+                    break
+                }
+            }
+        }
+
+        guard let path = envPath,
               let content = try? String(contentsOfFile: path) else {
+            print("⚠️ Could not load .env file")
             return
         }
-        
+
+        print("✅ Loading .env from: \(path)")
+
         let lines = content.components(separatedBy: .newlines)
         for line in lines {
             let trimmedLine = line.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !trimmedLine.isEmpty && !trimmedLine.hasPrefix("#") else { continue }
-            
+
             let parts = trimmedLine.components(separatedBy: "=")
             guard parts.count == 2 else { continue }
-            
+
             let key = parts[0].trimmingCharacters(in: .whitespacesAndNewlines)
             let value = parts[1].trimmingCharacters(in: .whitespacesAndNewlines)
-            
+
             setenv(key, value, 1)
+            print("🔧 Set env var: \(key) = \(value.prefix(10))...")
         }
     }
     
