@@ -133,8 +133,8 @@ class WalletManager: ObservableObject {
         await balanceManager.updateBalance()
         balanceManager.startBalanceUpdates()
 
-        // Load payment history
-        await transactionManager.loadPaymentHistory()
+        // Load payment history and update UI immediately
+        await loadPaymentHistory()
         transactionManager.startPaymentUpdates()
 
         // Update wallet info
