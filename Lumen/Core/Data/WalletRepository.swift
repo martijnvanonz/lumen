@@ -64,6 +64,19 @@ protocol WalletRepositoryProtocol {
     /// Check if seed is cached
     /// - Returns: True if seed is in cache
     func isSeedCached() -> Bool
+
+    /// Check if cache is valid
+    /// - Returns: True if cache is valid
+    func isCacheValid() -> Bool
+
+    /// Clear all cache data
+    func clearCache()
+
+    /// Get secure mnemonic with biometric authentication
+    /// - Parameter reason: Reason for requesting authentication
+    /// - Returns: Mnemonic phrase
+    /// - Throws: WalletRepositoryError if retrieval fails
+    func getSecureMnemonic(reason: String) async throws -> String
     
     // MARK: - Biometric Settings
     
@@ -263,6 +276,18 @@ class DefaultWalletRepository: WalletRepositoryProtocol {
     
     func isSeedCached() -> Bool {
         return secureSeedCache.isCacheValid()
+    }
+
+    func isCacheValid() -> Bool {
+        return secureSeedCache.isCacheValid()
+    }
+
+    func clearCache() {
+        secureSeedCache.clearCache()
+    }
+
+    func getSecureMnemonic(reason: String) async throws -> String {
+        return try await keychainManager.getSecureMnemonic(reason: reason)
     }
     
     // MARK: - Biometric Settings

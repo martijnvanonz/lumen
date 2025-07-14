@@ -23,6 +23,11 @@ protocol WalletServiceProtocol {
     /// - Returns: Wallet information including balance and status
     /// - Throws: WalletServiceError if not connected or operation fails
     func getWalletInfo() async throws -> GetInfoResponse
+
+    /// Get current wallet information (alias for getWalletInfo)
+    /// - Returns: Wallet information including balance and status
+    /// - Throws: WalletServiceError if not connected or operation fails
+    func getInfo() async throws -> GetInfoResponse
     
     // MARK: - Balance Operations
     
@@ -133,6 +138,35 @@ protocol WalletServiceProtocol {
     /// - Returns: Prepared payment response
     /// - Throws: WalletServiceError if validation or preparation fails
     func validateAndPreparePayment(from inputType: InputType) async throws -> PrepareSendResponse
+
+    // MARK: - Limits and Fees
+
+    /// Fetch onchain payment limits
+    /// - Returns: Onchain payment limits
+    /// - Throws: WalletServiceError if operation fails
+    func fetchOnchainLimits() async throws -> OnchainPaymentLimitsResponse
+
+    /// Fetch Lightning payment limits
+    /// - Returns: Lightning payment limits
+    /// - Throws: WalletServiceError if operation fails
+    func fetchLightningLimits() async throws -> LightningPaymentLimitsResponse
+
+    /// Get recommended fees for Bitcoin transactions
+    /// - Returns: Recommended fees
+    /// - Throws: WalletServiceError if operation fails
+    func getRecommendedFees() async throws -> RecommendedFees
+
+    // MARK: - Currency Operations
+
+    /// List available fiat currencies
+    /// - Returns: Array of available currencies
+    /// - Throws: WalletServiceError if operation fails
+    func listFiatCurrencies() async throws -> [FiatCurrency]
+
+    /// Fetch current fiat exchange rates
+    /// - Returns: Current exchange rates
+    /// - Throws: WalletServiceError if operation fails
+    func fetchFiatRates() async throws -> [Rate]
 }
 
 // MARK: - Wallet Service Errors
@@ -429,6 +463,70 @@ class BreezWalletService: WalletServiceProtocol {
             return try await preparePayment(destination: invoice.bolt11)
         default:
             throw WalletServiceError.unsupportedOperation("Input type not yet supported in service layer")
+        }
+    }
+
+    func getInfo() async throws -> GetInfoResponse {
+        return try await getWalletInfo()
+    }
+
+    func fetchOnchainLimits() async throws -> OnchainPaymentLimitsResponse {
+        guard let sdk = sdk else {
+            throw WalletServiceError.notConnected
+        }
+
+        do {
+            return try sdk.fetchOnchainLimits()
+        } catch {
+            throw WalletServiceError.sdkError(error.localizedDescription)
+        }
+    }
+
+    func fetchLightningLimits() async throws -> LightningPaymentLimitsResponse {
+        guard let sdk = sdk else {
+            throw WalletServiceError.notConnected
+        }
+
+        do {
+            return try sdk.fetchLightningLimits()
+        } catch {
+            throw WalletServiceError.sdkError(error.localizedDescription)
+        }
+    }
+
+    func getRecommendedFees() async throws -> RecommendedFees {
+        guard let sdk = sdk else {
+            throw WalletServiceError.notConnected
+        }
+
+        do {
+            return try sdk.recommendedFees()
+        } catch {
+            throw WalletServiceError.sdkError(error.localizedDescription)
+        }
+    }
+
+    func listFiatCurrencies() async throws -> [FiatCurrency] {
+        guard let sdk = sdk else {
+            throw WalletServiceError.notConnected
+        }
+
+        do {
+            return try sdk.listFiatCurrencies()
+        } catch {
+            throw WalletServiceError.sdkError(error.localizedDescription)
+        }
+    }
+
+    func fetchFiatRates() async throws -> [Rate] {
+        guard let sdk = sdk else {
+            throw WalletServiceError.notConnected
+        }
+
+        do {
+            return try sdk.fetchFiatRates()
+        } catch {
+            throw WalletServiceError.sdkError(error.localizedDescription)
         }
     }
 }

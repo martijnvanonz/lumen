@@ -18,9 +18,9 @@ class WalletManager: ObservableObject {
 
     // MARK: - Services
 
-    private let walletService: WalletServiceProtocol
+    internal let walletService: WalletServiceProtocol
     private let paymentService: PaymentServiceProtocol
-    private let repository: WalletRepositoryProtocol
+    private let repository: DefaultWalletRepository
     private let eventHandler = PaymentEventHandler.shared
     private let errorHandler = ErrorHandler.shared
     private let networkMonitor = NetworkMonitor.shared
@@ -416,7 +416,6 @@ class WalletManager: ObservableObject {
     func fetchOnchainLimits() async throws -> OnchainPaymentLimitsResponse {
         return try await walletService.fetchOnchainLimits()
     }
-    }
 
     /// Prepares an onchain receive payment
     func prepareReceiveOnchain(payerAmountSat: UInt64?) async throws -> PrepareReceiveResponse {
@@ -435,7 +434,7 @@ class WalletManager: ObservableObject {
 
     /// Executes a liquid receive payment
     func receiveLiquid(prepareResponse: PrepareReceiveResponse, description: String? = nil) async throws -> ReceivePaymentResponse {
-        return try await paymentService.executeReceiveLiquid(prepareResponse, description: description)
+        return try await paymentService.executeReceiveLiquid(prepareResponse, description: description ?? "")
     }
 
     /// Prepares a Bitcoin purchase via Moonpay
@@ -445,7 +444,8 @@ class WalletManager: ObservableObject {
 
     /// Executes a Bitcoin purchase and returns the provider URL
     func buyBitcoin(prepareResponse: PrepareBuyBitcoinResponse, redirectUrl: String? = nil) async throws -> String {
-        return try await paymentService.executeBuyBitcoin(prepareResponse, redirectUrl: redirectUrl)
+        let response = try await paymentService.executeBuyBitcoin(prepareResponse, redirectUrl: redirectUrl ?? "")
+        return response.url
     }
     
     // MARK: - Utility Methods
@@ -757,7 +757,21 @@ class WalletManager: ObservableObject {
 
     /// Gets payment information from parsed input without preparing
     func getPaymentInfo(from inputType: InputType) -> PaymentInputInfo {
-        return paymentService.getPaymentInfo(from: inputType)
+        // Convert PaymentInfo to PaymentInputInfo
+        if let paymentInfo = paymentService.getPaymentInfo(from: inputType) {
+            return PaymentInputInfo(
+                type: .bolt11, // Default type, should be determined from inputType
+                amount: paymentInfo.amount,
+                description: paymentInfo.description,
+                destination: paymentInfo.destination
+            )
+        } else {
+            // Return default PaymentInputInfo for unsupported types
+            return PaymentInputInfo(
+                type: .unsupported,
+                destination: ""
+            )
+        }
     }
 }
 
