@@ -152,6 +152,11 @@ class ErrorHandler: ObservableObject {
         case insufficientFunds = "insufficient_funds"
         case networkError = "network_error"
         case unsupportedPaymentType = "unsupported_payment_type"
+        case connectionFailed = "connection_failed"
+        case importFailed = "import_failed"
+        case deletionFailed = "deletion_failed"
+        case exportFailed = "export_failed"
+        case infoUpdateFailed = "info_update_failed"
 
         static func unsupportedPaymentType(_ message: String) -> WalletError {
             return .unsupportedPaymentType
@@ -175,6 +180,16 @@ class ErrorHandler: ObservableObject {
                 return "Network connection error. Please check your internet connection."
             case .unsupportedPaymentType:
                 return "This payment type is not yet supported."
+            case .connectionFailed:
+                return "Failed to connect to wallet service. Please try again."
+            case .importFailed:
+                return "Failed to import wallet. Please check your seed phrase."
+            case .deletionFailed:
+                return "Failed to delete wallet from secure storage."
+            case .exportFailed:
+                return "Failed to export wallet seed phrase."
+            case .infoUpdateFailed:
+                return "Failed to update wallet information."
             }
         }
     }

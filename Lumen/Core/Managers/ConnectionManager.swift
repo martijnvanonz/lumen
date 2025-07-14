@@ -1,6 +1,6 @@
 import Foundation
 import BreezSDKLiquid
-import web3swift
+import Web3Core
 
 /// Manages wallet connection lifecycle and state
 /// Extracted from WalletManager to provide focused connection management
@@ -70,7 +70,7 @@ class ConnectionManager: ObservableObject {
         } catch {
             isLoading = false
             connectionError = error.localizedDescription
-            errorHandler.logError(.wallet(.connectionFailed), context: "Wallet initialization")
+            errorHandler.logError(.wallet(.initializationFailed), context: "Wallet initialization")
             throw error
         }
     }
@@ -106,7 +106,7 @@ class ConnectionManager: ObservableObject {
         } catch {
             isLoading = false
             connectionError = error.localizedDescription
-            errorHandler.logError(.wallet(.importFailed), context: "Wallet import")
+            errorHandler.logError(.wallet(.initializationFailed), context: "Wallet import")
             throw error
         }
     }

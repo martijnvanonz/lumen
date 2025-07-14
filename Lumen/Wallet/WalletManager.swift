@@ -569,6 +569,11 @@ enum WalletError: Error, LocalizedError {
     case mnemonicGenerationFailed
     case invalidMnemonic(String)
     case initializationInProgress
+    case walletNotFound
+    case connectionFailed
+    case importFailed
+    case deletionFailed
+    case exportFailed
 
     var errorDescription: String? {
         switch self {
@@ -592,6 +597,16 @@ enum WalletError: Error, LocalizedError {
             return "Invalid seed phrase: \(message)"
         case .initializationInProgress:
             return "Wallet initialization already in progress"
+        case .walletNotFound:
+            return "Wallet not found. Please create or restore a wallet."
+        case .connectionFailed:
+            return "Failed to connect to wallet service"
+        case .importFailed:
+            return "Failed to import wallet from seed phrase"
+        case .deletionFailed:
+            return "Failed to delete wallet from secure storage"
+        case .exportFailed:
+            return "Failed to export wallet seed phrase"
         }
     }
 }

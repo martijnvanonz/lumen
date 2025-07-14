@@ -69,7 +69,7 @@ class WalletStateManager: ObservableObject {
             print("ℹ️ Wallet info updated successfully")
         } catch {
             walletInfoError = error.localizedDescription
-            errorHandler.logError(.wallet(.connectionFailed), context: "Wallet info update")
+            errorHandler.logError(.wallet(.syncFailed), context: "Wallet info update")
             print("❌ Failed to update wallet info: \(error)")
         }
         
@@ -127,7 +127,7 @@ class WalletStateManager: ObservableObject {
             
             print("🗑️ Wallet deleted completely")
         } catch {
-            errorHandler.logError(.wallet(.connectionFailed), context: "Wallet deletion")
+            errorHandler.logError(.wallet(.initializationFailed), context: "Wallet deletion")
             throw error
         }
     }
@@ -143,7 +143,7 @@ class WalletStateManager: ObservableObject {
             print("📤 Wallet mnemonic exported securely")
             return mnemonic
         } catch {
-            errorHandler.logError(.wallet(.connectionFailed), context: "Mnemonic export")
+            errorHandler.logError(.wallet(.initializationFailed), context: "Mnemonic export")
             throw error
         }
     }
