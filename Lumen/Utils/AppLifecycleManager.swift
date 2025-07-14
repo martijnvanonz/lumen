@@ -3,6 +3,7 @@ import UIKit
 import SwiftUI
 
 /// Manages app lifecycle events and coordinates security measures
+@MainActor
 class AppLifecycleManager: ObservableObject {
 
     // MARK: - Published Properties
@@ -320,7 +321,7 @@ struct AuthenticationRequiredView: View {
                     authError = biometricManager.userFriendlyErrorMessage(for: error)
 
                     // Only handle failure for serious errors, not user cancellation
-                    if let biometricError = error as? BiometricManager.BiometricError {
+                    if let biometricError = error as BiometricManager.BiometricError? {
                         switch biometricError {
                         case .notAvailable, .notEnrolled, .biometryNotAvailable, .biometryNotEnrolled, .biometryLockout:
                             // Serious biometric issues - handle as failure

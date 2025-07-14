@@ -393,12 +393,6 @@ class ErrorHandler: ObservableObject {
             switch walletError {
             case .notConnected:
                 return .wallet(.notConnected)
-            case .initializationFailed:
-                return .wallet(.initializationFailed)
-            case .syncFailed:
-                return .wallet(.syncFailed)
-            case .balanceUnavailable:
-                return .wallet(.balanceUnavailable)
             case .invalidInvoice:
                 return .payment(.invalidInvoice)
             case .insufficientFunds:

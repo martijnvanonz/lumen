@@ -5,6 +5,7 @@ import Web3Core
 
 /// Manages the Breez SDK Liquid wallet integration
 /// Refactored to coordinate between specialized managers instead of handling everything directly
+@MainActor
 class WalletManager: ObservableObject {
 
     // MARK: - Published Properties (Delegated to Managers)
