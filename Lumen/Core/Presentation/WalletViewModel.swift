@@ -274,18 +274,122 @@ class WalletViewModel: ObservableObject {
     /// Refresh payment history
     func refreshPayments() async {
         guard walletService.isConnected else { return }
-        
+
         isLoadingPayments = true
         paymentsError = nil
-        
+
         do {
             payments = try await walletService.getPaymentHistory()
         } catch {
             paymentsError = error.localizedDescription
             handleError(error, context: "Payments refresh")
         }
-        
+
         isLoadingPayments = false
+    }
+
+    // MARK: - Payment Operations
+
+    /// Parse payment input string
+    func parsePaymentInput(_ input: String) async throws -> InputType {
+        guard walletService.isConnected else {
+            throw WalletViewModelError.walletNotConnected
+        }
+
+        return try await walletService.parsePaymentInput(input)
+    }
+
+    /// Prepare payment from input type
+    func preparePayment(from inputType: InputType) async throws -> PrepareSendResponse {
+        guard walletService.isConnected else {
+            throw WalletViewModelError.walletNotConnected
+        }
+
+        return try await paymentService.preparePayment(from: inputType)
+    }
+
+    /// Send prepared payment
+    func sendPayment(preparedPayment: PrepareSendResponse) async throws -> SendPaymentResponse {
+        guard walletService.isConnected else {
+            throw WalletViewModelError.walletNotConnected
+        }
+
+        let result = try await paymentService.executePayment(preparedPayment)
+
+        // Refresh data after successful payment
+        await refreshBalance()
+        await refreshPayments()
+
+        return result
+    }
+
+    /// Get payment info from parsed input type
+    func getPaymentInfo(from inputType: InputType) -> PaymentInputInfo {
+        // Convert InputType to PaymentInputInfo
+        // This is a simplified implementation - in production you'd extract more details
+        switch inputType {
+        case .bolt11(let invoice):
+            return PaymentInputInfo(
+                type: .bolt11,
+                amount: invoice.amountMsat.map { $0 / 1000 }, // Convert msat to sat
+                description: invoice.description,
+                destination: invoice.bolt11,
+                expiry: Date(timeIntervalSince1970: TimeInterval(invoice.expiry)),
+                isExpired: invoice.expiry < UInt64(Date().timeIntervalSince1970)
+            )
+        case .lnUrlPay(let data, let bip353Address):
+            return PaymentInputInfo(
+                type: .lnUrlPay,
+                description: data.commentAllowed > 0 ? "LNURL Pay" : nil,
+                destination: data.callback,
+                minAmount: data.minSendable / 1000, // Convert msat to sat
+                maxAmount: data.maxSendable / 1000
+            )
+        case .bitcoinAddress(let address):
+            return PaymentInputInfo(
+                type: .bitcoinAddress,
+                destination: address.address
+            )
+        case .liquidAddress(let address):
+            return PaymentInputInfo(
+                type: .liquidAddress,
+                destination: address.address
+            )
+        case .bolt12Offer(let offer, let bip353Address):
+            return PaymentInputInfo(
+                type: .bolt12Offer,
+                description: offer.description,
+                destination: bip353Address ?? "BOLT12 Offer"
+            )
+        case .nodeId(let nodeId):
+            return PaymentInputInfo(
+                type: .nodeId,
+                destination: nodeId
+            )
+        case .url(let url):
+            return PaymentInputInfo(
+                type: .url,
+                destination: url
+            )
+        case .lnUrlWithdraw(let data):
+            return PaymentInputInfo(
+                type: .lnUrlWithdraw,
+                description: data.defaultDescription,
+                destination: data.callback,
+                minAmount: data.minWithdrawable / 1000,
+                maxAmount: data.maxWithdrawable / 1000
+            )
+        case .lnUrlAuth(let data):
+            return PaymentInputInfo(
+                type: .lnUrlAuth,
+                destination: data.url
+            )
+        case .lnUrlError(let data):
+            return PaymentInputInfo(
+                type: .unsupported,
+                description: data.reason
+            )
+        }
     }
     
     /// Refresh wallet info
@@ -375,7 +479,8 @@ enum WalletViewModelError: Error, LocalizedError {
     case mnemonicGenerationFailed(String)
     case connectionFailed(String)
     case dataLoadFailed(String)
-    
+    case walletNotConnected
+
     var errorDescription: String? {
         switch self {
         case .invalidMnemonic(let message):
@@ -386,6 +491,8 @@ enum WalletViewModelError: Error, LocalizedError {
             return "Connection failed: \(message)"
         case .dataLoadFailed(let message):
             return "Failed to load data: \(message)"
+        case .walletNotConnected:
+            return "Wallet is not connected"
         }
     }
 }

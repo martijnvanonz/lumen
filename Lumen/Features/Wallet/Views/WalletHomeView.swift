@@ -83,8 +83,7 @@ struct WalletHomeView: View {
             }
         }
         .sheet(isPresented: $showingSendView) {
-            // TODO: Implement SendPaymentSheet
-            Text("Send Payment Sheet")
+            ModernSendPaymentView()
         }
         .sheet(isPresented: $showingReceiveView) {
             // TODO: Implement ReceivePaymentSheet

@@ -430,6 +430,12 @@ struct SendPaymentView: View {
             return "qrcode"
         case .bitcoinAddress:
             return "bitcoinsign.circle"
+        case .liquidAddress:
+            return "drop.fill"
+        case .nodeId:
+            return "network"
+        case .url:
+            return "link"
         case .lnUrlWithdraw:
             return "arrow.down.circle"
         case .lnUrlAuth:
@@ -451,6 +457,12 @@ struct SendPaymentView: View {
             return "BOLT12 Offer"
         case .bitcoinAddress:
             return "Bitcoin Address"
+        case .liquidAddress:
+            return "Liquid Address"
+        case .nodeId:
+            return "Node ID"
+        case .url:
+            return "URL"
         case .lnUrlWithdraw:
             return "LNURL Withdraw"
         case .lnUrlAuth:

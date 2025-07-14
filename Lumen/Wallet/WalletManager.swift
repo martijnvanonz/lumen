@@ -650,6 +650,9 @@ enum PaymentInputType {
     case lnUrlPay
     case bolt12Offer
     case bitcoinAddress
+    case liquidAddress
+    case nodeId
+    case url
     case lnUrlWithdraw
     case lnUrlAuth
     case unsupported
@@ -660,6 +663,9 @@ enum PaymentInputType {
         case .lnUrlPay: return "Lightning Address"
         case .bolt12Offer: return "BOLT12 Offer"
         case .bitcoinAddress: return "Bitcoin Address"
+        case .liquidAddress: return "Liquid Address"
+        case .nodeId: return "Node ID"
+        case .url: return "URL"
         case .lnUrlWithdraw: return "LNURL Withdraw"
         case .lnUrlAuth: return "LNURL Auth"
         case .unsupported: return "Unsupported"
@@ -672,6 +678,9 @@ enum PaymentInputType {
         case .lnUrlPay: return "at"
         case .bolt12Offer: return "gift.fill"
         case .bitcoinAddress: return "bitcoinsign.circle.fill"
+        case .liquidAddress: return "drop.fill"
+        case .nodeId: return "network"
+        case .url: return "link"
         case .lnUrlWithdraw: return "arrow.down.circle.fill"
         case .lnUrlAuth: return "key.fill"
         case .unsupported: return "questionmark.circle.fill"
@@ -684,6 +693,9 @@ enum PaymentInputType {
         case .lnUrlPay: return .blue
         case .bolt12Offer: return .purple
         case .bitcoinAddress: return .orange
+        case .liquidAddress: return .cyan
+        case .nodeId: return .mint
+        case .url: return .indigo
         case .lnUrlWithdraw: return .green
         case .lnUrlAuth: return .red
         case .unsupported: return .gray
