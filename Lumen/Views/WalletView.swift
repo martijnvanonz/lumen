@@ -180,24 +180,12 @@ struct BalanceCard: View {
     let balance: UInt64
 
     var body: some View {
-        VStack(spacing: 16) {
-            VStack(spacing: 8) {
-                Text("Balance")
-                    .font(.headline)
-                    .foregroundColor(.secondary)
-                
-                SatsAmountView.balance(balance)
-            }
-            
-            // Lightning Network indicator
-            HStack(spacing: 8) {
-                Image(systemName: "bolt.fill")
-                    .foregroundColor(.yellow)
-                
-                Text("Lightning Network")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
+        VStack(spacing: 8) {
+            Text("Balance")
+                .font(.headline)
+                .foregroundColor(.secondary)
+
+            SatsAmountView.balance(balance)
         }
         .frame(maxWidth: .infinity)
         .padding(24)
