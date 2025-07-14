@@ -101,15 +101,8 @@ struct OnboardingFlowView: View {
             }
             
         case .completed:
-            // TODO: Implement OnboardingCompletedStep
-            VStack {
-                Text("Welcome to Lumen!")
-                    .font(.title)
-                Text("Your wallet is ready to use")
-                    .font(.body)
-                Button("Get Started") {
-                    completeOnboarding()
-                }
+            OnboardingCompletedStep {
+                completeOnboarding()
             }
         }
     }
@@ -305,15 +298,8 @@ struct EnhancedOnboardingFlowView: View {
             }
             
         case .completed:
-            // TODO: Implement OnboardingCompletedStep
-            VStack {
-                Text("Welcome to Lumen!")
-                    .font(.title)
-                Text("Your wallet is ready to use")
-                    .font(.body)
-                Button("Get Started") {
-                    completeOnboarding()
-                }
+            EnhancedOnboardingCompletedStep {
+                completeOnboarding()
             }
         }
     }
