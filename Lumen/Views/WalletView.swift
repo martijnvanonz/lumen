@@ -100,7 +100,8 @@ struct WalletView: View {
                     }
                     .padding(.top)
                 }
-                .navigationBarHidden(true)
+                .navigationTitle("")
+                .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         HStack(spacing: 16) {
