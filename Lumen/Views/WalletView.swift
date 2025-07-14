@@ -16,6 +16,25 @@ struct WalletView: View {
             ZStack(alignment: .top) {
                 ScrollView {
                     VStack(spacing: 24) {
+                        // Top icons row
+                        HStack {
+                            Spacer()
+
+                            HStack(spacing: 16) {
+                                ConnectionStatusIcon()
+
+                                Button(action: {
+                                    showingSettings = true
+                                }) {
+                                    Image(systemName: "gearshape")
+                                        .font(.title2)
+                                        .foregroundColor(.primary)
+                                }
+                            }
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, 8)
+
                         // Balance Card with Info Button
                         VStack(spacing: 12) {
                             BalanceCard(balance: walletManager.balance)
@@ -100,23 +119,7 @@ struct WalletView: View {
                     }
                     .padding(.top)
                 }
-                .navigationTitle("")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        HStack(spacing: 16) {
-                            ConnectionStatusIcon()
-
-                            Button(action: {
-                                showingSettings = true
-                            }) {
-                                Image(systemName: "gearshape")
-                                    .font(.title2)
-                                    .foregroundColor(.primary)
-                            }
-                        }
-                    }
-                }
+                .navigationBarHidden(true)
                 .refreshable {
                     // Refresh wallet data and payment history
                     await refreshWallet()
