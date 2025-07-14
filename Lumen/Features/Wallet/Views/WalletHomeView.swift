@@ -68,7 +68,8 @@ struct WalletHomeView: View {
                     }
                 }
             }
-            .navigationBarHidden(true)
+            .navigationTitle("Lumen")
+            .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     walletToolbar

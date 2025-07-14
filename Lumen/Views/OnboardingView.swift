@@ -82,11 +82,11 @@ struct NewWalletWelcomeView: View {
                     .shadow(color: .yellow.opacity(0.3), radius: 20)
 
                 VStack(spacing: 8) {
-                    Text("Lightning Wallet")
+                    Text("Lumen")
                         .font(.largeTitle)
                         .fontWeight(.bold)
 
-                    Text("Fast, simple payments.")
+                    Text("Bright, simple payments.")
                         .font(.title3)
                         .foregroundColor(.secondary)
                 }
