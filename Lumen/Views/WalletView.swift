@@ -12,9 +12,8 @@ struct WalletView: View {
     @State private var refundableSwapsCount = 0
 
     var body: some View {
-        NavigationView {
-            ZStack(alignment: .top) {
-                ScrollView {
+        ZStack(alignment: .top) {
+            ScrollView {
                     VStack(spacing: 24) {
                         // Top icons row
                         HStack {
@@ -119,7 +118,7 @@ struct WalletView: View {
                     }
                     .padding(.top)
                 }
-                .navigationBarHidden(true)
+                .padding(.top, 1) // Ensure content stays below status bar
                 .refreshable {
                     // Refresh wallet data and payment history
                     await refreshWallet()
@@ -138,7 +137,6 @@ struct WalletView: View {
 
                 }
             }
-        }
         .sheet(isPresented: $showingSendView) {
             SendPaymentView()
         }
