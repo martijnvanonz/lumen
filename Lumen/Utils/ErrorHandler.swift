@@ -27,8 +27,14 @@ class ErrorHandler: ObservableObject {
         case keychain(KeychainError)
         case payment(PaymentError)
         case sdk(SdkError)
+        case location(LocationError)
+        case configuration(ConfigurationError)
+        case onboarding(OnboardingError)
+        case currency(CurrencyError)
+        case notification(NotificationError)
+        case cache(CacheError)
         case unknown(String)
-        
+
         var id: String {
             switch self {
             case .network(let error): return "network_\(error.rawValue)"
@@ -37,6 +43,12 @@ class ErrorHandler: ObservableObject {
             case .keychain(let error): return "keychain_\(error.rawValue)"
             case .payment(let error): return "payment_\(error.rawValue)"
             case .sdk(let error): return "sdk_\(error.rawValue)"
+            case .location(let error): return "location_\(error.rawValue)"
+            case .configuration(let error): return "configuration_\(error.rawValue)"
+            case .onboarding(let error): return "onboarding_\(error.rawValue)"
+            case .currency(let error): return "currency_\(error.rawValue)"
+            case .notification(let error): return "notification_\(error.rawValue)"
+            case .cache(let error): return "cache_\(error.rawValue)"
             case .unknown(let message): return "unknown_\(message.hashValue)"
             }
         }
@@ -49,10 +61,16 @@ class ErrorHandler: ObservableObject {
             case .keychain: return "Security Error"
             case .payment: return "Payment Error"
             case .sdk: return "Service Error"
+            case .location: return "Location Error"
+            case .configuration: return "Configuration Error"
+            case .onboarding: return "Setup Error"
+            case .currency: return "Currency Error"
+            case .notification: return "Notification Error"
+            case .cache: return "Storage Error"
             case .unknown: return "Unexpected Error"
             }
         }
-        
+
         var message: String {
             switch self {
             case .network(let error): return error.userMessage
@@ -61,6 +79,12 @@ class ErrorHandler: ObservableObject {
             case .keychain(let error): return error.userMessage
             case .payment(let error): return error.userMessage
             case .sdk(let error): return error.userMessage
+            case .location(let error): return error.userMessage
+            case .configuration(let error): return error.userMessage
+            case .onboarding(let error): return error.userMessage
+            case .currency(let error): return error.userMessage
+            case .notification(let error): return error.userMessage
+            case .cache(let error): return error.userMessage
             case .unknown(let message): return message
             }
         }
@@ -79,6 +103,20 @@ class ErrorHandler: ObservableObject {
                 return .info("Add funds to your wallet")
             case .sdk(.serviceUnavailable):
                 return .retry("Service temporarily unavailable")
+            case .location(.noPermission), .location(.servicesDisabled):
+                return .settings("Enable location services in Settings")
+            case .location(.unavailable), .location(.timeout):
+                return .retry("Try again to get your location")
+            case .configuration(.missingApiKey), .configuration(.invalidApiKey):
+                return .restart("Restart the app to reload configuration")
+            case .onboarding(.seedGenerationFailed), .onboarding(.walletSetupFailed):
+                return .retry("Try setting up your wallet again")
+            case .currency(.exchangeRateFailed):
+                return .retry("Refresh exchange rates")
+            case .notification(.permissionDenied):
+                return .settings("Enable notifications in Settings")
+            case .cache(.storageFull):
+                return .info("Free up device storage space")
             default:
                 return nil
             }
@@ -114,6 +152,12 @@ class ErrorHandler: ObservableObject {
         case insufficientFunds = "insufficient_funds"
         case networkError = "network_error"
         case unsupportedPaymentType = "unsupported_payment_type"
+        case connectionFailed = "connection_failed"
+        case importFailed = "import_failed"
+        case deletionFailed = "deletion_failed"
+        case exportFailed = "export_failed"
+        case infoUpdateFailed = "info_update_failed"
+        case balanceUpdateFailed = "balance_update_failed"
 
         static func unsupportedPaymentType(_ message: String) -> WalletError {
             return .unsupportedPaymentType
@@ -137,6 +181,18 @@ class ErrorHandler: ObservableObject {
                 return "Network connection error. Please check your internet connection."
             case .unsupportedPaymentType:
                 return "This payment type is not yet supported."
+            case .connectionFailed:
+                return "Failed to connect to wallet service. Please try again."
+            case .importFailed:
+                return "Failed to import wallet. Please check your seed phrase."
+            case .deletionFailed:
+                return "Failed to delete wallet from secure storage."
+            case .exportFailed:
+                return "Failed to export wallet seed phrase."
+            case .infoUpdateFailed:
+                return "Failed to update wallet information."
+            case .balanceUpdateFailed:
+                return "Failed to update wallet balance."
             }
         }
     }
@@ -190,6 +246,7 @@ class ErrorHandler: ObservableObject {
         case paymentFailed = "payment_failed"
         case invoiceExpired = "invoice_expired"
         case routingFailed = "routing_failed"
+        case historyLoadFailed = "history_load_failed"
         
         var userMessage: String {
             switch self {
@@ -203,6 +260,8 @@ class ErrorHandler: ObservableObject {
                 return "Payment request has expired."
             case .routingFailed:
                 return "Unable to find a route for this payment."
+            case .historyLoadFailed:
+                return "Failed to load payment history."
             }
         }
     }
@@ -236,22 +295,27 @@ class ErrorHandler: ObservableObject {
             case settings
             case wait
             case info
+            case restart
         }
-        
+
         static func retry(_ message: String) -> RecoveryAction {
             RecoveryAction(type: .retry, message: message)
         }
-        
+
         static func settings(_ message: String) -> RecoveryAction {
             RecoveryAction(type: .settings, message: message)
         }
-        
+
         static func wait(_ message: String) -> RecoveryAction {
             RecoveryAction(type: .wait, message: message)
         }
-        
+
         static func info(_ message: String) -> RecoveryAction {
             RecoveryAction(type: .info, message: message)
+        }
+
+        static func restart(_ message: String) -> RecoveryAction {
+            RecoveryAction(type: .restart, message: message)
         }
     }
     
@@ -325,16 +389,10 @@ class ErrorHandler: ObservableObject {
         }
         
         // Map WalletManager errors
-        if let walletError = error as? WalletError {
+        if let walletError = error as? Lumen.WalletError {
             switch walletError {
             case .notConnected:
                 return .wallet(.notConnected)
-            case .initializationFailed:
-                return .wallet(.initializationFailed)
-            case .syncFailed:
-                return .wallet(.syncFailed)
-            case .balanceUnavailable:
-                return .wallet(.balanceUnavailable)
             case .invalidInvoice:
                 return .payment(.invalidInvoice)
             case .insufficientFunds:
@@ -343,6 +401,26 @@ class ErrorHandler: ObservableObject {
                 return .network(.noConnection)
             case .unsupportedPaymentType:
                 return .payment(.invalidInvoice)
+            case .walletNotFound:
+                return .wallet(.notConnected)
+            case .connectionFailed:
+                return .wallet(.connectionFailed)
+            case .importFailed:
+                return .wallet(.importFailed)
+            case .deletionFailed:
+                return .wallet(.deletionFailed)
+            case .exportFailed:
+                return .wallet(.exportFailed)
+            case .paymentExpired:
+                return .payment(.invalidInvoice)
+            case .amountOutOfRange:
+                return .payment(.invalidInvoice)
+            case .mnemonicGenerationFailed:
+                return .wallet(.initializationFailed)
+            case .invalidMnemonic:
+                return .wallet(.initializationFailed)
+            case .initializationInProgress:
+                return .wallet(.initializationFailed)
             }
         }
         
@@ -375,5 +453,136 @@ class ErrorHandler: ObservableObject {
     /// Get recent errors for debugging
     func getRecentErrors(limit: Int = 10) -> [ErrorLog] {
         return Array(errorHistory.suffix(limit).reversed())
+    }
+}
+
+// MARK: - Additional Error Types
+
+/// Location-related errors (integrated from BTCMapErrorHandler)
+enum LocationError: String, CaseIterable {
+    case noPermission = "no_permission"
+    case servicesDisabled = "services_disabled"
+    case unavailable = "unavailable"
+    case timeout = "timeout"
+
+    var userMessage: String {
+        switch self {
+        case .noPermission:
+            return "We need your location to show nearby Bitcoin places. Your location stays private and is only used on your device."
+        case .servicesDisabled:
+            return "Location services are disabled. Please enable them in Settings to see nearby Bitcoin places."
+        case .unavailable:
+            return "Unable to determine your location. Please check your connection and try again."
+        case .timeout:
+            return "Location request timed out. Please try again."
+        }
+    }
+}
+
+/// Configuration-related errors
+enum ConfigurationError: String, CaseIterable {
+    case missingApiKey = "missing_api_key"
+    case invalidApiKey = "invalid_api_key"
+    case missingConfiguration = "missing_configuration"
+    case invalidEnvironment = "invalid_environment"
+
+    var userMessage: String {
+        switch self {
+        case .missingApiKey:
+            return "App configuration is incomplete. Please restart the app or contact support."
+        case .invalidApiKey:
+            return "App configuration is invalid. Please restart the app or contact support."
+        case .missingConfiguration:
+            return "Required configuration is missing. Please restart the app."
+        case .invalidEnvironment:
+            return "Invalid app environment configuration."
+        }
+    }
+}
+
+/// Onboarding and setup errors
+enum OnboardingError: String, CaseIterable {
+    case seedGenerationFailed = "seed_generation_failed"
+    case walletSetupFailed = "wallet_setup_failed"
+    case biometricSetupFailed = "biometric_setup_failed"
+    case currencySelectionFailed = "currency_selection_failed"
+
+    var userMessage: String {
+        switch self {
+        case .seedGenerationFailed:
+            return "Failed to generate secure wallet seed. Please try again."
+        case .walletSetupFailed:
+            return "Failed to set up your wallet. Please try again or restart the app."
+        case .biometricSetupFailed:
+            return "Failed to set up biometric authentication. You can enable it later in Settings."
+        case .currencySelectionFailed:
+            return "Failed to save currency selection. You can change it later in Settings."
+        }
+    }
+}
+
+/// Currency and exchange rate errors
+enum CurrencyError: String, CaseIterable {
+    case exchangeRateFailed = "exchange_rate_failed"
+    case unsupportedCurrency = "unsupported_currency"
+    case conversionFailed = "conversion_failed"
+    case rateLimitExceeded = "rate_limit_exceeded"
+
+    var userMessage: String {
+        switch self {
+        case .exchangeRateFailed:
+            return "Failed to fetch current exchange rates. Amounts may not be accurate."
+        case .unsupportedCurrency:
+            return "Selected currency is not supported. Please choose a different currency."
+        case .conversionFailed:
+            return "Failed to convert currency amounts. Please try again."
+        case .rateLimitExceeded:
+            return "Too many currency requests. Please wait a moment and try again."
+        }
+    }
+}
+
+/// Notification-related errors
+enum NotificationError: String, CaseIterable {
+    case permissionDenied = "permission_denied"
+    case registrationFailed = "registration_failed"
+    case deliveryFailed = "delivery_failed"
+    case invalidToken = "invalid_token"
+
+    var userMessage: String {
+        switch self {
+        case .permissionDenied:
+            return "Notification permission denied. Enable notifications in Settings to receive payment alerts."
+        case .registrationFailed:
+            return "Failed to register for notifications. Some features may not work properly."
+        case .deliveryFailed:
+            return "Failed to deliver notification. Please check your notification settings."
+        case .invalidToken:
+            return "Notification configuration is invalid. Please restart the app."
+        }
+    }
+}
+
+/// Cache and local storage errors
+enum CacheError: String, CaseIterable {
+    case readFailed = "read_failed"
+    case writeFailed = "write_failed"
+    case corruptedData = "corrupted_data"
+    case storageFull = "storage_full"
+    case permissionDenied = "permission_denied"
+
+    var userMessage: String {
+        switch self {
+        case .readFailed:
+            return "Failed to load cached data. Some features may load slowly."
+        case .writeFailed:
+            return "Failed to save data locally. Some features may not work offline."
+        case .corruptedData:
+            return "Local data is corrupted. The app will refresh data from the server."
+        case .storageFull:
+            return "Device storage is full. Please free up space for optimal performance."
+        case .permissionDenied:
+            return "Storage permission denied. Some features may not work properly."
+        }
     }
 }

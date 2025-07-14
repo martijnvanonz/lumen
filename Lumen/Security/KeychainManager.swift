@@ -9,6 +9,7 @@ class KeychainManager {
     private enum Constants {
         static let service = "com.lumen.wallet"
         static let mnemonicKey = "wallet_mnemonic"
+        static let biometricTokenKey = "biometric_token"
     }
     
     // MARK: - Errors
@@ -219,6 +220,99 @@ extension KeychainManager {
             SecureSeedCache.shared.storeSeed(mnemonic)
 
             return mnemonic
+        }
+    }
+
+    // MARK: - Biometric Token Storage
+
+    /// Stores a biometric token securely in keychain
+    /// - Parameter token: The token to store
+    /// - Throws: KeychainError if storage fails
+    func storeBiometricToken(_ token: String) throws {
+        guard let data = token.data(using: .utf8) else {
+            throw KeychainError.invalidData
+        }
+
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: Constants.service,
+            kSecAttrAccount as String: Constants.biometricTokenKey,
+            kSecValueData as String: data,
+            kSecAttrSynchronizable as String: true // Enable iCloud sync
+        ]
+
+        let status = SecItemAdd(query as CFDictionary, nil)
+
+        switch status {
+        case errSecSuccess:
+            break
+        case errSecDuplicateItem:
+            // Update existing item
+            let updateQuery: [String: Any] = [
+                kSecClass as String: kSecClassGenericPassword,
+                kSecAttrService as String: Constants.service,
+                kSecAttrAccount as String: Constants.biometricTokenKey
+            ]
+
+            let updateAttributes: [String: Any] = [
+                kSecValueData as String: data
+            ]
+
+            let updateStatus = SecItemUpdate(updateQuery as CFDictionary, updateAttributes as CFDictionary)
+            if updateStatus != errSecSuccess {
+                throw KeychainError.unexpectedError(updateStatus)
+            }
+        default:
+            throw KeychainError.unexpectedError(status)
+        }
+    }
+
+    /// Retrieves the biometric token from keychain
+    /// - Returns: The stored biometric token
+    /// - Throws: KeychainError if retrieval fails
+    func retrieveBiometricToken() throws -> String {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: Constants.service,
+            kSecAttrAccount as String: Constants.biometricTokenKey,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne
+        ]
+
+        var result: AnyObject?
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+
+        switch status {
+        case errSecSuccess:
+            guard let data = result as? Data,
+                  let token = String(data: data, encoding: .utf8) else {
+                throw KeychainError.invalidData
+            }
+            return token
+        case errSecItemNotFound:
+            throw KeychainError.itemNotFound
+        default:
+            throw KeychainError.unexpectedError(status)
+        }
+    }
+
+    /// Deletes the biometric token from keychain
+    /// - Throws: KeychainError if deletion fails
+    func deleteBiometricToken() throws {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: Constants.service,
+            kSecAttrAccount as String: Constants.biometricTokenKey
+        ]
+
+        let status = SecItemDelete(query as CFDictionary)
+
+        switch status {
+        case errSecSuccess, errSecItemNotFound:
+            // Success or item already doesn't exist
+            break
+        default:
+            throw KeychainError.unexpectedError(status)
         }
     }
 }

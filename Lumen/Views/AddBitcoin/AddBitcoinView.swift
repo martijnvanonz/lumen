@@ -5,60 +5,59 @@ struct AddBitcoinView: View {
     @State private var showingReceiveOnchain = false
     @State private var showingReceiveLiquid = false
     @State private var showingBuyBitcoin = false
-    
+
     var body: some View {
         NavigationView {
-            VStack(spacing: 24) {
+            VStack(spacing: DesignSystem.Spacing.card) {
                 // Header
-                VStack(spacing: 8) {
+                VStack(spacing: DesignSystem.Spacing.sm) {
                     Text("Add Bitcoin")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                    
+                        .font(DesignSystem.Typography.largeTitle())
+
                     Text("Transfer from your exchange or buy instantly")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .font(DesignSystem.Typography.subheadline())
+                        .foregroundColor(DesignSystem.Colors.textSecondary)
                         .multilineTextAlignment(.center)
                 }
-                .padding(.top)
-                
+                .padding(.top, DesignSystem.Spacing.md)
+
                 // Options
-                VStack(spacing: 16) {
+                VStack(spacing: DesignSystem.Spacing.md) {
                     // Receive Bitcoin (Onchain)
                     AddBitcoinOptionCard(
                         title: "Receive Bitcoin",
                         subtitle: "From exchange or wallet (onchain)",
-                        icon: "bitcoinsign.circle.fill",
-                        iconColor: .orange,
+                        icon: DesignSystem.Icons.bitcoin,
+                        iconColor: AppConstants.Colors.bitcoin,
                         action: {
                             showingReceiveOnchain = true
                         }
                     )
-                    
+
                     // Receive Liquid Bitcoin
                     AddBitcoinOptionCard(
                         title: "Receive Liquid Bitcoin",
                         subtitle: "From exchange or wallet (liquid)",
                         icon: "drop.circle.fill",
-                        iconColor: .blue,
+                        iconColor: AppConstants.Colors.liquid,
                         action: {
                             showingReceiveLiquid = true
                         }
                     )
-                    
+
                     // Buy Bitcoin
                     AddBitcoinOptionCard(
                         title: "Buy Bitcoin",
                         subtitle: "Purchase directly with fiat via Moonpay",
                         icon: "creditcard.circle.fill",
-                        iconColor: .green,
+                        iconColor: DesignSystem.Colors.success,
                         action: {
                             showingBuyBitcoin = true
                         }
                     )
                 }
-                .padding(.horizontal)
-                
+                .padding(.horizontal, DesignSystem.Spacing.md)
+
                 Spacer()
             }
             .navigationBarTitleDisplayMode(.inline)
@@ -91,44 +90,44 @@ struct AddBitcoinOptionCard: View {
     let icon: String
     let iconColor: Color
     let action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 16) {
+            HStack(spacing: DesignSystem.Spacing.md) {
                 // Icon
                 Image(systemName: icon)
-                    .font(.title)
+                    .font(DesignSystem.Typography.title())
                     .foregroundColor(iconColor)
-                    .frame(width: 40, height: 40)
-                
+                    .frame(width: AppConstants.UI.iconSizeXLarge + 8, height: AppConstants.UI.iconSizeXLarge + 8)
+
                 // Text content
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: DesignSystem.Spacing.xs) {
                     Text(title)
-                        .font(.headline)
-                        .foregroundColor(.primary)
+                        .font(DesignSystem.Typography.headline())
+                        .foregroundColor(DesignSystem.Colors.textPrimary)
                         .multilineTextAlignment(.leading)
-                    
+
                     Text(subtitle)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .font(DesignSystem.Typography.subheadline())
+                        .foregroundColor(DesignSystem.Colors.textSecondary)
                         .multilineTextAlignment(.leading)
                 }
-                
+
                 Spacer()
-                
+
                 // Chevron
                 Image(systemName: "chevron.right")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .font(DesignSystem.Typography.subheadline())
+                    .foregroundColor(DesignSystem.Colors.textSecondary)
             }
-            .padding(20)
+            .padding(DesignSystem.Spacing.lg - 4)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(.secondarySystemBackground))
+                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
+                    .fill(DesignSystem.Colors.backgroundSecondary)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(iconColor.opacity(0.2), lineWidth: 1)
+                        RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
+                            .stroke(iconColor.opacity(0.2), lineWidth: AppConstants.UI.borderWidthThin)
                     )
             )
         }

@@ -1,42 +1,10 @@
 import SwiftUI
 import BreezSDKLiquid
 
-// MARK: - Error Handling Helper
-private func getUserFriendlyErrorMessage(_ error: Error) -> String {
-    let errorString = error.localizedDescription.lowercased()
-
-    // Check for common error patterns and provide user-friendly messages
-    if errorString.contains("insufficient") || errorString.contains("not enough") || errorString.contains("balance") {
-        return "Insufficient funds. You don't have enough sats for this payment."
-    } else if errorString.contains("expired") || errorString.contains("timeout") {
-        return "This payment request has expired. Please request a new invoice."
-    } else if errorString.contains("invalid") || errorString.contains("malformed") {
-        return "Invalid payment request. Please check the QR code or invoice."
-    } else if errorString.contains("network") || errorString.contains("connection") {
-        return "Network error. Please check your internet connection and try again."
-    } else if errorString.contains("route") || errorString.contains("path") {
-        return "Unable to find a payment route. The recipient may be offline."
-    } else if errorString.contains("fee") {
-        return "Payment fees are too high. Try again later when network fees are lower."
-    } else if errorString.contains("amount") && errorString.contains("too") {
-        if errorString.contains("small") || errorString.contains("low") {
-            return "Payment amount is too small. Minimum amount required."
-        } else if errorString.contains("large") || errorString.contains("high") {
-            return "Payment amount is too large. Please try a smaller amount."
-        }
-    } else if errorString.contains("channel") {
-        return "Lightning channel issue. Please try again in a moment."
-    } else if errorString.contains("invoice") {
-        return "Invalid Lightning invoice. Please check the payment request."
-    }
-
-    // Fallback to original error message if no pattern matches
-    return error.localizedDescription
-}
-
 struct WalletView: View {
     @StateObject private var walletManager = WalletManager.shared
     @StateObject private var eventHandler = PaymentEventHandler.shared
+    @StateObject private var errorHandler = ErrorHandler.shared
     @State private var showingSendView = false
     @State private var showingReceiveView = false
     @State private var showingRefundView = false
@@ -44,10 +12,28 @@ struct WalletView: View {
     @State private var refundableSwapsCount = 0
 
     var body: some View {
-        NavigationView {
-            ZStack(alignment: .top) {
-                ScrollView {
+        ZStack(alignment: .top) {
+            ScrollView {
                     VStack(spacing: 24) {
+                        // Top icons row
+                        HStack {
+                            Spacer()
+
+                            HStack(spacing: 16) {
+                                ConnectionStatusIcon()
+
+                                Button(action: {
+                                    showingSettings = true
+                                }) {
+                                    Image(systemName: "gearshape")
+                                        .font(.title2)
+                                        .foregroundColor(.primary)
+                                }
+                            }
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, 8)
+
                         // Balance Card with Info Button
                         VStack(spacing: 12) {
                             BalanceCard(balance: walletManager.balance)
@@ -132,23 +118,7 @@ struct WalletView: View {
                     }
                     .padding(.top)
                 }
-                .navigationTitle("Lumen")
-                .navigationBarTitleDisplayMode(.large)
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        HStack(spacing: 16) {
-                            ConnectionStatusIcon()
-
-                            Button(action: {
-                                showingSettings = true
-                            }) {
-                                Image(systemName: "gearshape")
-                                    .font(.title2)
-                                    .foregroundColor(.primary)
-                            }
-                        }
-                    }
-                }
+                .padding(.top, 1) // Ensure content stays below status bar
                 .refreshable {
                     // Refresh wallet data and payment history
                     await refreshWallet()
@@ -167,7 +137,6 @@ struct WalletView: View {
 
                 }
             }
-        }
         .sheet(isPresented: $showingSendView) {
             SendPaymentView()
         }
@@ -211,24 +180,12 @@ struct BalanceCard: View {
     let balance: UInt64
 
     var body: some View {
-        VStack(spacing: 16) {
-            VStack(spacing: 8) {
-                Text("Balance")
-                    .font(.headline)
-                    .foregroundColor(.secondary)
-                
-                SatsAmountView.balance(balance)
-            }
-            
-            // Lightning Network indicator
-            HStack(spacing: 8) {
-                Image(systemName: "bolt.fill")
-                    .foregroundColor(.yellow)
-                
-                Text("Lightning Network")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
+        VStack(spacing: 8) {
+            Text("Balance")
+                .font(.headline)
+                .foregroundColor(.secondary)
+
+            SatsAmountView.balance(balance)
         }
         .frame(maxWidth: .infinity)
         .padding(24)
@@ -284,7 +241,7 @@ struct SendPaymentView: View {
     @State private var paymentInfo: PaymentInputInfo?
     @State private var preparedPayment: PrepareSendResponse?
     @State private var showingConfirmation = false
-    @State private var showingFeeDetails = false
+
     @State private var showingQRScanner = true // Always show QR scanner by default
     @State private var scannedCode: String?
 
@@ -540,7 +497,8 @@ struct SendPaymentView: View {
                 }
             } catch {
                 await MainActor.run {
-                    errorMessage = getUserFriendlyErrorMessage(error)
+                    ErrorHandler.shared.handle(error, context: "Prepare payment")
+                    errorMessage = error.localizedDescription
                     isLoading = false
                 }
             }
@@ -571,7 +529,8 @@ struct SendPaymentView: View {
                 await MainActor.run {
                     paymentInfo = nil
                     preparedPayment = nil
-                    errorMessage = getUserFriendlyErrorMessage(error)
+                    ErrorHandler.shared.handle(error, context: "Parse payment")
+                    errorMessage = error.localizedDescription
                 }
             }
         }
@@ -595,7 +554,8 @@ struct SendPaymentView: View {
                 }
             } catch {
                 await MainActor.run {
-                    errorMessage = getUserFriendlyErrorMessage(error)
+                    ErrorHandler.shared.handle(error, context: "Prepare refund")
+                    errorMessage = error.localizedDescription
                     isLoading = false
                 }
             }
@@ -626,7 +586,8 @@ struct SendPaymentView: View {
                 notificationFeedback.notificationOccurred(.error)
 
                 await MainActor.run {
-                    errorMessage = getUserFriendlyErrorMessage(error)
+                    ErrorHandler.shared.handle(error, context: "Send payment")
+                    errorMessage = error.localizedDescription
                     isLoading = false
                 }
             }
@@ -1159,7 +1120,8 @@ struct ReceivePaymentView: View {
                 }
             } catch {
                 await MainActor.run {
-                    errorMessage = getUserFriendlyErrorMessage(error)
+                    ErrorHandler.shared.handle(error, context: "Receive payment")
+                    errorMessage = error.localizedDescription
                     isLoading = false
                 }
             }
@@ -1237,43 +1199,7 @@ struct ReceiveFeeCard: View {
     }
 }
 
-// MARK: - Fee Details Sheet
 
-struct FeeDetailsSheet: View {
-    let preparedPayment: PrepareSendResponse
-    let paymentInfo: PaymentInputInfo?
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(spacing: 20) {
-                    // Fee comparison
-                    FeeComparisonView(
-                        lightningFeeSats: preparedPayment.feesSat ?? 0,
-                        paymentAmountSats: extractPaymentAmount(from: preparedPayment, paymentInfo: paymentInfo)
-                    )
-
-                    // Fee breakdown
-                    FeeBreakdownView(preparedPayment: preparedPayment)
-
-                    // Educational content
-                    FeeEducationView()
-                }
-                .padding()
-            }
-            .navigationTitle("Fee Details")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                }
-            }
-        }
-    }
-}
 
 // MARK: - Helper Functions
 
@@ -1309,68 +1235,7 @@ private func amountSatsFromReceiveAmount(_ receiveAmount: ReceiveAmount?) -> UIn
     }
 }
 
-// MARK: - Payment Success Overlay
-
-struct PaymentSuccessOverlay: View {
-    let payment: PaymentEventHandler.PaymentInfo
-    let onDismiss: () -> Void
-
-    var body: some View {
-        VStack {
-            Spacer()
-
-            VStack(spacing: 16) {
-                // Success icon
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 60))
-                    .foregroundColor(.green)
-
-                // Success message
-                Text("Payment Received!")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primary)
-
-                // Amount
-                SatsAmountView(
-                    amount: payment.amountSat,
-                    displayMode: .both,
-                    size: .large,
-                    style: .success
-                )
-
-                // Dismiss button
-                Button("Continue") {
-                    onDismiss()
-                }
-                .font(.headline)
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.green)
-                .cornerRadius(12)
-            }
-            .padding(24)
-            .background(
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color(.systemBackground))
-                    .shadow(color: .black.opacity(0.2), radius: 20, x: 0, y: 10)
-            )
-            .padding(.horizontal, 32)
-
-            Spacer()
-        }
-        .background(Color.black.opacity(0.4))
-        .transition(.asymmetric(
-            insertion: .scale.combined(with: .opacity),
-            removal: .scale.combined(with: .opacity)
-        ))
-        .animation(.spring(response: 0.6, dampingFraction: 0.8), value: true)
-        .onTapGesture {
-            onDismiss()
-        }
-    }
-}
+// Note: PaymentSuccessOverlay is defined in WalletHomeView.swift
 
 /// Extracts the payment amount in satoshis with fallback logic
 /// For BOLT11 invoices, PrepareSendResponse.amount can be nil, so we fall back to PaymentInputInfo
