@@ -29,7 +29,9 @@ class BalanceManager: ObservableObject {
     }
     
     deinit {
-        stopBalanceUpdates()
+        // Note: Cannot call async methods in deinit
+        // Balance updates will be stopped when the timer is deallocated
+        balanceUpdateTimer?.invalidate()
     }
     
     // MARK: - Balance Management
@@ -46,7 +48,7 @@ class BalanceManager: ObservableObject {
         
         do {
             let walletInfo = try await walletService.getWalletInfo()
-            balance = walletInfo.balanceSat
+            balance = walletInfo.walletInfo.balanceSat
             print("💰 Balance updated: \(balance) sats")
         } catch {
             balanceError = error.localizedDescription
@@ -100,12 +102,12 @@ class BalanceManager: ObservableObject {
     /// Get balance in selected fiat currency
     func getBalanceInFiat() -> Double? {
         guard let selectedCurrency = CurrencyManager.shared.selectedCurrency,
-              let rate = CurrencyManager.shared.getCurrentRate(for: selectedCurrency.id) else {
+              let rate = CurrencyManager.shared.getCurrentRate() else {
             return nil
         }
         
         let btcAmount = getBalanceInBTC()
-        return btcAmount * rate.value
+        return btcAmount * rate
     }
     
     /// Get formatted balance in selected fiat currency
@@ -130,6 +132,7 @@ class BalanceManager: ObservableObject {
     
     /// Get available balance after accounting for fees
     func getAvailableBalance(withFeeReserve feeReserveSats: UInt64 = 1000) -> UInt64 {
+        let feeReserve: UInt64 = 1000 // Reserve 1000 sats for fees
         guard balance > feeReserve else { return 0 }
         return balance - feeReserveSats
     }
@@ -199,12 +202,4 @@ enum BalanceValidationResult {
 }
 
 // MARK: - NumberFormatter Extension
-
-extension NumberFormatter {
-    static let satsFormatter: NumberFormatter = {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.groupingSeparator = ","
-        return formatter
-    }()
-}
+// Note: satsFormatter is already defined in PaymentService

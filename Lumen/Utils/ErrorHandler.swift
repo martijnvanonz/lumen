@@ -157,6 +157,7 @@ class ErrorHandler: ObservableObject {
         case deletionFailed = "deletion_failed"
         case exportFailed = "export_failed"
         case infoUpdateFailed = "info_update_failed"
+        case balanceUpdateFailed = "balance_update_failed"
 
         static func unsupportedPaymentType(_ message: String) -> WalletError {
             return .unsupportedPaymentType
@@ -190,6 +191,8 @@ class ErrorHandler: ObservableObject {
                 return "Failed to export wallet seed phrase."
             case .infoUpdateFailed:
                 return "Failed to update wallet information."
+            case .balanceUpdateFailed:
+                return "Failed to update wallet balance."
             }
         }
     }
@@ -243,6 +246,7 @@ class ErrorHandler: ObservableObject {
         case paymentFailed = "payment_failed"
         case invoiceExpired = "invoice_expired"
         case routingFailed = "routing_failed"
+        case historyLoadFailed = "history_load_failed"
         
         var userMessage: String {
             switch self {
@@ -256,6 +260,8 @@ class ErrorHandler: ObservableObject {
                 return "Payment request has expired."
             case .routingFailed:
                 return "Unable to find a route for this payment."
+            case .historyLoadFailed:
+                return "Failed to load payment history."
             }
         }
     }
@@ -383,7 +389,7 @@ class ErrorHandler: ObservableObject {
         }
         
         // Map WalletManager errors
-        if let walletError = error as? WalletError {
+        if let walletError = error as? Lumen.WalletError {
             switch walletError {
             case .notConnected:
                 return .wallet(.notConnected)
@@ -401,6 +407,26 @@ class ErrorHandler: ObservableObject {
                 return .network(.noConnection)
             case .unsupportedPaymentType:
                 return .payment(.invalidInvoice)
+            case .walletNotFound:
+                return .wallet(.notConnected)
+            case .connectionFailed:
+                return .wallet(.connectionFailed)
+            case .importFailed:
+                return .wallet(.importFailed)
+            case .deletionFailed:
+                return .wallet(.deletionFailed)
+            case .exportFailed:
+                return .wallet(.exportFailed)
+            case .paymentExpired:
+                return .payment(.invalidInvoice)
+            case .amountOutOfRange:
+                return .payment(.invalidInvoice)
+            case .mnemonicGenerationFailed:
+                return .wallet(.initializationFailed)
+            case .invalidMnemonic:
+                return .wallet(.initializationFailed)
+            case .initializationInProgress:
+                return .wallet(.initializationFailed)
             }
         }
         

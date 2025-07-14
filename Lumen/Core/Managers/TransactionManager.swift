@@ -31,7 +31,9 @@ class TransactionManager: ObservableObject {
     }
     
     deinit {
-        stopPaymentUpdates()
+        // Note: Cannot call async methods in deinit
+        // Payment updates will be stopped when the timer is deallocated
+        paymentUpdateTimer?.invalidate()
     }
     
     // MARK: - Payment History Management
@@ -208,7 +210,11 @@ extension TransactionManager {
     
     /// Format payment amount with currency
     func formatPaymentAmount(_ payment: Payment) -> String {
-        let formatter = NumberFormatter.satsFormatter
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 0
+        formatter.groupingSeparator = ","
+        formatter.usesGroupingSeparator = true
         let amountString = formatter.string(from: NSNumber(value: payment.amountSat)) ?? "0"
         return "\(amountString) sats"
     }
@@ -229,20 +235,28 @@ extension TransactionManager {
             return "Sent"
         case .receive:
             return "Received"
-        case .closedChannel:
-            return "Channel Closed"
         }
     }
     
     /// Get payment status display string
     func getPaymentStatus(_ payment: Payment) -> String {
         switch payment.status {
+        case .created:
+            return "Created"
         case .pending:
             return "Pending"
         case .complete:
             return "Complete"
         case .failed:
             return "Failed"
+        case .timedOut:
+            return "Timed Out"
+        case .refundable:
+            return "Refundable"
+        case .refundPending:
+            return "Refund Pending"
+        case .waitingFeeAcceptance:
+            return "Waiting Fee Acceptance"
         }
     }
 }
