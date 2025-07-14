@@ -4,10 +4,10 @@ import BreezSDKLiquid
 import Web3Core
 
 /// Manages the Breez SDK Liquid wallet integration
-/// Refactored to coordinate between services instead of handling everything directly
+/// Refactored to coordinate between specialized managers instead of handling everything directly
 class WalletManager: ObservableObject {
 
-    // MARK: - Published Properties
+    // MARK: - Published Properties (Delegated to Managers)
 
     @Published var isConnected = false
     @Published var balance: UInt64 = 0
@@ -15,6 +15,13 @@ class WalletManager: ObservableObject {
     @Published var errorMessage: String?
     @Published var payments: [Payment] = []
     @Published var isLoadingPayments = false
+
+    // MARK: - Specialized Managers
+
+    @Published var connectionManager: ConnectionManager
+    @Published var balanceManager: BalanceManager
+    @Published var transactionManager: TransactionManager
+    @Published var stateManager: WalletStateManager
 
     // MARK: - Services
 
@@ -34,122 +41,76 @@ class WalletManager: ObservableObject {
         self.repository = DefaultWalletRepository()
         self.walletService = BreezWalletService()
         self.paymentService = DefaultPaymentService(walletService: walletService)
+
+        // Initialize specialized managers
+        self.connectionManager = ConnectionManager(walletService: walletService, repository: repository)
+        self.balanceManager = BalanceManager(walletService: walletService)
+        self.transactionManager = TransactionManager(paymentService: paymentService)
+        self.stateManager = WalletStateManager(repository: repository, walletService: walletService)
+
+        // Set up manager coordination
+        setupManagerCoordination()
     }
 
-    // MARK: - Computed Properties
+    // MARK: - Manager Coordination
+
+    private func setupManagerCoordination() {
+        // Sync published properties with manager states
+        connectionManager.$isConnected.assign(to: &$isConnected)
+        connectionManager.$isLoading.assign(to: &$isLoading)
+        connectionManager.$connectionError.assign(to: &$errorMessage)
+
+        balanceManager.$balance.assign(to: &$balance)
+
+        transactionManager.$payments.assign(to: &$payments)
+        transactionManager.$isLoadingPayments.assign(to: &$isLoadingPayments)
+    }
+
+    // MARK: - Computed Properties (Delegated to Managers)
 
     /// Check if a wallet exists in storage
     var hasWallet: Bool {
-        get { repository.hasWallet }
-        set { repository.hasWallet = newValue }
+        get { stateManager.hasWallet }
+        set { stateManager.setHasWallet(newValue) }
     }
 
     /// Check if user is currently logged in
     var isLoggedIn: Bool {
-        get { repository.isLoggedIn }
-        set { repository.isLoggedIn = newValue }
+        get { stateManager.isLoggedIn }
+        set { stateManager.setIsLoggedIn(newValue) }
     }
 
-    // MARK: - Wallet Lifecycle
-
-    private var isInitializing = false
+    // MARK: - Wallet Lifecycle (Delegated to Managers)
 
     /// Imports a wallet from an existing mnemonic phrase
     /// - Parameter mnemonic: The BIP39 mnemonic phrase to import
     /// - Throws: WalletError if import fails
     func importWallet(mnemonic: String) async throws {
-        // Prevent concurrent initialization
-        guard !isInitializing else {
-            print("⚠️ Wallet initialization already in progress - skipping import")
-            throw WalletError.initializationInProgress
-        }
+        // Delegate to connection manager
+        try await connectionManager.importWallet(mnemonic: mnemonic)
 
-        isInitializing = true
-        defer { isInitializing = false }
+        // Update state after successful import
+        stateManager.setHasWallet(true)
+        stateManager.setIsLoggedIn(true)
 
-        await MainActor.run {
-            isLoading = true
-            errorMessage = nil
-        }
+        // Start managers
+        await startManagers()
 
-        do {
-            // Validate the mnemonic first
-            let normalizedMnemonic = SeedPhraseValidator.normalizeSeedPhrase(mnemonic)
-            let validation = SeedPhraseValidator.validateSeedPhrase(normalizedMnemonic)
-
-            guard validation.isValid else {
-                throw WalletError.invalidMnemonic(validation.errorMessage)
-            }
-
-            // Store the imported mnemonic using repository
-            try repository.storeMnemonic(normalizedMnemonic)
-
-            // Clear any previously selected currency for imported wallet
-            await MainActor.run {
-                CurrencyManager.shared.clearSelectedCurrency()
-            }
-
-            // Connect to wallet with event handling
-            try await connectToWallet(mnemonic: normalizedMnemonic)
-
-            await MainActor.run {
-                isConnected = walletService.isConnected
-                isLoading = false
-                repository.hasWallet = true
-                repository.isLoggedIn = true
-            }
-
-            print("✅ Successfully imported wallet with \(normalizedMnemonic.components(separatedBy: " ").count) words")
-
-        } catch {
-            await MainActor.run {
-                isLoading = false
-                errorMessage = error.localizedDescription
-            }
-            throw error
-        }
+        print("✅ Wallet import coordinated successfully")
     }
 
     /// Initializes the wallet - checks for existing mnemonic or creates new one
     func initializeWallet() async {
-        // Prevent concurrent initialization
-        guard !isInitializing else {
-            print("⚠️ Wallet initialization already in progress - skipping duplicate call")
-            return
-        }
-
-        isInitializing = true
-        defer { isInitializing = false }
-        await MainActor.run {
-            isLoading = true
-            errorMessage = nil
-        }
-
         do {
-            let mnemonic: String
+            // Delegate to connection manager
+            try await connectionManager.initializeWallet()
 
-            // Check if mnemonic exists using repository
-            if repository.mnemonicExists() {
-                // Retrieve existing mnemonic
-                mnemonic = try await retrieveExistingMnemonic()
-            } else {
-                // Generate new mnemonic and store it securely
-                mnemonic = try await generateAndStoreMnemonic()
-            }
+            // Update state after successful initialization
+            stateManager.setHasWallet(true)
+            stateManager.setIsLoggedIn(true)
 
-            // Connect to wallet with event handling
-            try await connectToWallet(mnemonic: mnemonic)
-
-            await MainActor.run {
-                isConnected = walletService.isConnected
-                isLoading = false
-            }
-
-            // Update state flags on main thread
-            await MainActor.run {
-                repository.hasWallet = true
-                repository.isLoggedIn = true
-            }
+            // Start managers
+            await startManagers()
 
             // Load currencies but don't auto-select default during onboarding
             Task {
@@ -158,15 +119,27 @@ class WalletManager: ObservableObject {
                 await CurrencyManager.shared.startRateUpdates()
             }
 
-        } catch {
-            await MainActor.run {
-                errorMessage = "Failed to initialize wallet: \(error.localizedDescription)"
-                isLoading = false
-            }
+            print("✅ Wallet initialization coordinated successfully")
 
-            // Handle error through error handler
+        } catch {
             errorHandler.handle(error, context: "Wallet initialization")
         }
+    }
+
+    /// Start all managers after successful connection
+    private func startManagers() async {
+        // Start balance updates
+        await balanceManager.updateBalance()
+        balanceManager.startBalanceUpdates()
+
+        // Load payment history
+        await transactionManager.loadPaymentHistory()
+        transactionManager.startPaymentUpdates()
+
+        // Update wallet info
+        await stateManager.updateWalletInfo()
+
+        print("🚀 All managers started successfully")
     }
 
     /// Shared initialization task to prevent concurrent initialization
@@ -175,7 +148,6 @@ class WalletManager: ObservableObject {
     /// Quick initialization using cached seed (no biometric auth required)
     func initializeWalletFromCache() async -> Bool {
         print("🔄 initializeWalletFromCache called from async context")
-        print("🔄 Current state - isInitializing: \(isInitializing), isConnected: \(isConnected), isLoggedIn: \(isLoggedIn)")
 
         // If already connected, no need to initialize again
         if isConnected {
@@ -191,7 +163,7 @@ class WalletManager: ObservableObject {
 
         // Create new initialization task
         let task = Task<Bool, Never> { @MainActor in
-            await self.performSingleInitialization()
+            return await self.performCacheInitialization()
         }
 
         initializationTask = task
@@ -201,62 +173,19 @@ class WalletManager: ObservableObject {
         return result
     }
 
-    /// Perform single initialization to prevent race conditions
-    @MainActor
-    private func performSingleInitialization() async -> Bool {
-        // Double-check if already connected
-        if isConnected {
-            print("✅ Already connected during single initialization - skipping")
-            return true
-        }
-
-        // Prevent concurrent initialization
-        guard !isInitializing else {
-            print("⚠️ Wallet initialization already in progress during single init - skipping")
-            return false
-        }
-
-        // Check if we have a valid cached seed using repository
-        guard repository.isCacheValid() else {
-            print("❌ Cache invalid - cannot initialize from cache")
-            return false
-        }
-
-        print("🔄 Starting single wallet initialization from cache...")
-        isInitializing = true
-
-        defer {
-            isInitializing = false
-            print("🔄 Single wallet initialization from cache completed")
-        }
-
-        return await performCacheInitialization()
-    }
-
     /// Perform the actual cache initialization
+    @MainActor
     private func performCacheInitialization() async -> Bool {
+        // Delegate to connection manager
+        let success = await connectionManager.initializeFromCache()
 
-        do {
-            let cachedSeed = try repository.retrieveCachedSeed()
+        if success {
+            // Update state after successful initialization
+            stateManager.setHasWallet(true)
+            stateManager.setIsLoggedIn(true)
 
-            await MainActor.run {
-                isLoading = true
-                errorMessage = nil
-            }
-
-            // Connect to wallet with cached mnemonic and event handling
-            try await connectToWallet(mnemonic: cachedSeed)
-
-            await MainActor.run {
-                isConnected = walletService.isConnected
-                isLoading = false
-            }
-
-            // Update state flags on main thread
-            await MainActor.run {
-                repository.hasWallet = true
-                repository.isLoggedIn = true
-            }
+            // Start managers
+            await startManagers()
 
             // Load currencies
             Task {
@@ -265,115 +194,20 @@ class WalletManager: ObservableObject {
                 await CurrencyManager.shared.startRateUpdates()
             }
 
-            print("✅ Wallet initialized from secure cache")
-            return true
-
-        } catch {
-            print("❌ Failed to initialize from cache: \(error)")
-            return false
-        }
-    }
-    
-    /// Generates a new mnemonic and stores it securely in iCloud Keychain
-    private func generateAndStoreMnemonic() async throws -> String {
-        // Generate mnemonic using Breez SDK
-        let mnemonic = try generateBIP39Mnemonic()
-
-        // Store mnemonic using repository
-        try repository.storeMnemonic(mnemonic)
-
-        // Clear any previously selected currency for new wallet
-        await MainActor.run {
-            CurrencyManager.shared.clearSelectedCurrency()
+            print("✅ Cache initialization coordinated successfully")
         }
 
-        print("✅ Generated secure BIP39 mnemonic with \(mnemonic.split(separator: " ").count * 11) bits of entropy")
-        return mnemonic
-    }
-
-    /// Retrieves existing mnemonic with secure authentication and caching
-    private func retrieveExistingMnemonic() async throws -> String {
-        print("🔐 WalletManager: Retrieving existing mnemonic with biometric auth")
-        // Use repository for secure mnemonic retrieval with biometric authentication and caching
-        let mnemonic = try await repository.getSecureMnemonic(reason: "Unlock your Lumen wallet")
-        print("✅ WalletManager: Successfully retrieved and cached mnemonic")
-        return mnemonic
+        return success
     }
     
-    /// Connects to the wallet using services and sets up event handling
-    private func connectToWallet(mnemonic: String) async throws {
-        print("🔗 connectToWallet called from async context")
-
-        await MainActor.run {
-            eventHandler.updateConnectionStatus(.connecting)
-        }
-
-        do {
-            // Connect using wallet service
-            try await walletService.connect(mnemonic: mnemonic)
-
-            // Set up event handling (if the wallet service provides SDK access)
-            await setupEventHandling()
-
-            await MainActor.run {
-                eventHandler.updateConnectionStatus(.syncing)
-            }
-
-            // Get initial balance
-            await updateBalance()
-
-            // Load payment history
-            await loadPaymentHistory()
-
-            // Start currency manager rate updates
-            await MainActor.run {
-                CurrencyManager.shared.startRateUpdates()
-            }
-
-            await MainActor.run {
-                eventHandler.updateConnectionStatus(.connected)
-            }
-        } catch {
-            await MainActor.run {
-                eventHandler.updateConnectionStatus(.disconnected)
-            }
-
-            // Log error and re-throw
-            errorHandler.logError(.sdk(.connectionFailed), context: "SDK connection")
-            throw error
-        }
-    }
-
-    /// Sets up event handling for wallet events
-    private func setupEventHandling() async {
-        // For now, we'll need to access the SDK through the wallet service
-        // This is a temporary solution until we fully abstract event handling
-        if let breezService = walletService as? BreezWalletService {
-            // We'll need to add a method to get the SDK instance from the service
-            // This is a design decision - we could either:
-            // 1. Add event handling to the service layer
-            // 2. Expose SDK access for event handling
-            // For now, we'll skip detailed event setup and rely on service-level handling
-            print("⚠️ Event handling setup deferred to service layer")
-        }
-    }
+    // MARK: - Legacy Methods (Moved to Managers)
+    // These methods are now handled by specialized managers
     
-    // Note: Event listening is now handled by the wallet service
-    
-    // Note: SDK event handling is now managed by the wallet service
-    
-    /// Updates the wallet balance
+    // MARK: - Delegated Methods (Now handled by specialized managers)
+
+    /// Updates the wallet balance (delegated to BalanceManager)
     func updateBalance() async {
-        guard walletService.isConnected else { return }
-
-        do {
-            let newBalance = try await walletService.getBalance()
-            await MainActor.run {
-                self.balance = newBalance
-            }
-        } catch {
-            print("Failed to get wallet balance: \(error)")
-        }
+        await balanceManager.updateBalance()
     }
     
     // MARK: - Payment Methods
@@ -387,9 +221,9 @@ class WalletManager: ObservableObject {
     func sendPayment(prepareResponse: PrepareSendResponse) async throws -> SendPaymentResponse {
         let response = try await paymentService.executePayment(prepareResponse)
 
-        // Update balance and payment history after successful payment
-        await updateBalance()
-        await loadPaymentHistory()
+        // Update managers after successful payment
+        await balanceManager.updateBalance()
+        await transactionManager.loadPaymentHistory()
 
         return response
     }
@@ -450,20 +284,13 @@ class WalletManager: ObservableObject {
     
     // MARK: - Utility Methods
 
-    /// Disconnects from the wallet service
+    /// Disconnects from the wallet service (delegated to ConnectionManager)
     func disconnect() async {
-        guard walletService.isConnected else { return }
+        await connectionManager.disconnect()
 
-        do {
-            try await walletService.disconnect()
-            await MainActor.run {
-                self.isConnected = false
-                // Stop currency manager rate updates
-                CurrencyManager.shared.stopRateUpdates()
-            }
-        } catch {
-            print("Failed to disconnect: \(error)")
-        }
+        // Stop manager updates
+        balanceManager.stopBalanceUpdates()
+        transactionManager.stopPaymentUpdates()
     }
 
     /// Resets the wallet by clearing stored mnemonic and disconnecting
@@ -489,23 +316,13 @@ class WalletManager: ObservableObject {
 
     /// Logs out the user (clears in-memory state but preserves keychain)
     func logout() async {
-        // Clear secure seed cache using repository
-        repository.clearCache()
-
         // Disconnect from wallet service
-        await disconnect()
+        await connectionManager.disconnect()
 
-        // Clear in-memory state
-        await MainActor.run {
-            self.isConnected = false
-            self.balance = 0
-            self.payments = []
-            self.errorMessage = nil
-            self.isLoading = false
-        }
-
-        // Update state (preserve hasWallet, clear isLoggedIn)
-        repository.isLoggedIn = false
+        // Clear manager states
+        balanceManager.resetBalance()
+        transactionManager.clearPaymentHistory()
+        await stateManager.logout()
 
         // Notify that authentication state should be reset
         NotificationCenter.default.post(name: .authenticationStateReset, object: nil)
@@ -515,21 +332,11 @@ class WalletManager: ObservableObject {
 
     /// Permanently deletes wallet from keychain and clears all state
     func deleteWalletFromKeychain() async throws {
-        // Clear secure seed cache using repository
-        repository.clearCache()
-
         // First logout to clear all state
         await logout()
 
-        // Delete mnemonic using repository
-        try repository.deleteMnemonic()
-
-        // Clear all state
-        repository.hasWallet = false
-        repository.isLoggedIn = false
-
-        // Clear selected currency
-        CurrencyManager.shared.clearSelectedCurrency()
+        // Delete wallet using state manager
+        try await stateManager.deleteWallet()
 
         print("✅ Wallet permanently deleted from keychain and secure cache cleared")
     }
@@ -538,38 +345,12 @@ class WalletManager: ObservableObject {
 
     // MARK: - Payment Management
 
-    /// Loads payment history using payment service
+    /// Loads payment history (delegated to TransactionManager)
     func loadPaymentHistory() async {
-        guard walletService.isConnected else {
-            logError("Cannot load payments: Wallet service not connected")
-            return
-        }
+        await transactionManager.loadPaymentHistory()
 
-        await MainActor.run {
-            isLoadingPayments = true
-        }
-
-        do {
-            logInfo("Loading payment history...")
-            let paymentList = try await paymentService.getPaymentHistory()
-
-            await MainActor.run {
-                self.payments = paymentList
-                self.isLoadingPayments = false
-                logInfo("Loaded \(paymentList.count) payments")
-            }
-
-            // Update the PaymentEventHandler with real payment data
-            await updatePaymentEventHandler(with: paymentList)
-
-        } catch {
-            await MainActor.run {
-                self.isLoadingPayments = false
-            }
-
-            logError("Failed to load payment history: \(error)")
-            errorHandler.handle(error, context: "Loading payment history")
-        }
+        // Update the PaymentEventHandler with real payment data
+        await updatePaymentEventHandler(with: transactionManager.payments)
     }
 
     /// Updates the PaymentEventHandler with real payment data
