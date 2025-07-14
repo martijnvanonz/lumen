@@ -63,14 +63,9 @@ class CurrencyManager: ObservableObject {
             isLoadingCurrencies = true
         }
 
-        // Try to get SDK, but don't fail if it's not available yet
-        guard let sdk = WalletManager.shared.sdk else {
-            await loadFallbackCurrencies(setDefaultIfNone: setDefaultIfNone)
-            return
-        }
-
+        // Try to get currencies from wallet service, but don't fail if it's not available yet
         do {
-            let currencies = try sdk.listFiatCurrencies()
+            let currencies = try await WalletManager.shared.walletService.listFiatCurrencies()
 
             await MainActor.run {
                 self.availableCurrencies = currencies.sorted { $0.id < $1.id }
@@ -142,16 +137,12 @@ class CurrencyManager: ObservableObject {
 
     /// Fetch current BTC rates from Breez SDK
     func fetchCurrentRates() async {
-        guard let sdk = WalletManager.shared.sdk else {
-            return
-        }
-        
         await MainActor.run {
             isLoadingRates = true
         }
-        
+
         do {
-            let rates = try sdk.fetchFiatRates()
+            let rates = try await WalletManager.shared.walletService.fetchFiatRates()
 
             await MainActor.run {
                 self.currentRates = rates
@@ -183,15 +174,11 @@ class CurrencyManager: ObservableObject {
     /// Reload currencies from SDK when it becomes available
     /// This replaces fallback currencies with real SDK currencies
     func reloadCurrenciesFromSDK(setDefaultIfNone: Bool = false) async {
-        guard let sdk = WalletManager.shared.sdk else {
-            return
-        }
-
         // Cancel any existing loading task
         currencyLoadingTask?.cancel()
 
         do {
-            let currencies = try sdk.listFiatCurrencies()
+            let currencies = try await WalletManager.shared.walletService.listFiatCurrencies()
 
             await MainActor.run {
                 // Store the currently selected currency ID to restore it
