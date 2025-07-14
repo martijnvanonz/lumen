@@ -252,7 +252,7 @@ struct SendPaymentView: View {
     @State private var paymentInfo: PaymentInputInfo?
     @State private var preparedPayment: PrepareSendResponse?
     @State private var showingConfirmation = false
-    @State private var showingFeeDetails = false
+
     @State private var showingQRScanner = true // Always show QR scanner by default
     @State private var scannedCode: String?
 
@@ -1210,43 +1210,7 @@ struct ReceiveFeeCard: View {
     }
 }
 
-// MARK: - Fee Details Sheet
 
-struct FeeDetailsSheet: View {
-    let preparedPayment: PrepareSendResponse
-    let paymentInfo: PaymentInputInfo?
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(spacing: 20) {
-                    // Fee comparison
-                    FeeComparisonView(
-                        lightningFeeSats: preparedPayment.feesSat ?? 0,
-                        paymentAmountSats: extractPaymentAmount(from: preparedPayment, paymentInfo: paymentInfo)
-                    )
-
-                    // Fee breakdown
-                    FeeBreakdownView(preparedPayment: preparedPayment)
-
-                    // Educational content
-                    FeeEducationView()
-                }
-                .padding()
-            }
-            .navigationTitle("Fee Details")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                }
-            }
-        }
-    }
-}
 
 // MARK: - Helper Functions
 

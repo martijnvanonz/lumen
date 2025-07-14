@@ -103,15 +103,12 @@ The wallet correctly implements core SDK integration, security, and basic paymen
 ## Partially Implemented Features (⚠️ - Need Completion)
 
 ### 9. Comprehensive Fee Display
-**Status**: ⚠️ Partial  
-**Documentation**: [End-User Fees](https://sdk-doc-liquid.breez.technology/guide/end-user_fees.html)  
-**Purpose**: Show detailed fee breakdown for different payment types (submarine swap vs direct Liquid).  
-**Implementation Location**: 
-- `Lumen/Views/FeeComparisonView.swift` (enhance existing)
-- `Lumen/Views/SendPaymentView.swift` - improve fee display
-- `Lumen/Views/ReceivePaymentView.swift` - add fee information
-**Dependencies**: None  
-**Estimated Time**: 1-2 days
+**Status**: ❌ Removed
+**Documentation**: [End-User Fees](https://sdk-doc-liquid.breez.technology/guide/end-user_fees.html)
+**Purpose**: Show detailed fee breakdown for different payment types (submarine swap vs direct Liquid).
+**Note**: Feature removed as it was not integrated into the app flow and provided limited value.
+**Dependencies**: None
+**Estimated Time**: N/A
 
 ### 10. Advanced Error Recovery
 **Status**: ⚠️ Partial  
@@ -153,7 +150,7 @@ The wallet correctly implements core SDK integration, security, and basic paymen
 
 2. **Week 6**: BOLT12 and Modern Features
    - BOLT12 offer support (3-4 days)
-   - Comprehensive fee display (1-2 days)
+   - ~~Comprehensive fee display~~ (removed)
 
 3. **Week 7**: Error Handling and Polish
    - Advanced error recovery (2 days)
@@ -218,7 +215,7 @@ The wallet correctly implements core SDK integration, security, and basic paymen
 - [ ] BOLT12 offers can be generated and paid
 - [ ] All payment input formats are supported
 - [ ] Fee acceptance flow works for amountless payments
-- [ ] Comprehensive fee information is displayed
+- [x] ~~Comprehensive fee information is displayed~~ (removed)
 
 ### Phase 3 Completion Criteria
 - [ ] Multi-asset payments supported
