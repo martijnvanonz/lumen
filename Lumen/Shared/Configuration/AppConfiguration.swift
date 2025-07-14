@@ -346,14 +346,16 @@ class DefaultAppConfiguration: AppConfigurationProtocol {
             let trimmedLine = line.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !trimmedLine.isEmpty && !trimmedLine.hasPrefix("#") else { continue }
 
-            let parts = trimmedLine.components(separatedBy: "=")
-            guard parts.count == 2 else { continue }
+            // Split on first = only to handle values with = in them
+            guard let equalIndex = trimmedLine.firstIndex(of: "=") else { continue }
 
-            let key = parts[0].trimmingCharacters(in: .whitespacesAndNewlines)
-            let value = parts[1].trimmingCharacters(in: .whitespacesAndNewlines)
+            let key = String(trimmedLine[..<equalIndex]).trimmingCharacters(in: .whitespacesAndNewlines)
+            let value = String(trimmedLine[trimmedLine.index(after: equalIndex)...]).trimmingCharacters(in: .whitespacesAndNewlines)
+
+            guard !key.isEmpty else { continue }
 
             setenv(key, value, 1)
-            print("🔧 Set env var: \(key) = \(value.prefix(10))...")
+            print("🔧 Set env var: \(key) = \(value.prefix(10))... (length: \(value.count))")
         }
     }
     
