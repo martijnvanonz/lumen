@@ -89,6 +89,11 @@ struct AppConstants {
         static let borderPrimary = Color(.separator)
         static let borderSecondary = Color(.systemGray4)
         static let borderAccent = Color.blue.opacity(0.2)
+
+        // Pastel Background Colors - Very subtle tones for gentle background
+        static let pastelPink = Color(red: 0.99, green: 0.95, blue: 0.95)
+        static let pastelPeach = Color(red: 0.99, green: 0.96, blue: 0.94)
+        static let pastelLavender = Color(red: 0.95, green: 0.90, blue: 0.98)
     }
     
     // MARK: - Typography

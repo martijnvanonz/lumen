@@ -13,8 +13,11 @@ struct WalletView: View {
 
     var body: some View {
         ZStack(alignment: .top) {
+            // Wavy pastel background
+            WavyBackgroundView.static
+
             ScrollView {
-                    VStack(spacing: 24) {
+                    VStack(spacing: DesignSystem.Spacing.card) {
                         // Top icons row
                         HStack {
                             Spacer()
@@ -180,21 +183,26 @@ struct BalanceCard: View {
     let balance: UInt64
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: DesignSystem.Spacing.sm) {
             Text("Balance")
-                .font(.headline)
-                .foregroundColor(.secondary)
+                .font(DesignSystem.Typography.headline())
+                .foregroundColor(DesignSystem.Colors.textSecondary)
 
             SatsAmountView.balance(balance)
         }
         .frame(maxWidth: .infinity)
-        .padding(24)
+        .padding(DesignSystem.Spacing.card)
         .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color(.systemBackground))
-                .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
+            DesignSystem.Gradients.cardSubtle
         )
-        .padding(.horizontal)
+        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md))
+        .shadow(
+            color: DesignSystem.Shadow.medium.color,
+            radius: DesignSystem.Shadow.medium.radius,
+            x: DesignSystem.Shadow.medium.x,
+            y: DesignSystem.Shadow.medium.y
+        )
+        .padding(.horizontal, DesignSystem.Spacing.md)
     }
 
 }
@@ -206,23 +214,29 @@ struct ActionButton: View {
     let icon: String
     let color: Color
     let action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 8) {
+            VStack(spacing: DesignSystem.Spacing.sm) {
                 Image(systemName: icon)
-                    .font(.title2)
+                    .font(DesignSystem.Typography.title2())
                     .foregroundColor(color)
-                
+
                 Text(title)
-                    .font(.headline)
-                    .foregroundColor(.primary)
+                    .font(DesignSystem.Typography.headline())
+                    .foregroundColor(DesignSystem.Colors.textPrimary)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 20)
+            .padding(.vertical, DesignSystem.Spacing.lg)
             .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color(.secondarySystemBackground))
+                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
+                    .fill(Color.white)
+                    .shadow(
+                        color: DesignSystem.Shadow.light.color,
+                        radius: DesignSystem.Shadow.light.radius,
+                        x: DesignSystem.Shadow.light.x,
+                        y: DesignSystem.Shadow.light.y
+                    )
             )
         }
         .buttonStyle(PlainButtonStyle())

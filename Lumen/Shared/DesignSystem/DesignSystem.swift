@@ -132,11 +132,57 @@ struct DesignSystem {
         
         /// Secondary border color
         static let borderSecondary = AppConstants.Colors.borderSecondary
+
+        // MARK: - Pastel Colors
+
+        /// Soft pink pastel color
+        static let pastelPink = AppConstants.Colors.pastelPink
+
+        /// Soft peach pastel color
+        static let pastelPeach = AppConstants.Colors.pastelPeach
+
+        /// Soft lavender pastel color
+        static let pastelLavender = AppConstants.Colors.pastelLavender
         
         /// Accent border color
         static let borderAccent = AppConstants.Colors.borderAccent
     }
-    
+
+    // MARK: - Gradient System
+
+    struct Gradients {
+
+        /// Soft pastel background gradient - Very subtle for gentle appearance
+        static let pastelBackground = LinearGradient(
+            gradient: Gradient(colors: [
+                DesignSystem.Colors.pastelPink.opacity(0.3),
+                DesignSystem.Colors.pastelPeach.opacity(0.3)
+            ]),
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+
+        /// Card subtle gradient
+        static let cardSubtle = LinearGradient(
+            gradient: Gradient(colors: [
+                Color.white,
+                Color(white: 0.97)
+            ]),
+            startPoint: .top,
+            endPoint: .bottom
+        )
+
+        /// Primary brand gradient
+        static let brandPrimary = LinearGradient(
+            gradient: Gradient(colors: [
+                DesignSystem.Colors.primary,
+                DesignSystem.Colors.secondary
+            ]),
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
     // MARK: - Spacing System
     
     struct Spacing {
@@ -187,25 +233,29 @@ struct DesignSystem {
     }
     
     // MARK: - Shadow System
-    
+
     struct Shadow {
-        
-        /// Light shadow for subtle elevation
+        let color: Color
+        let radius: CGFloat
+        let x: CGFloat
+        let y: CGFloat
+
+        /// Very light shadow for minimal elevation - matches target design
         static let light = Shadow(
-            color: Color.black.opacity(0.05),
+            color: Color.black.opacity(0.02),
+            radius: 1,
+            x: 0,
+            y: 0.5
+        )
+
+        /// Subtle shadow for cards - very gentle for clean aesthetic
+        static let medium = Shadow(
+            color: Color.black.opacity(0.04),
             radius: 2,
             x: 0,
             y: 1
         )
-        
-        /// Medium shadow for cards
-        static let medium = Shadow(
-            color: Color.black.opacity(0.1),
-            radius: 4,
-            x: 0,
-            y: 2
-        )
-        
+
         /// Heavy shadow for modals
         static let heavy = Shadow(
             color: Color.black.opacity(0.15),
@@ -213,13 +263,6 @@ struct DesignSystem {
             x: 0,
             y: 4
         )
-        
-        struct Shadow {
-            let color: Color
-            let radius: CGFloat
-            let x: CGFloat
-            let y: CGFloat
-        }
     }
     
     // MARK: - Animation System
