@@ -100,8 +100,7 @@ struct WalletView: View {
                     }
                     .padding(.top)
                 }
-                .navigationTitle("Lumen")
-                .navigationBarTitleDisplayMode(.large)
+                .navigationBarHidden(true)
                 .toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         HStack(spacing: 16) {
