@@ -13,115 +13,19 @@ struct WalletView: View {
     
     var body: some View {
         Group {
-            ZStack(alignment: .top) {
+            ZStack {
+                // Layer 0: Background (fixed)
                 FixedGradientContainer {
+                    // Layer 1 + 2: Scrollable content with wave
                     ScrollView {
+                    ZStack {
+                        // Layer 1: Wave + White space (scrolls with content)
                         VStack(spacing: 0) {
-                            // Cards over gradient background
-                            VStack(spacing: 24) {
-                                // Top icons row
-                                HStack {
-                                    Spacer()
-                                    
-                                    HStack(spacing: 16) {
-                                        ConnectionStatusIcon()
-                                        
-                                        Button(action: {
-                                            showingSettings = true
-                                        }) {
-                                            Image(systemName: "gearshape")
-                                                .font(.title2)
-                                                .foregroundColor(.primary)
-                                        }
-                                    }
-                                }
-                                .padding(.horizontal)
-                                .padding(.top, 8)
-                                
-                                // Balance Card with Info Button
-                                VStack(spacing: 12) {
-                                    BalanceCard(balance: walletManager.balance)
-                                }
-                                
-                                // Action Buttons
-                                VStack(spacing: 16) {
-                                    HStack(spacing: 16) {
-                                        ActionButton(
-                                            title: "Send",
-                                            icon: "arrow.up.circle.fill",
-                                            color: .orange
-                                        ) {
-                                            showingSendView = true
-                                        }
-                                        
-                                        ActionButton(
-                                            title: "Receive",
-                                            icon: "arrow.down.circle.fill",
-                                            color: .green
-                                        ) {
-                                            showingReceiveView = true
-                                        }
-                                    }
-                                }
-                                
-                                // Refund button (only show if there are refunds available)
-                                if refundableSwapsCount > 0 {
-                                    Button(action: {
-                                        showingRefundView = true
-                                    }) {
-                                        HStack(spacing: 8) {
-                                            Image(systemName: "arrow.uturn.backward.circle.fill")
-                                                .font(.title3)
-                                                .foregroundColor(.orange)
-                                            
-                                            VStack(alignment: .leading, spacing: 2) {
-                                                Text("Get Money Back")
-                                                    .font(.subheadline)
-                                                    .fontWeight(.medium)
-                                                    .foregroundColor(.orange)
-                                                
-                                                Text("\(refundableSwapsCount) payment\(refundableSwapsCount == 1 ? "" : "s") to refund")
-                                                    .font(.caption)
-                                                    .foregroundColor(.secondary)
-                                            }
-                                            
-                                            Spacer()
-                                            
-                                            // Badge with count
-                                            Text("\(refundableSwapsCount)")
-                                                .font(.caption)
-                                                .fontWeight(.bold)
-                                                .foregroundColor(.white)
-                                                .padding(.horizontal, 8)
-                                                .padding(.vertical, 4)
-                                                .background(Color.orange)
-                                                .clipShape(Capsule())
-                                        }
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                        .padding(.vertical, 12)
-                                        .padding(.horizontal, 16)
-                                        .background(
-                                            RoundedRectangle(cornerRadius: 12)
-                                                .fill(Color.orange.opacity(0.1))
-                                                .overlay(
-                                                    RoundedRectangle(cornerRadius: 12)
-                                                        .stroke(Color.orange.opacity(0.3), lineWidth: 1)
-                                                )
-                                        )
-                                    }
-                                    .buttonStyle(PlainButtonStyle())
-                                }
-                            }
-                            .padding(.horizontal)
-                        }
-                        .padding(.top)
-                        
-                        // Add some space before wave transition
-                        Color.clear
-                            .frame(height: 0)
-                        
-                        // Wave transition + white content area
-                        VStack(spacing: 0) {
+                            // Space for content above wave
+                            Spacer()
+                                .frame(height: 50) // Adjust based on content above wave
+
+                            // Wave transition
                             WaveTransition(
                                 animated: true,
                                 waveHeight: 200,
@@ -133,23 +37,117 @@ struct WalletView: View {
                             // White content area
                             Rectangle()
                                 .fill(Color.white)
-                                .frame(minHeight: 500)
-                                .overlay(alignment: .top) {
-                                    VStack(spacing: 24) {
-                                        // Bitcoin Places Card
-                                        SmartNearbyPlacesCard()
-                                            .padding(.horizontal)
-                                            .padding(.top, -70)
-                                        
-                                        // Enhanced Transaction History with real-time updates
-                                        EnhancedTransactionHistoryView()
-                                            .padding(.horizontal)
+                                .frame(minHeight: 600) // Ensure enough white space
+                        }
+
+                        // Layer 2: All content (positioned over wave, scrolls with content)
+                        VStack(spacing: 24) {
+                            // Top icons row
+                            HStack {
+                                Spacer()
+
+                                HStack(spacing: 16) {
+                                    ConnectionStatusIcon()
+
+                                    Button(action: {
+                                        showingSettings = true
+                                    }) {
+                                        Image(systemName: "gearshape")
+                                            .font(.title2)
+                                            .foregroundColor(.primary)
                                     }
                                 }
+                            }
+                            .padding(.horizontal)
+                            .padding(.top, 8)
+
+                            // Balance Card
+                            VStack(spacing: 12) {
+                                BalanceCard(balance: walletManager.balance)
+                            }
+
+                            // Action Buttons
+                            VStack(spacing: 16) {
+                                HStack(spacing: 16) {
+                                    ActionButton(
+                                        title: "Send",
+                                        icon: "arrow.up.circle.fill",
+                                        color: .orange
+                                    ) {
+                                        showingSendView = true
+                                    }
+
+                                    ActionButton(
+                                        title: "Receive",
+                                        icon: "arrow.down.circle.fill",
+                                        color: .green
+                                    ) {
+                                        showingReceiveView = true
+                                    }
+                                }
+                            }
+
+                            // Refund button (only show if there are refunds available)
+                            if refundableSwapsCount > 0 {
+                                Button(action: {
+                                    showingRefundView = true
+                                }) {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "arrow.uturn.backward.circle.fill")
+                                            .font(.title3)
+                                            .foregroundColor(.orange)
+
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text("Get Money Back")
+                                                .font(.subheadline)
+                                                .fontWeight(.medium)
+                                                .foregroundColor(.orange)
+
+                                            Text("\(refundableSwapsCount) payment\(refundableSwapsCount == 1 ? "" : "s") to refund")
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
+                                        }
+
+                                        Spacer()
+
+                                        // Badge with count
+                                        Text("\(refundableSwapsCount)")
+                                            .font(.caption)
+                                            .fontWeight(.bold)
+                                            .foregroundColor(.white)
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 4)
+                                            .background(Color.orange)
+                                            .clipShape(Capsule())
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.vertical, 12)
+                                    .padding(.horizontal, 16)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .fill(Color.orange.opacity(0.1))
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 12)
+                                                    .stroke(Color.orange.opacity(0.3), lineWidth: 1)
+                                            )
+                                    )
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
+
+                            // Bitcoin Places Card (positioned over wave transition)
+                            SmartNearbyPlacesCard()
+                                .padding(.horizontal)
+
+                            // Enhanced Transaction History (in white area)
+                            EnhancedTransactionHistoryView()
+                                .padding(.horizontal)
+                                .padding(.bottom, 40) // Extra bottom padding
                         }
+                        .zIndex(1) // Ensure content is above wave
+                        .padding(.horizontal)
                     }
                 }
-                .padding(.top, 1) // Ensure content stays below status bar
                 .refreshable {
                     // Refresh wallet data and payment history
                     await refreshWallet()
@@ -159,6 +157,7 @@ struct WalletView: View {
                         await checkRefundableSwaps()
                     }
                 }
+                } // FixedGradientContainer
             }
             
             // Payment success overlay
