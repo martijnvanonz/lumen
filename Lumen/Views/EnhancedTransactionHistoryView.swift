@@ -152,10 +152,6 @@ struct EnhancedTransactionRow: View {
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 16)
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color(.tertiarySystemBackground))
-        )
         .padding(.horizontal)
     }
 }

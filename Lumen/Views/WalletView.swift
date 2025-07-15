@@ -12,137 +12,41 @@ struct WalletView: View {
     @State private var refundableSwapsCount = 0
     
     var body: some View {
+        mainContent
+            .sheet(isPresented: $showingSendView) {
+                SendPaymentView()
+            }
+            .sheet(isPresented: $showingReceiveView) {
+                ReceivePaymentView()
+            }
+            .sheet(isPresented: $showingRefundView) {
+                RefundView()
+            }
+            .sheet(isPresented: $showingSettings) {
+                SettingsView()
+            }
+    }
+
+    private var mainContent: some View {
         Group {
             FixedGradientContainer {
                 ScrollView {
-                    VStack(spacing: 24) {
-                        // Top icons row
-                        HStack {
-                            Spacer()
-
-                            HStack(spacing: 16) {
-                                ConnectionStatusIcon()
-
-                                Button(action: {
-                                    showingSettings = true
-                                }) {
-                                    Image(systemName: "gearshape")
-                                        .font(.title2)
-                                        .foregroundColor(.primary)
-                                }
-                            }
-                        }
-                        .padding(.horizontal)
-                        .padding(.top, 8)
-
-                        // Balance Card
-                        VStack(spacing: 12) {
-                            BalanceCard(balance: walletManager.balance)
-                        }
-
-                        // Action Buttons
-                        VStack(spacing: 16) {
-                            HStack(spacing: 16) {
-                                ActionButton(
-                                    title: "Send",
-                                    icon: "arrow.up.circle.fill",
-                                    color: .orange
-                                ) {
-                                    showingSendView = true
-                                }
-
-                                ActionButton(
-                                    title: "Receive",
-                                    icon: "arrow.down.circle.fill",
-                                    color: .green
-                                ) {
-                                    showingReceiveView = true
-                                }
-                            }
-                        }
-
-                        // Refund button (only show if there are refunds available)
-                        if refundableSwapsCount > 0 {
-                            Button(action: {
-                                showingRefundView = true
-                            }) {
-                                HStack(spacing: 8) {
-                                    Image(systemName: "arrow.uturn.backward.circle.fill")
-                                        .font(.title3)
-                                        .foregroundColor(.orange)
-
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text("Get Money Back")
-                                            .font(.subheadline)
-                                            .fontWeight(.medium)
-                                            .foregroundColor(.orange)
-
-                                        Text("\(refundableSwapsCount) payment\(refundableSwapsCount == 1 ? "" : "s") to refund")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                    }
-
-                                    Spacer()
-
-                                    // Badge with count
-                                    Text("\(refundableSwapsCount)")
-                                        .font(.caption)
-                                        .fontWeight(.bold)
-                                        .foregroundColor(.white)
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 4)
-                                        .background(Color.orange)
-                                        .clipShape(Capsule())
-                                }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.vertical, 12)
-                                .padding(.horizontal, 16)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(Color.orange.opacity(0.1))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 12)
-                                                .stroke(Color.orange.opacity(0.3), lineWidth: 1)
-                                        )
-                                )
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                        }
-
-                        // Wave transition
-                        WaveTransition(
-                            animated: true,
-                            waveHeight: 200,
-                            amplitude: 150,
-                            frequency: 0.4,
-                            position: 0.3
-                        )
-
-                        // White background content
-                        VStack(spacing: 24) {
-                            // Bitcoin Places Card
-                            SmartNearbyPlacesCard()
-                                .padding(.horizontal)
-
-                            // Enhanced Transaction History
-                            EnhancedTransactionHistoryView()
-                                .padding(.horizontal)
-                                .padding(.bottom, 40) // Extra bottom padding
-                        }
-                        .background(Color.white)
-                    }
-                }
-                .refreshable {
-                    // Refresh wallet data and payment history
-                    await refreshWallet()
-                }
-                .onAppear {
-                    Task {
-                        await checkRefundableSwaps()
+                    VStack(spacing: 0) {
+                        topContent
+                        waveTransition
+                        bottomContent
                     }
                 }
             }
-            
+            .refreshable {
+                await refreshWallet()
+            }
+            .onAppear {
+                Task {
+                    await checkRefundableSwaps()
+                }
+            }
+
             // Payment success overlay
             if eventHandler.showPaymentSuccess, let payment = eventHandler.lastSuccessfulPayment {
                 PaymentSuccessOverlay(payment: payment) {
@@ -150,20 +54,138 @@ struct WalletView: View {
                 }
             }
         }
-        .sheet(isPresented: $showingSendView) {
-            SendPaymentView()
-        }
-        .sheet(isPresented: $showingReceiveView) {
-            ReceivePaymentView()
-        }
-        .sheet(isPresented: $showingRefundView) {
-            RefundView()
-        }
-        .sheet(isPresented: $showingSettings) {
-            SettingsView()
-        }
     }
-    
+
+    private var topContent: some View {
+        VStack(spacing: 24) {
+            // Top icons row
+            HStack {
+                Spacer()
+
+                HStack(spacing: 16) {
+                    ConnectionStatusIcon()
+
+                    Button(action: {
+                        showingSettings = true
+                    }) {
+                        Image(systemName: "gearshape")
+                            .font(.title2)
+                            .foregroundColor(.primary)
+                    }
+                }
+            }
+            .padding(.horizontal)
+            .padding(.top, 8)
+
+            // Balance Card
+            VStack(spacing: 12) {
+                BalanceCard(balance: walletManager.balance)
+            }
+
+            // Action Buttons
+            VStack(spacing: 16) {
+                HStack(spacing: 16) {
+                    ActionButton(
+                        title: "Send",
+                        icon: "arrow.up.circle.fill",
+                        color: .orange
+                    ) {
+                        showingSendView = true
+                    }
+
+                    ActionButton(
+                        title: "Receive",
+                        icon: "arrow.down.circle.fill",
+                        color: .green
+                    ) {
+                        showingReceiveView = true
+                    }
+                }
+            }
+
+            // Refund button (only show if there are refunds available)
+            if refundableSwapsCount > 0 {
+                refundButton
+            }
+        }
+        .padding(.horizontal)
+        .padding(.top, 8)
+        .padding(.bottom, 40)
+    }
+
+    private var refundButton: some View {
+        Button(action: {
+            showingRefundView = true
+        }) {
+            HStack(spacing: 8) {
+                Image(systemName: "arrow.uturn.backward.circle.fill")
+                    .font(.title3)
+                    .foregroundColor(.orange)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Get Money Back")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundColor(.orange)
+
+                    Text("\(refundableSwapsCount) payment\(refundableSwapsCount == 1 ? "" : "s") to refund")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                Spacer()
+
+                // Badge with count
+                Text("\(refundableSwapsCount)")
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.orange)
+                    .clipShape(Capsule())
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 12)
+            .padding(.horizontal, 16)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.orange.opacity(0.1))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.orange.opacity(0.3), lineWidth: 1)
+                    )
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+
+    private var waveTransition: some View {
+        WaveTransition(
+            animated: true,
+            waveHeight: 200,
+            amplitude: 150,
+            frequency: 0.4,
+            position: 0.3
+        )
+        .frame(height: 200)
+    }
+
+    private var bottomContent: some View {
+        VStack(spacing: 20) {
+            // Bitcoin Places Card - on white background
+            SmartNearbyPlacesCard()
+                .padding(.horizontal)
+
+            // Enhanced Transaction History - on white background
+            EnhancedTransactionHistoryView()
+                .padding(.horizontal)
+                .padding(.bottom, 100) // Extra bottom padding for scrolling
+        }
+        .padding(.top, 20)
+        .background(Color.white)
+    }
+
     private func refreshWallet() async {
         // Refresh wallet balance and payment history
         await walletManager.updateBalance()
@@ -1210,65 +1232,40 @@ struct WalletView: View {
             )
         }
     }
-    
-    
-    
-    // MARK: - Helper Functions
-    
-    /// Extracts the amount in satoshis from a PayAmount enum
-    private static func amountSatsFromPayAmount(_ payAmount: PayAmount?) -> UInt64 {
-        guard let payAmount = payAmount else { return 0 }
-        
-        switch payAmount {
-        case .bitcoin(let receiverAmountSat):
-            return receiverAmountSat
-        case .asset(_, let receiverAmount, _):
-            // For assets, we approximate using the receiver amount
-            // In a real app, you'd need proper conversion logic
-            return UInt64(receiverAmount)
-        case .drain:
-            return 0 // Drain means send all available, amount is determined dynamically
+
+    // MARK: - Static Helper Functions
+
+    static func extractPaymentAmount(from preparedPayment: PrepareSendResponse, paymentInfo: PaymentInputInfo?) -> UInt64 {
+        // First try to get amount from prepared payment
+        if let amount = preparedPayment.amount {
+            switch amount {
+            case .bitcoin(let receiverAmountSat):
+                return receiverAmountSat
+            case .asset(_, _, _):
+                // For asset payments, we might need to handle differently
+                // For now, return 0 or handle as needed
+                return 0
+            case .drain:
+                // For drain payments, we might need to get the amount differently
+                return 0
+            }
         }
+
+        // Fallback to payment info amount
+        return paymentInfo?.amount ?? 0
     }
-    
-    
-    
-    /// Extracts the amount in satoshis from a ReceiveAmount enum
-    fileprivate static func amountSatsFromReceiveAmount(_ receiveAmount: ReceiveAmount?) -> UInt64 {
+
+    static func amountSatsFromReceiveAmount(_ receiveAmount: ReceiveAmount?) -> UInt64 {
         guard let receiveAmount = receiveAmount else { return 0 }
-        
+
         switch receiveAmount {
         case .bitcoin(let payerAmountSat):
             return payerAmountSat
-        case .asset(_, let payerAmount):
-            // For assets, we approximate using the payer amount
-            // In a real app, you'd need proper conversion logic
-            return UInt64(payerAmount ?? 0)
+        case .asset(_, _):
+            // For asset amounts, we might need to handle differently
+            // For now, return 0 or handle as needed
+            return 0
         }
-    }
-    
-    // Note: PaymentSuccessOverlay is defined in WalletHomeView.swift
-    
-    /// Extracts the payment amount in satoshis with fallback logic
-    /// For BOLT11 invoices, PrepareSendResponse.amount can be nil, so we fall back to PaymentInputInfo
-    fileprivate static func extractPaymentAmount(
-        from preparedPayment: PrepareSendResponse?,
-        paymentInfo: PaymentInputInfo?
-    ) -> UInt64 {
-        // First try to get amount from PrepareSendResponse
-        if let preparedPayment = preparedPayment,
-           let amount = preparedPayment.amount {
-            return WalletView.amountSatsFromPayAmount(amount)
-        }
-        
-        // Fallback to PaymentInputInfo for BOLT11 invoices with fixed amounts
-        if let paymentInfo = paymentInfo,
-           let amountMsat = paymentInfo.amount {
-            // Convert millisats to sats
-            return amountMsat / 1000
-        }
-        
-        return 0
     }
 }
 
