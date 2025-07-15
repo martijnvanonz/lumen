@@ -103,10 +103,11 @@ struct WaveTransition: View {
         self.frequency = frequency
         self.position = position
     }
-    
+
     // MARK: - Body
-    
+
     var body: some View {
+        // Wave shape that creates the transition and fills everything below
         CustomWaveShape(
             amplitude: amplitude,
             frequency: frequency,
@@ -114,7 +115,7 @@ struct WaveTransition: View {
             position: position
         )
         .fill(Color.white)
-        .frame(height: waveHeight)
+        .frame(minHeight: waveHeight)
         .shadow(
             color: Color.black.opacity(0.1), // Dark shadow for better visibility
             radius: 8,
@@ -155,20 +156,18 @@ struct WaveTransition: View {
             endPoint: .bottomTrailing
         )
         .frame(height: 300)
-        
-        // Wave transition
+
+        // Wave transition with content
         WaveTransition()
-        
-        // White content area
-        Color.white
-            .frame(height: 400)
+            .frame(height: 500)
             .overlay(
                 VStack {
                     Text("White Content Area")
                         .font(.title2)
                         .fontWeight(.semibold)
                         .foregroundColor(.black)
-                    
+                        .padding(.top, 80)
+
                     Text("Transaction history goes here")
                         .font(.body)
                         .foregroundColor(.gray)
@@ -191,13 +190,23 @@ struct WaveTransition: View {
             endPoint: .bottomTrailing
         )
         .frame(height: 300)
-        
-        // Animated wave transition
+
+        // Animated wave transition with content
         WaveTransition(animated: true)
-        
-        // White content area
-        Color.white
-            .frame(height: 400)
+            .frame(height: 500)
+            .overlay(
+                VStack {
+                    Text("White Content Area")
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.black)
+                        .padding(.top, 80)
+
+                    Text("Transaction history goes here")
+                        .font(.body)
+                        .foregroundColor(.gray)
+                }
+            )
             .overlay(
                 VStack {
                     Text("White Content Area")
@@ -267,7 +276,7 @@ struct WaveTransition: View {
 
 // MARK: - Custom Wave Shape
 
-/// Custom wave shape that allows position adjustment
+/// Custom wave shape that creates just the top curve with white fill below
 private struct CustomWaveShape: Shape {
     var amplitude: CGFloat
     var frequency: CGFloat
@@ -283,17 +292,21 @@ private struct CustomWaveShape: Shape {
         // Start from top-left corner
         path.move(to: CGPoint(x: 0, y: 0))
 
-        // Create wave across the width
+        // Create smooth wave curve across the width (convex/mountain shape)
         for x in stride(from: 0, through: width, by: 2) {
             let relativeX = x / width
             let sine = sin((relativeX * frequency * 2 * .pi) + phase)
-            let y = height * position + (sine * amplitude)
+            let y = (sine * amplitude) + amplitude // Wave starts from top, curves down
             path.addLine(to: CGPoint(x: x, y: y))
         }
 
-        // Complete the shape
+        // Draw straight line to bottom-right corner
         path.addLine(to: CGPoint(x: width, y: height))
+
+        // Draw straight line to bottom-left corner
         path.addLine(to: CGPoint(x: 0, y: height))
+
+        // Close the path
         path.closeSubpath()
 
         return path
