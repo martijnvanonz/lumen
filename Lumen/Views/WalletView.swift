@@ -118,22 +118,22 @@ struct WalletView: View {
                         
                         // Add some space before wave transition
                         Color.clear
-                            .frame(height: 50)
+                            .frame(height: 0)
                         
                         // Wave transition + white content area
                         VStack(spacing: 0) {
                             WaveTransition(
                                 animated: true,
-                                waveHeight: 30,
-                                amplitude: 50,
-                                frequency: 0.6,
+                                waveHeight: 200,
+                                amplitude: 150,
+                                frequency: 0.4,
                                 position: 0.3
                             )
-                            
+
                             // White content area
                             Rectangle()
                                 .fill(Color.white)
-                                .frame(minHeight: 600)
+                                .frame(minHeight: 500)
                                 .overlay(alignment: .top) {
                                     VStack(spacing: 24) {
                                         // Bitcoin Places Card

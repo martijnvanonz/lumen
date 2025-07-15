@@ -292,13 +292,28 @@ private struct CustomWaveShape: Shape {
         // Start from top-left corner
         path.move(to: CGPoint(x: 0, y: 0))
 
-        // Create smooth wave curve across the width (convex/mountain shape)
-        for x in stride(from: 0, through: width, by: 2) {
-            let relativeX = x / width
-            let sine = sin((relativeX * frequency * 2 * .pi) + phase)
-            let y = (sine * amplitude) + amplitude // Wave starts from top, curves down
-            path.addLine(to: CGPoint(x: x, y: y))
-        }
+        // Create smooth bezier curve for more natural wave shape
+        let baseY = height * position
+        let controlPointOffset = width * 0.25 // Control points at 25% and 75% of width
+
+        // First control point (left side of wave)
+        let cp1X = width * 0.25
+        let cp1Y = baseY + amplitude * 0.2 + sin(phase) * amplitude * 0.1
+
+        // Second control point (right side of wave)
+        let cp2X = width * 0.75
+        let cp2Y = baseY - amplitude * 0.8 + sin(phase + .pi) * amplitude * 0.2
+
+        // End point
+        let endX = width
+        let endY = baseY - amplitude * 0.9 + sin(frequency * 2 * .pi + phase) * amplitude * 0.1
+
+        // Create smooth bezier curve
+        path.addCurve(
+            to: CGPoint(x: endX, y: endY),
+            control1: CGPoint(x: cp1X, y: cp1Y),
+            control2: CGPoint(x: cp2X, y: cp2Y)
+        )
 
         // Draw straight line to bottom-right corner
         path.addLine(to: CGPoint(x: width, y: height))
