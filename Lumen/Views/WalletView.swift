@@ -70,7 +70,7 @@ struct WalletView: View {
                     }) {
                         Image(systemName: "gearshape")
                             .font(.title2)
-                            .foregroundColor(.primary)
+                            .foregroundColor(.white)
                     }
                 }
             }
@@ -85,23 +85,42 @@ struct WalletView: View {
             // Action Buttons
             VStack(spacing: 16) {
                 HStack(spacing: 16) {
-                    ActionButton(
-                        title: "Send",
-                        icon: "arrow.up.circle.fill",
-                        color: .orange
-                    ) {
-                        showingSendView = true
+                    GlassmorphismCard {
+                        Button(action: { showingSendView = true }) {
+                            VStack(spacing: 8) {
+                                Image(systemName: "arrow.up.circle.fill")
+                                    .font(.title2)
+                                    .foregroundColor(.orange)
+
+                                Text("Send")
+                                    .font(.headline)
+                                    .foregroundColor(.primary)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 20)
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
 
-                    ActionButton(
-                        title: "Receive",
-                        icon: "arrow.down.circle.fill",
-                        color: .green
-                    ) {
-                        showingReceiveView = true
+                    GlassmorphismCard {
+                        Button(action: { showingReceiveView = true }) {
+                            VStack(spacing: 8) {
+                                Image(systemName: "arrow.down.circle.fill")
+                                    .font(.title2)
+                                    .foregroundColor(.green)
+
+                                Text("Receive")
+                                    .font(.headline)
+                                    .foregroundColor(.primary)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 20)
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
                 }
             }
+            .padding(.horizontal)
 
             // Refund button (only show if there are refunds available)
             if refundableSwapsCount > 0 {
@@ -216,20 +235,16 @@ struct WalletView: View {
         let balance: UInt64
         
         var body: some View {
-            VStack(spacing: 8) {
-                Text("Balance")
-                    .font(.headline)
-                    .foregroundColor(.secondary)
-                
-                SatsAmountView.balance(balance)
+            GlassmorphismCard {
+                VStack(spacing: 8) {
+                    Text("Balance")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+
+                    SatsAmountView.balance(balance)
+                }
+                .frame(maxWidth: .infinity)
             }
-            .frame(maxWidth: .infinity)
-            .padding(24)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(.systemBackground))
-                    .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
-            )
             .padding(.horizontal)
         }
         

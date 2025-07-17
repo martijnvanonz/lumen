@@ -15,40 +15,33 @@ struct NearbyPlacesCard: View {
     
     var body: some View {
         Button(action: handleTap) {
-            HStack(spacing: 16) {
-                // Icon
-                Image(systemName: "map.circle.fill")
-                    .font(.title2)
-                    .foregroundColor(.blue)
-                
-                // Content
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(getMainText())
-                        .font(.headline)
-                        .foregroundColor(.primary)
-                        .multilineTextAlignment(.leading)
-                    
-                    Text(getSubText())
-                        .font(.caption)
+            GlassmorphismCard {
+                HStack(spacing: 16) {
+                    // Icon
+                    Image(systemName: "map.circle.fill")
+                        .font(.title2)
+                        .foregroundColor(.blue)
+
+                    // Content
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(getMainText())
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                            .multilineTextAlignment(.leading)
+
+                        Text(getSubText())
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.leading)
+                    }
+
+                    Spacer()
+
+                    // Arrow or action icon
+                    Image(systemName: getActionIcon())
                         .foregroundColor(.secondary)
-                        .multilineTextAlignment(.leading)
                 }
-                
-                Spacer()
-                
-                // Arrow or action icon
-                Image(systemName: getActionIcon())
-                    .foregroundColor(.secondary)
             }
-            .padding(16)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.blue.opacity(0.05))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.blue.opacity(0.2), lineWidth: 1)
-                    )
-            )
         }
         .buttonStyle(PlainButtonStyle())
         .sheet(isPresented: $showingPlaces) {
@@ -133,35 +126,28 @@ struct NearbyPlacesCard: View {
 
 struct NearbyPlacesLoadingCard: View {
     var body: some View {
-        HStack(spacing: 16) {
-            Image(systemName: "map.circle")
-                .font(.title2)
-                .foregroundColor(.gray)
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Loading Bitcoin places...")
-                    .font(.headline)
-                    .foregroundColor(.primary)
-                
-                Text("Please wait while we fetch nearby merchants")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+        GlassmorphismCard {
+            HStack(spacing: 16) {
+                Image(systemName: "map.circle")
+                    .font(.title2)
+                    .foregroundColor(.gray)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Loading Bitcoin places...")
+                        .font(.headline)
+                        .foregroundColor(.primary)
+
+                    Text("Please wait while we fetch nearby merchants")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                Spacer()
+
+                ProgressView()
+                    .scaleEffect(0.8)
             }
-            
-            Spacer()
-            
-            ProgressView()
-                .scaleEffect(0.8)
         }
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.gray.opacity(0.05))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.gray.opacity(0.2), lineWidth: 1)
-                )
-        )
     }
 }
 
@@ -173,35 +159,28 @@ struct NearbyPlacesErrorCard: View {
     
     var body: some View {
         Button(action: onRetry) {
-            HStack(spacing: 16) {
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.title2)
-                    .foregroundColor(.orange)
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Failed to load places")
-                        .font(.headline)
-                        .foregroundColor(.primary)
-                    
-                    Text("Tap to retry")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+            GlassmorphismCard {
+                HStack(spacing: 16) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.title2)
+                        .foregroundColor(.orange)
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Failed to load places")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+
+                        Text("Tap to retry")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+
+                    Spacer()
+
+                    Image(systemName: "arrow.clockwise")
+                        .foregroundColor(.orange)
                 }
-                
-                Spacer()
-                
-                Image(systemName: "arrow.clockwise")
-                    .foregroundColor(.orange)
             }
-            .padding(16)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.orange.opacity(0.05))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.orange.opacity(0.2), lineWidth: 1)
-                    )
-            )
         }
         .buttonStyle(PlainButtonStyle())
     }

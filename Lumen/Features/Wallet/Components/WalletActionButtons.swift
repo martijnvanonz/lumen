@@ -25,14 +25,16 @@ struct WalletActionButtons: View {
     // MARK: - View Body
     
     var body: some View {
-        Group {
-            switch layout {
-            case .horizontal:
-                horizontalLayout
-            case .vertical:
-                verticalLayout
-            case .grid:
-                gridLayout
+        GlassmorphismCard {
+            Group {
+                switch layout {
+                case .horizontal:
+                    horizontalLayout
+                case .vertical:
+                    verticalLayout
+                case .grid:
+                    gridLayout
+                }
             }
         }
         .padding(.horizontal, DesignSystem.Spacing.md)
@@ -111,39 +113,41 @@ struct EnhancedWalletActionButtons: View {
     // MARK: - View Body
     
     var body: some View {
-        VStack(spacing: DesignSystem.Spacing.lg) {
-            // Primary actions
-            HStack(spacing: DesignSystem.Spacing.md) {
-                StandardButton(title: "Send", action: onSendTap)
-                    .style(.primary)
-                    .size(.large)
-                    .icon(DesignSystem.Icons.send)
-                    .enabled(isEnabled)
-                
-                StandardButton(title: "Receive", action: onReceiveTap)
-                    .style(.secondary)
-                    .size(.large)
-                    .icon(DesignSystem.Icons.receive)
-                    .enabled(isEnabled)
-            }
-            
-            // Secondary actions
-            if showSecondaryActions {
+        GlassmorphismCard {
+            VStack(spacing: DesignSystem.Spacing.lg) {
+                // Primary actions
                 HStack(spacing: DesignSystem.Spacing.md) {
-                    if let onScanTap = onScanTap {
-                        StandardButton(title: "Scan", action: onScanTap)
-                            .style(.outline)
-                            .size(.regular)
-                            .icon(DesignSystem.Icons.scan)
-                            .enabled(isEnabled)
-                    }
-                    
-                    if let onAddBitcoinTap = onAddBitcoinTap {
-                        StandardButton(title: "Add Bitcoin", action: onAddBitcoinTap)
-                            .style(.outline)
-                            .size(.regular)
-                            .icon(DesignSystem.Icons.bitcoin)
-                            .enabled(isEnabled)
+                    StandardButton(title: "Send", action: onSendTap)
+                        .style(.primary)
+                        .size(.large)
+                        .icon(DesignSystem.Icons.send)
+                        .enabled(isEnabled)
+
+                    StandardButton(title: "Receive", action: onReceiveTap)
+                        .style(.secondary)
+                        .size(.large)
+                        .icon(DesignSystem.Icons.receive)
+                        .enabled(isEnabled)
+                }
+
+                // Secondary actions
+                if showSecondaryActions {
+                    HStack(spacing: DesignSystem.Spacing.md) {
+                        if let onScanTap = onScanTap {
+                            StandardButton(title: "Scan", action: onScanTap)
+                                .style(.outline)
+                                .size(.regular)
+                                .icon(DesignSystem.Icons.scan)
+                                .enabled(isEnabled)
+                        }
+
+                        if let onAddBitcoinTap = onAddBitcoinTap {
+                            StandardButton(title: "Add Bitcoin", action: onAddBitcoinTap)
+                                .style(.outline)
+                                .size(.regular)
+                                .icon(DesignSystem.Icons.bitcoin)
+                                .enabled(isEnabled)
+                        }
                     }
                 }
             }
@@ -170,7 +174,8 @@ struct CompactWalletActionButtons: View {
     // MARK: - View Body
     
     var body: some View {
-        HStack(spacing: DesignSystem.Spacing.sm) {
+        GlassmorphismCard {
+            HStack(spacing: DesignSystem.Spacing.sm) {
             // Send button
             Button(action: onSendTap) {
                 VStack(spacing: DesignSystem.Spacing.xs) {
@@ -244,7 +249,9 @@ struct CompactWalletActionButtons: View {
                 }
                 .disabled(!isEnabled)
             }
+            }
         }
+        .padding(EdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16))
         .padding(.horizontal, DesignSystem.Spacing.md)
     }
 }

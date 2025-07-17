@@ -30,45 +30,41 @@ struct WalletBalanceCard: View {
     // MARK: - View Body
     
     var body: some View {
-        VStack(spacing: DesignSystem.Spacing.lg) {
-            // Header with title and info button
-            HStack {
-                Text("Balance")
-                    .font(DesignSystem.Typography.headline(weight: .semibold))
-                    .foregroundColor(DesignSystem.Colors.textSecondary)
-                
-                Spacer()
-                
-                if showInfoButton {
-                    Button(action: { onInfoTap?() }) {
-                        Image(systemName: DesignSystem.Icons.info)
-                            .font(DesignSystem.Typography.subheadline(weight: .medium))
-                            .foregroundColor(DesignSystem.Colors.textSecondary)
+        GlassmorphismCard {
+            VStack(spacing: DesignSystem.Spacing.lg) {
+                // Header with title and info button
+                HStack {
+                    Text("Balance")
+                        .font(DesignSystem.Typography.headline(weight: .semibold))
+                        .foregroundColor(DesignSystem.Colors.textSecondary)
+
+                    Spacer()
+
+                    if showInfoButton {
+                        Button(action: { onInfoTap?() }) {
+                            Image(systemName: DesignSystem.Icons.info)
+                                .font(DesignSystem.Typography.subheadline(weight: .medium))
+                                .foregroundColor(DesignSystem.Colors.textSecondary)
+                        }
                     }
                 }
-            }
-            
-            // Balance display
-            if isLoading {
-                LoadingStateView.minimal("Loading balance...")
-                    .frame(height: 60)
-            } else {
-                AmountDisplayCard.balance(balance)
-                    .style(.prominent)
-                    .size(.hero)
-            }
-            
-            // Network indicator
-            if showNetworkIndicator {
-                networkIndicator
+
+                // Balance display
+                if isLoading {
+                    LoadingStateView.minimal("Loading balance...")
+                        .frame(height: 60)
+                } else {
+                    AmountDisplayCard.balance(balance)
+                        .style(.prominent)
+                        .size(.hero)
+                }
+
+                // Network indicator
+                if showNetworkIndicator {
+                    networkIndicator
+                }
             }
         }
-        .standardPadding()
-        .background(
-            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
-                .fill(DesignSystem.Colors.backgroundPrimary)
-                .mediumShadow()
-        )
         .padding(.horizontal, DesignSystem.Spacing.md)
     }
     

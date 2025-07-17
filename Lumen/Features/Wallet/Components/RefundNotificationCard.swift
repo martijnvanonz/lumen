@@ -60,49 +60,42 @@ struct RefundNotificationCard: View {
     
     var body: some View {
         if refundCount > 0 {
-            HStack(spacing: DesignSystem.Spacing.md) {
-                // Icon
-                Image(systemName: style.icon)
-                    .font(DesignSystem.Typography.title3(weight: .medium))
-                    .foregroundColor(style.cardStyle.iconColor)
-                
-                // Content
-                VStack(alignment: .leading, spacing: DesignSystem.Spacing.xs) {
-                    Text(style.title)
-                        .font(DesignSystem.Typography.subheadline(weight: .semibold))
-                        .foregroundColor(DesignSystem.Colors.textPrimary)
-                    
-                    Text(refundMessage)
-                        .font(DesignSystem.Typography.caption(weight: .regular))
-                        .foregroundColor(DesignSystem.Colors.textSecondary)
-                        .lineLimit(2)
-                }
-                
-                Spacer()
-                
-                // Action indicator
-                Image(systemName: "chevron.right")
-                    .font(DesignSystem.Typography.caption(weight: .medium))
-                    .foregroundColor(DesignSystem.Colors.textSecondary)
-                
-                // Dismiss button (optional)
-                if isDismissible, let onDismiss = onDismiss {
-                    Button(action: onDismiss) {
-                        Image(systemName: "xmark")
-                            .font(DesignSystem.Typography.caption(weight: .medium))
+            GlassmorphismCard {
+                HStack(spacing: DesignSystem.Spacing.md) {
+                    // Icon
+                    Image(systemName: style.icon)
+                        .font(DesignSystem.Typography.title3(weight: .medium))
+                        .foregroundColor(style.cardStyle.iconColor)
+
+                    // Content
+                    VStack(alignment: .leading, spacing: DesignSystem.Spacing.xs) {
+                        Text(style.title)
+                            .font(DesignSystem.Typography.subheadline(weight: .semibold))
+                            .foregroundColor(DesignSystem.Colors.textPrimary)
+
+                        Text(refundMessage)
+                            .font(DesignSystem.Typography.caption(weight: .regular))
                             .foregroundColor(DesignSystem.Colors.textSecondary)
+                            .lineLimit(2)
+                    }
+
+                    Spacer()
+
+                    // Action indicator
+                    Image(systemName: "chevron.right")
+                        .font(DesignSystem.Typography.caption(weight: .medium))
+                        .foregroundColor(DesignSystem.Colors.textSecondary)
+
+                    // Dismiss button (optional)
+                    if isDismissible, let onDismiss = onDismiss {
+                        Button(action: onDismiss) {
+                            Image(systemName: "xmark")
+                                .font(DesignSystem.Typography.caption(weight: .medium))
+                                .foregroundColor(DesignSystem.Colors.textSecondary)
+                        }
                     }
                 }
             }
-            .standardPadding()
-            .background(
-                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
-                    .fill(style.cardStyle.backgroundColor)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
-                            .stroke(style.cardStyle.borderColor ?? Color.clear, lineWidth: AppConstants.UI.borderWidthThin)
-                    )
-            )
             .onTapGesture {
                 onTap()
             }
@@ -138,7 +131,8 @@ struct EnhancedRefundNotificationCard: View {
     
     var body: some View {
         if refundCount > 0 {
-            VStack(spacing: DesignSystem.Spacing.md) {
+            GlassmorphismCard {
+                VStack(spacing: DesignSystem.Spacing.md) {
                 // Header
                 HStack {
                     HStack(spacing: DesignSystem.Spacing.sm) {
@@ -188,16 +182,8 @@ struct EnhancedRefundNotificationCard: View {
                     .style(.primary)
                     .size(.regular)
                     .icon(DesignSystem.Icons.receive)
+                }
             }
-            .standardPadding()
-            .background(
-                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
-                    .fill(DesignSystem.Colors.warning.opacity(0.1))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
-                            .stroke(DesignSystem.Colors.warning.opacity(0.3), lineWidth: AppConstants.UI.borderWidthThin)
-                    )
-            )
             .padding(.horizontal, DesignSystem.Spacing.md)
             .transition(.opacity.combined(with: .scale(scale: 0.95)))
         }
