@@ -111,6 +111,7 @@ struct WalletView: View {
         .padding(.horizontal)
         .padding(.top, 8)
         .padding(.bottom, 40)
+        .zIndex(1)
     }
 
     private var refundButton: some View {
@@ -179,10 +180,11 @@ struct WalletView: View {
 
             // Enhanced Transaction History - on white background
             EnhancedTransactionHistoryView()
+                .padding(.top, 20)
                 .padding(.horizontal)
                 .padding(.bottom, 100) // Extra bottom padding for scrolling
         }
-        .padding(.top, 20)
+        .padding(.top, -220)
         .background(Color.white)
     }
 
