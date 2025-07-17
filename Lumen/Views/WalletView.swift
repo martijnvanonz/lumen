@@ -90,7 +90,7 @@ struct WalletView: View {
                             VStack(spacing: 8) {
                                 Image(systemName: "arrow.up.circle.fill")
                                     .font(.title2)
-                                    .foregroundColor(.orange)
+                                    .foregroundColor(.white)
 
                                 Text("Send")
                                     .font(.headline)
@@ -107,7 +107,7 @@ struct WalletView: View {
                             VStack(spacing: 8) {
                                 Image(systemName: "arrow.down.circle.fill")
                                     .font(.title2)
-                                    .foregroundColor(.green)
+                                    .foregroundColor(.white)
 
                                 Text("Receive")
                                     .font(.headline)
@@ -120,7 +120,6 @@ struct WalletView: View {
                     }
                 }
             }
-            .padding(.horizontal)
 
             // Refund button (only show if there are refunds available)
             if refundableSwapsCount > 0 {
@@ -233,7 +232,7 @@ struct WalletView: View {
     
     struct BalanceCard: View {
         let balance: UInt64
-        
+
         var body: some View {
             GlassmorphismCard {
                 VStack(spacing: 8) {
@@ -245,7 +244,6 @@ struct WalletView: View {
                 }
                 .frame(maxWidth: .infinity)
             }
-            .padding(.horizontal)
         }
         
     }
