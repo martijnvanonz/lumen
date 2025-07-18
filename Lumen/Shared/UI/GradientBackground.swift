@@ -1,90 +1,117 @@
 import SwiftUI
 
 /// Gradient background component for the wallet homepage
-/// Displays a beautiful gradient background image that matches the design
+/// Now uses animated gradient with noise overlay instead of static image
 struct GradientBackground: View {
-    
+
     // MARK: - Properties
-    
-    /// The name of the gradient image in Assets.xcassets
-    private let imageName: String
-    
+
     /// Whether to ignore safe area
     private let ignoresSafeArea: Bool
-    
+
+    /// Animation speed multiplier
+    private let animationSpeed: Double
+
+    /// Noise opacity
+    private let noiseOpacity: Double
+
     // MARK: - Initialization
-    
-    /// Initialize with custom image name
+
+    /// Initialize animated gradient background
     /// - Parameters:
-    ///   - imageName: Name of the gradient image in Assets.xcassets
+    ///   - ignoresSafeArea: Whether to ignore safe area (default: true)
+    ///   - animationSpeed: Animation speed multiplier (default: 1.0)
+    ///   - noiseOpacity: Noise overlay opacity (default: 0.08)
+    init(
+        ignoresSafeArea: Bool = true,
+        animationSpeed: Double = 1.0,
+        noiseOpacity: Double = 0.08
+    ) {
+        self.ignoresSafeArea = ignoresSafeArea
+        self.animationSpeed = animationSpeed
+        self.noiseOpacity = noiseOpacity
+    }
+
+    // MARK: - Legacy initializer for backward compatibility
+
+    /// Legacy initializer that ignores imageName parameter
+    /// - Parameters:
+    ///   - imageName: Ignored - kept for backward compatibility
     ///   - ignoresSafeArea: Whether to ignore safe area (default: true)
     init(imageName: String = "background", ignoresSafeArea: Bool = true) {
-        self.imageName = imageName
         self.ignoresSafeArea = ignoresSafeArea
+        self.animationSpeed = 1.0
+        self.noiseOpacity = 0.08
     }
-    
+
     // MARK: - Body
-    
+
     var body: some View {
-        GeometryReader { geometry in
-            Image(imageName)
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(width: geometry.size.width, height: geometry.size.height)
-                .clipped()
-        }
-        .ignoresSafeArea(ignoresSafeArea ? .all : [])
+        UniversalAnimatedGradientBackground(
+            ignoresSafeArea: ignoresSafeArea,
+            animationSpeed: animationSpeed,
+            noiseOpacity: noiseOpacity
+        )
     }
 }
 
 /// Alternative gradient background using SwiftUI gradients
-/// This can be used as a fallback if the PNG is not available
+/// Now uses animated gradient for consistency with main background
 struct SwiftUIGradientBackground: View {
-    
+
     // MARK: - Properties
-    
+
     /// Whether to ignore safe area
     private let ignoresSafeArea: Bool
-    
+
+    /// Animation speed multiplier
+    private let animationSpeed: Double
+
     // MARK: - Initialization
-    
-    init(ignoresSafeArea: Bool = true) {
+
+    init(ignoresSafeArea: Bool = true, animationSpeed: Double = 1.0) {
         self.ignoresSafeArea = ignoresSafeArea
+        self.animationSpeed = animationSpeed
     }
-    
+
     // MARK: - Body
-    
+
     var body: some View {
-        LinearGradient(
-            gradient: Gradient(colors: [
-                Color(red: 1.0, green: 0.8, blue: 0.6),  // Peach/orange top
-                Color(red: 0.9, green: 0.6, blue: 0.8),  // Pink middle
-                Color(red: 0.7, green: 0.5, blue: 1.0)   // Purple bottom
-            ]),
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
+        // Use fallback version (no noise) for broader compatibility
+        AnimatedGradientBackgroundFallback(
+            ignoresSafeArea: ignoresSafeArea,
+            animationSpeed: animationSpeed
         )
-        .ignoresSafeArea(ignoresSafeArea ? .all : [])
     }
 }
 
 /// Fixed gradient background container for wallet homepage
-/// The gradient stays fixed while content scrolls over it
+/// The animated gradient stays fixed while content scrolls over it
 struct FixedGradientContainer<Content: View>: View {
 
     // MARK: - Properties
 
     private let content: Content
-    private let useImageGradient: Bool
+    private let useAnimatedGradient: Bool
 
     // MARK: - Initialization
 
-    /// Initialize with scrollable content over fixed gradient
+    /// Initialize with scrollable content over fixed animated gradient
     /// - Parameters:
-    ///   - useImageGradient: Whether to use PNG image or SwiftUI gradient (default: true)
+    ///   - useAnimatedGradient: Whether to use animated gradient or fallback (default: true)
     ///   - content: The scrollable content to display over the fixed gradient
-    init(useImageGradient: Bool = true, @ViewBuilder content: () -> Content) {
-        self.useImageGradient = useImageGradient
+    init(useAnimatedGradient: Bool = true, @ViewBuilder content: () -> Content) {
+        self.useAnimatedGradient = useAnimatedGradient
+        self.content = content()
+    }
+
+    /// Legacy initializer for backward compatibility
+    /// - Parameters:
+    ///   - useImageGradient: Mapped to useAnimatedGradient for compatibility
+    ///   - content: The scrollable content to display over the fixed gradient
+    @available(*, deprecated, message: "Use init(useAnimatedGradient:content:) instead")
+    init(useImageGradient: Bool, @ViewBuilder content: () -> Content) {
+        self.useAnimatedGradient = useImageGradient
         self.content = content()
     }
 
@@ -92,8 +119,8 @@ struct FixedGradientContainer<Content: View>: View {
 
     var body: some View {
         ZStack {
-            // FIXED gradient background - doesn't scroll
-            if useImageGradient {
+            // FIXED animated gradient background - doesn't scroll
+            if useAnimatedGradient {
                 GradientBackground()
             } else {
                 SwiftUIGradientBackground()
@@ -105,23 +132,33 @@ struct FixedGradientContainer<Content: View>: View {
     }
 }
 
-/// Container view that provides gradient background with content overlay
-/// This makes it easy to add the gradient background to any view
+/// Container view that provides animated gradient background with content overlay
+/// This makes it easy to add the animated gradient background to any view
 struct GradientBackgroundContainer<Content: View>: View {
 
     // MARK: - Properties
 
     private let content: Content
-    private let useImageGradient: Bool
+    private let useAnimatedGradient: Bool
 
     // MARK: - Initialization
 
     /// Initialize with content
     /// - Parameters:
-    ///   - useImageGradient: Whether to use PNG image or SwiftUI gradient (default: true)
+    ///   - useAnimatedGradient: Whether to use animated gradient or fallback (default: true)
     ///   - content: The content to display over the gradient
-    init(useImageGradient: Bool = true, @ViewBuilder content: () -> Content) {
-        self.useImageGradient = useImageGradient
+    init(useAnimatedGradient: Bool = true, @ViewBuilder content: () -> Content) {
+        self.useAnimatedGradient = useAnimatedGradient
+        self.content = content()
+    }
+
+    /// Legacy initializer for backward compatibility
+    /// - Parameters:
+    ///   - useImageGradient: Mapped to useAnimatedGradient for compatibility
+    ///   - content: The content to display over the gradient
+    @available(*, deprecated, message: "Use init(useAnimatedGradient:content:) instead")
+    init(useImageGradient: Bool, @ViewBuilder content: () -> Content) {
+        self.useAnimatedGradient = useImageGradient
         self.content = content()
     }
 
@@ -129,8 +166,8 @@ struct GradientBackgroundContainer<Content: View>: View {
 
     var body: some View {
         ZStack {
-            // Background gradient
-            if useImageGradient {
+            // Animated background gradient
+            if useAnimatedGradient {
                 GradientBackground()
             } else {
                 SwiftUIGradientBackground()
@@ -144,33 +181,33 @@ struct GradientBackgroundContainer<Content: View>: View {
 
 // MARK: - Preview
 
-#Preview("Image Gradient") {
+#Preview("Animated Gradient") {
     GradientBackgroundContainer {
         VStack(spacing: 20) {
-            Text("Wallet Homepage")
+            Text("Animated Wallet Background")
                 .font(.largeTitle)
                 .fontWeight(.bold)
                 .foregroundColor(.white)
-            
+
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color.white.opacity(0.9))
                 .frame(height: 120)
                 .padding(.horizontal)
                 .shadow(radius: 10)
-            
+
             HStack(spacing: 16) {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(Color.white.opacity(0.9))
                     .frame(height: 80)
                     .shadow(radius: 8)
-                
+
                 RoundedRectangle(cornerRadius: 12)
                     .fill(Color.white.opacity(0.9))
                     .frame(height: 80)
                     .shadow(radius: 8)
             }
             .padding(.horizontal)
-            
+
             Spacer()
         }
         .padding(.top, 50)
@@ -200,10 +237,10 @@ struct GradientBackgroundContainer<Content: View>: View {
     }
 }
 
-#Preview("SwiftUI Gradient") {
+#Preview("Fallback Gradient") {
     GradientBackgroundContainer(useImageGradient: false) {
         VStack(spacing: 20) {
-            Text("Wallet Homepage")
+            Text("Fallback Animated Background")
                 .font(.largeTitle)
                 .fontWeight(.bold)
                 .foregroundColor(.white)
