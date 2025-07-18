@@ -13,7 +13,7 @@ struct GlassmorphismCard<Content: View>: View {
     private var padding: EdgeInsets = EdgeInsets(top: 20, leading: 20, bottom: 20, trailing: 20)
     private var cornerRadius: CGFloat = 35
     private var backgroundOpacity: Double = 0.4
-    private var shadowColor: Color = Color.black.opacity(0.25)
+    private var shadowColor: Color = Color.white.opacity(0.40)
     private var shadowRadius: CGFloat = 20
     private var shadowOffset: CGSize = CGSize(width: 0, height: 4)
     private var backgroundBlur: CGFloat = 4

@@ -90,7 +90,7 @@ struct WalletView: View {
                             VStack(spacing: 8) {
                                 Image(systemName: "arrow.up.circle.fill")
                                     .font(.title2)
-                                    .foregroundColor(.white)
+                                    .foregroundColor(.black)
 
                                 Text("Send")
                                     .font(.headline)
@@ -107,7 +107,7 @@ struct WalletView: View {
                             VStack(spacing: 8) {
                                 Image(systemName: "arrow.down.circle.fill")
                                     .font(.title2)
-                                    .foregroundColor(.white)
+                                    .foregroundColor(.black)
 
                                 Text("Receive")
                                     .font(.headline)

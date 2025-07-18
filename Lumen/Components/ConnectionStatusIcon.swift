@@ -10,9 +10,8 @@ struct ConnectionStatusIcon: View {
         Group {
             switch eventHandler.connectionStatus {
             case .connected:
-                Image(systemName: "wifi")
-                    .foregroundColor(.green)
-                    .font(.system(size: 16, weight: .medium))
+                // Don't show anything when connected - connection is working fine
+                EmptyView()
 
             case .connecting, .syncing:
                 ProgressView()
