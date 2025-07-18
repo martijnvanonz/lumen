@@ -29,22 +29,29 @@ struct WalletView: View {
 
     private var mainContent: some View {
         Group {
-            FixedGradientContainer {
-                ScrollView {
-                    VStack(spacing: 0) {
-                        topContent
-                        waveTransition
-                        bottomContent
+            ZStack {
+                // Fixed gradient background with scrollable top content
+                FixedGradientContainer {
+                    ScrollView {
+                        VStack(spacing: 0) {
+                            topContent
+                            // Add some bottom spacing to account for the wave bottom sheet
+                            Color.clear.frame(height: 120)
+                        }
                     }
                 }
-            }
-            .refreshable {
-                await refreshWallet()
-            }
-            .onAppear {
-                Task {
-                    await checkRefundableSwaps()
+                .refreshable {
+                    await refreshWallet()
                 }
+                .onAppear {
+                    Task {
+                        await checkRefundableSwaps()
+                    }
+                }
+
+                // Interactive wave bottom sheet overlay
+                InteractiveWaveBottomSheet()
+                    .padding(.bottom, 60) // Move wave higher to avoid iOS home gesture
             }
 
             // Payment success overlay
@@ -121,6 +128,9 @@ struct WalletView: View {
                 }
             }
 
+            // Bitcoin Places Card - moved from bottomContent
+            SmartNearbyPlacesCard()
+
             // Refund button (only show if there are refunds available)
             if refundableSwapsCount > 0 {
                 refundButton
@@ -179,32 +189,7 @@ struct WalletView: View {
         .buttonStyle(PlainButtonStyle())
     }
 
-    private var waveTransition: some View {
-        WaveTransition(
-            animated: true,
-            waveHeight: 200,
-            amplitude: 150,
-            frequency: 0.4,
-            position: 0.3
-        )
-        .frame(height: 200)
-    }
 
-    private var bottomContent: some View {
-        VStack(spacing: 20) {
-            // Bitcoin Places Card - on white background
-            SmartNearbyPlacesCard()
-                .padding(.horizontal)
-
-            // Enhanced Transaction History - on white background
-            EnhancedTransactionHistoryView()
-                .padding(.top, 20)
-                .padding(.horizontal)
-                .padding(.bottom, 100) // Extra bottom padding for scrolling
-        }
-        .padding(.top, -220)
-        .background(Color.white)
-    }
 
     private func refreshWallet() async {
         // Refresh wallet balance and payment history
