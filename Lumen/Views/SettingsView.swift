@@ -251,7 +251,9 @@ struct SettingsView: View {
                         Spacer()
                     }
                 }
-                
+
+
+
                 // Network Section
                 Section("Network") {
                     HStack {
@@ -382,6 +384,7 @@ struct SettingsView: View {
         .sheet(isPresented: $showingAddBitcoin) {
             AddBitcoinView()
         }
+
         .alert("Logout Wallet", isPresented: $showingLogoutConfirmation) {
             Button("Cancel", role: .cancel) { }
             Button("Logout", role: .destructive) {

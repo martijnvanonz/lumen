@@ -234,18 +234,9 @@ struct RoundedCorner: Shape {
 
 #Preview {
     ZStack {
-        // Gradient background
-        LinearGradient(
-            gradient: Gradient(colors: [
-                Color(red: 1.0, green: 0.8, blue: 0.6),
-                Color(red: 0.9, green: 0.6, blue: 0.8),
-                Color(red: 0.7, green: 0.5, blue: 1.0)
-            ]),
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        .ignoresSafeArea()
-        
+        // Animated gradient background
+        UniversalAnimatedGradientBackground()
+
         // Interactive wave bottom sheet
         InteractiveWaveBottomSheet()
     }
