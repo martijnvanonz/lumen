@@ -66,6 +66,7 @@ struct SatsAmountView: View {
         case success
         case warning
         case error
+        case white
 
         var color: Color {
             switch self {
@@ -74,6 +75,7 @@ struct SatsAmountView: View {
             case .success: return .green
             case .warning: return .orange
             case .error: return .red
+            case .white: return .white
             }
         }
 
@@ -84,6 +86,7 @@ struct SatsAmountView: View {
             case .success: return .green.opacity(0.8)
             case .warning: return .orange.opacity(0.8)
             case .error: return .red.opacity(0.8)
+            case .white: return .white.opacity(0.8)
             }
         }
     }
@@ -246,7 +249,7 @@ extension SatsAmountView {
             amount: amount,
             displayMode: .stacked,
             size: .huge,
-            style: .primary,
+            style: .white,
             showCurrencyConversion: true,
             alignment: .center
         )

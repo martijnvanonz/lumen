@@ -234,18 +234,12 @@ struct WalletView: View {
         let balance: UInt64
 
         var body: some View {
-            GlassmorphismCard {
-                VStack(spacing: 8) {
-                    Text("Balance")
-                        .font(.headline)
-                        .foregroundColor(.secondary)
-
-                    SatsAmountView.balance(balance)
-                }
-                .frame(maxWidth: .infinity)
+            VStack(spacing: 8) {
+                SatsAmountView.balance(balance)
             }
+            .frame(maxWidth: .infinity)
         }
-        
+
     }
     
     // MARK: - Action Button
