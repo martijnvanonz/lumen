@@ -37,7 +37,7 @@ struct SatsAmountView: View {
             case .compact: return .caption
             case .regular: return .subheadline
             case .large: return .title3
-            case .huge: return .system(size: 36, weight: .bold, design: .rounded)
+            case .huge: return .system(size: 48, weight: .bold, design: .rounded)
             }
         }
 

@@ -88,6 +88,7 @@ struct WalletView: View {
             VStack(spacing: 12) {
                 BalanceCard(balance: walletManager.balance)
             }
+            .padding(.vertical, 100)
 
             // Action Buttons
             VStack(spacing: 16) {
@@ -1259,6 +1260,80 @@ struct WalletView: View {
             // For asset amounts, we might need to handle differently
             // For now, return 0 or handle as needed
             return 0
+        }
+    }
+}
+
+// MARK: - Payment Success Overlay
+
+/// Payment success overlay component
+struct PaymentSuccessOverlay: View {
+    let payment: PaymentEventHandler.PaymentInfo
+    let onDismiss: () -> Void
+
+    var body: some View {
+        ZStack {
+            // Background overlay
+            Color.black.opacity(0.3)
+                .ignoresSafeArea()
+                .onTapGesture {
+                    onDismiss()
+                }
+
+            // Success card
+            VStack(spacing: 24) {
+                // Success icon
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 60, weight: .medium))
+                    .foregroundColor(.green)
+
+                // Success message
+                Text(successMessage)
+                    .font(.title2.bold())
+                    .foregroundColor(.primary)
+                    .multilineTextAlignment(.center)
+
+                // Amount
+                VStack(spacing: 8) {
+                    Text("\(payment.amountSat) sats")
+                        .font(.title.bold())
+                        .foregroundColor(.primary)
+                }
+                .padding()
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(.green.opacity(0.1))
+                )
+
+                // Continue button
+                Button("Continue") {
+                    onDismiss()
+                }
+                .font(.headline)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(.green)
+                .cornerRadius(12)
+            }
+            .padding(32)
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(.regularMaterial)
+                    .shadow(radius: 20)
+            )
+            .padding(.horizontal, 32)
+        }
+        .transition(.opacity.combined(with: .scale(scale: 0.9)))
+        .animation(.spring(), value: true)
+    }
+
+    private var successMessage: String {
+        switch payment.direction {
+        case .outgoing:
+            return "Payment Sent!"
+        case .incoming:
+            return "Payment Received!"
         }
     }
 }
