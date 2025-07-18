@@ -93,13 +93,13 @@ struct WalletView: View {
             VStack(spacing: 16) {
                 HStack(spacing: 16) {
                     GlassmorphismCard {
-                        Button(action: { showingSendView = true }) {
+                        Button(action: { showingReceiveView = true }) {
                             VStack(spacing: 8) {
-                                Image(systemName: "arrow.up.circle.fill")
+                                Image(systemName: "arrow.down.circle.fill")
                                     .font(.title2)
                                     .foregroundColor(.black)
 
-                                Text("Send")
+                                Text("Receive")
                                     .font(.headline)
                                     .foregroundColor(.primary)
                             }
@@ -110,13 +110,13 @@ struct WalletView: View {
                     }
 
                     GlassmorphismCard {
-                        Button(action: { showingReceiveView = true }) {
+                        Button(action: { showingSendView = true }) {
                             VStack(spacing: 8) {
-                                Image(systemName: "arrow.down.circle.fill")
+                                Image(systemName: "arrow.up.circle.fill")
                                     .font(.title2)
                                     .foregroundColor(.black)
 
-                                Text("Receive")
+                                Text("Send")
                                     .font(.headline)
                                     .foregroundColor(.primary)
                             }
