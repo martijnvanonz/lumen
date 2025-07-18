@@ -92,9 +92,9 @@ struct InteractiveWaveBottomSheet: View {
     private var transactionHistoryContent: some View {
         ScrollView {
             VStack(spacing: 0) {
-                // Content padding to account for wave
-                Color.clear.frame(height: 20)
-                
+                // Content padding to account for wave - increased to move content higher
+                Color.clear.frame(height: -40)
+
                 // Transaction history
                 EnhancedTransactionHistoryView()
                     .padding(.horizontal)
