@@ -40,7 +40,7 @@ struct AnimatedGradientBackground: View {
         GeometryReader { geometry in
             TimelineView(.animation) { context in
                 let time = context.date.timeIntervalSinceReferenceDate
-                let t = sin(time * 0.1 * animationSpeed)
+                let t = sin(time * 0.3 * animationSpeed) // Subtle but visible animation
                 
                 ZStack {
                     // 1. Animated gradient (replaces Image("background"))
@@ -50,8 +50,8 @@ struct AnimatedGradientBackground: View {
                             Color(red: 0.9, green: 0.6, blue: 0.8),  // Pink middle
                             Color(red: 0.7, green: 0.5, blue: 1.0)   // Purple bottom
                         ],
-                        startPoint: UnitPoint(x: 0.5, y: 0.5 + t * 0.05),
-                        endPoint: UnitPoint(x: 0.5, y: 1.0 - t * 0.05)
+                        startPoint: UnitPoint(x: 0.5, y: 0.5 + t * 0.1), // Subtle but noticeable movement
+                        endPoint: UnitPoint(x: 0.5, y: 1.0 - t * 0.1)
                     )
                     
                     // 2. Animated noise overlay
@@ -64,7 +64,7 @@ struct AnimatedGradientBackground: View {
                             )
                         )
                         .blendMode(.overlay)
-                        .opacity(noiseOpacity)
+                        .opacity(0.15) // Subtle but visible noise texture
                 }
             }
         }
@@ -96,7 +96,7 @@ struct AnimatedGradientBackgroundFallback: View {
     var body: some View {
         TimelineView(.animation) { context in
             let time = context.date.timeIntervalSinceReferenceDate
-            let t = sin(time * 0.1 * animationSpeed)
+            let t = sin(time * 0.3 * animationSpeed) // Subtle but visible animation
             
             LinearGradient(
                 colors: [
@@ -104,8 +104,8 @@ struct AnimatedGradientBackgroundFallback: View {
                     Color(red: 0.9, green: 0.6, blue: 0.8),  // Pink middle
                     Color(red: 0.7, green: 0.5, blue: 1.0)   // Purple bottom
                 ],
-                startPoint: UnitPoint(x: 0.5, y: 0.5 + t * 0.05),
-                endPoint: UnitPoint(x: 0.5, y: 1.0 - t * 0.05)
+                startPoint: UnitPoint(x: 0.5, y: 0.5 + t * 0.1), // Subtle but noticeable movement
+                endPoint: UnitPoint(x: 0.5, y: 1.0 - t * 0.1)
             )
         }
         .ignoresSafeArea(ignoresSafeArea ? .all : [])

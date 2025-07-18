@@ -8,8 +8,8 @@ half4 noiseShader(float2 position, half4 color, float2 size, float time) {
     // Normalize position to UV coordinates (0-1)
     float2 uv = position / size;
     
-    // Create animated noise using time-based offset
-    float2 animatedUV = uv + time * 0.05;
+    // Create animated noise using time-based offset (subtle but visible)
+    float2 animatedUV = uv + time * 0.1;
     
     // Generate pseudo-random noise using dot product and sine
     float noise = fract(sin(dot(animatedUV, float2(12.9898, 78.233))) * 43758.5453);
